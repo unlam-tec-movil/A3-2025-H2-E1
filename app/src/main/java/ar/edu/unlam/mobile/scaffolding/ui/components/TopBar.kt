@@ -2,6 +2,8 @@ package ar.edu.unlam.mobile.scaffolding.ui.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -12,7 +14,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import ar.edu.unlam.mobile.scaffolding.ui.theme.ScaffoldingV2Theme
 
@@ -21,8 +22,6 @@ import ar.edu.unlam.mobile.scaffolding.ui.theme.ScaffoldingV2Theme
 fun TopBar(
     title: String?,
     onNavigateBack: (() -> Unit)? = null,
-    actionIcon: ImageVector? = null,
-    onActionClick: (() -> Unit)? = null,
     colors: TopAppBarColors =
         TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.background,
@@ -30,6 +29,7 @@ fun TopBar(
             titleContentColor = MaterialTheme.colorScheme.onBackground,
             actionIconContentColor = MaterialTheme.colorScheme.onBackground,
         ),
+    actions: (@Composable () -> Unit)? = null,
 ) {
     CenterAlignedTopAppBar(
         title = {
@@ -45,11 +45,7 @@ fun TopBar(
             }
         },
         actions = {
-            if (onActionClick != null && actionIcon != null) {
-                IconButton(onClick = onActionClick) {
-                    Icon(imageVector = actionIcon, contentDescription = "Action")
-                }
-            }
+            if (actions != null) actions()
         },
         colors = colors,
     )
@@ -61,9 +57,27 @@ fun TopBarPreview() {
     ScaffoldingV2Theme {
         TopBar(
             title = "Title",
-            onNavigateBack = {},
-            actionIcon = Icons.Filled.Search,
-            onActionClick = {},
+            onNavigateBack = { /*TODO*/ },
+            actions = {
+                IconButton(onClick = { /*TODO*/ }) {
+                    Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
+                }
+            },
         )
+    }
+}
+
+@Preview
+@Composable
+fun TopBarPreview2() {
+    ScaffoldingV2Theme {
+        TopBar(
+            title = "Title",
+        ) {
+            Icon(imageVector = Icons.Default.AccountCircle, contentDescription = "testIcon")
+            IconButton(onClick = { /*TODO*/ }) {
+                Icon(imageVector = Icons.Default.MoreVert, contentDescription = "testButton")
+            }
+        }
     }
 }
