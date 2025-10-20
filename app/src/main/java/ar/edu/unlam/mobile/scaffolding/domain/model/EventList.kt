@@ -1,6 +1,6 @@
 package ar.edu.unlam.mobile.scaffolding.domain.model
 
-data class Event(
+data class EventList(
     val id: String,
     val title: String,
     val description: String,
@@ -8,10 +8,4 @@ data class Event(
     val lat: Double,
     val lng: Double,
     val image: String?,
-    val beforeImage: List<String>,
-    val afterImage: List<String>?,
-    val membersId: List<Int>?,
-    val creatorId: Int,
-    val saved: Boolean,
-    val participating: Boolean,
 )
