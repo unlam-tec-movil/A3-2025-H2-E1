@@ -23,19 +23,21 @@ fun PrimaryButton(
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier
-            .width(width)
-            .height(50.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF4CAF50),
-            contentColor = Color.White
-        ),
-        shape = RoundedCornerShape(12.dp)
+        modifier =
+            modifier
+                .width(width)
+                .height(50.dp),
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF4CAF50),
+                contentColor = Color.White,
+            ),
+        shape = RoundedCornerShape(12.dp),
     ) {
         Text(
             text = text,
             fontWeight = FontWeight.Bold,
-            fontSize = 16.sp
+            fontSize = 16.sp,
         )
     }
 }

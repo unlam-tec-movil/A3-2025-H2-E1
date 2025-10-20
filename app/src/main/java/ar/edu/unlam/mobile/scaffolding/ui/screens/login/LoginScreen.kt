@@ -37,76 +37,73 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import ar.edu.unlam.mobile.scaffolding.ui.components.PrimaryButton
 
 @Composable
-fun LoginScreen(
-    viewModel: LoginViewModel = hiltViewModel()
-) {
+fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
     val formState by viewModel.formState.collectAsState()
 
-        Column(
-            modifier = Modifier
+    Column(
+        modifier =
+            Modifier
                 .fillMaxSize()
                 .padding(horizontal = 32.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = "Iniciar sesión",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+        )
 
+        Spacer(modifier = Modifier.height(32.dp))
+
+        OutlinedTextField(
+            value = formState.email,
+            onValueChange = { viewModel.onEmailChanged(it) },
+            label = { Text("Email") },
+            singleLine = true,
+            leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            modifier = Modifier.fillMaxWidth(),
+            isError = formState.emailError != null,
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        var passwordVisible by remember { mutableStateOf(false) }
+        OutlinedTextField(
+            value = formState.password,
+            onValueChange = { viewModel.onPasswordChanged(it) },
+            label = { Text("Contraseña") },
+            singleLine = true,
+            leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        PrimaryButton(
+            text = "Ingresar",
+            width = 320.dp,
+            onClick = { viewModel.onLoginClicked() },
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row {
             Text(
-                text = "Iniciar sesión",
-                style = MaterialTheme.typography.headlineSmall,
+                text = "¿No tenés cuenta? ",
+                color = Color.Gray,
+                fontSize = 14.sp,
+            )
+            Text(
+                text = "Registrate",
+                color = Color(0xFF2E7D32),
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
+                modifier = Modifier.clickable { },
             )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            OutlinedTextField(
-                value = formState.email,
-                onValueChange = { viewModel.onEmailChanged(it) },
-                label = { Text("Email") },
-                singleLine = true,
-                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                modifier = Modifier.fillMaxWidth(),
-                isError = formState.emailError != null
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            var passwordVisible by remember { mutableStateOf(false) }
-            OutlinedTextField(
-                value = formState.password,
-                onValueChange = { viewModel.onPasswordChanged(it) },
-                label = { Text("Contraseña") },
-                singleLine = true,
-                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
-                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            PrimaryButton(
-                text = "Ingresar",
-                width = 320.dp,
-                onClick = { viewModel.onLoginClicked() }
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row {
-                Text(
-                    text = "¿No tenés cuenta? ",
-                    color = Color.Gray,
-                    fontSize = 14.sp
-                )
-                Text(
-                    text = "Registrate",
-                    color = Color(0xFF2E7D32),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clickable { }
-                )
-            }
-
         }
     }
+}
