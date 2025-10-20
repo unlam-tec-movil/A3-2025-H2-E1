@@ -33,13 +33,12 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import ar.edu.unlam.mobile.scaffolding.ui.components.PrimaryButton
 
 @Composable
 fun LoginScreen(
-    viewModel: LoginViewModel = viewModel(),
-    onSignupClick: () -> Unit = {},
+    viewModel: LoginViewModel = hiltViewModel()
 ) {
     val formState by viewModel.formState.collectAsState()
 
@@ -105,7 +104,7 @@ fun LoginScreen(
                     color = Color(0xFF2E7D32),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clickable { onSignupClick() }
+                    modifier = Modifier.clickable { }
                 )
             }
 
