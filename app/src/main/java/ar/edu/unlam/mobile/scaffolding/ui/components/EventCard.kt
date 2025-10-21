@@ -33,53 +33,56 @@ fun EventCard(
     myLocation: LatLng? = null,
 ) {
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(8.dp)
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(8.dp),
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            //imagen
+            // imagen
             AsyncImage(
                 model = imageUrl,
                 contentDescription = "Imagen del evento",
-                modifier = modifier
-                    .height(180.dp)
-                    .fillMaxWidth(),
-                contentScale = ContentScale.Crop
+                modifier =
+                    modifier
+                        .height(180.dp)
+                        .fillMaxWidth(),
+                contentScale = ContentScale.Crop,
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
             )
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            //fechas
+            // fechas
             val dateFormat = SimpleDateFormat("dd 'de' MMMM 'de' yyyy", Locale.getDefault())
             val dateString = dateFormat.format(date)
             Text(
                 text = "Fecha: $dateString",
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
             )
 
             val timeFormat = SimpleDateFormat("HH:mm 'hs'", Locale.getDefault())
             val timeString = timeFormat.format(date)
             Text(
                 text = "Horario: $timeString",
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
             )
-            //ubicacion
+            // ubicacion
             Text(
                 text = "Ubicación: $location",
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
             )
 
             Spacer(modifier = Modifier.height(6.dp))
@@ -91,18 +94,18 @@ fun EventCard(
                     coordinates.longitude,
                     myLocation.latitude,
                     myLocation.longitude,
-                    results
+                    results,
                 )
 
                 Text(
-                    text = "Distancia: ${results[0] /100} Km",
-                    style = MaterialTheme.typography.bodySmall
+                    text = "Distancia: ${results[0] / 100} Km",
+                    style = MaterialTheme.typography.bodySmall,
                 )
             } else {
                 val remaining = relativeTimeCustom(date)
                 Text(
                     text = remaining,
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodySmall,
                 )
             }
         }
@@ -141,7 +144,6 @@ fun EventCardPreview() {
             title = "Concierto de Rock",
             location = "Estadio River Plate",
             date = calendar.time,
-
         )
     }
 }
