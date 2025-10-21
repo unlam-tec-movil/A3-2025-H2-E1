@@ -32,11 +32,11 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import ar.edu.unlam.mobile.scaffolding.ui.components.BottomBar
 import ar.edu.unlam.mobile.scaffolding.ui.components.SnackbarVisualsWithError
+import ar.edu.unlam.mobile.scaffolding.ui.screens.EventListScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.FormScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.HOME_SCREEN_ROUTE
 import ar.edu.unlam.mobile.scaffolding.ui.screens.HomeScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.UserScreen
-import ar.edu.unlam.mobile.scaffolding.ui.screens.login.LoginScreen
 import ar.edu.unlam.mobile.scaffolding.ui.theme.ScaffoldingV2Theme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -70,7 +70,7 @@ fun MainScreen() {
     val snackBarHostState = remember { SnackbarHostState() }
     Scaffold(
         bottomBar = {
-            if (currentRoute == "home" || currentRoute == "form" || currentRoute == "user/{id}") {
+            if (currentRoute == "home" || currentRoute == "eventList" || currentRoute == "user/{id}") {
                 BottomBar(controller = controller)
             }
         },
@@ -123,18 +123,26 @@ fun MainScreen() {
                 // Home es el componente en sí que es el destino de navegación.
                 HomeScreen(modifier = Modifier.padding(paddingValue))
             }
-            composable("form") {
-                FormScreen(
+
+            composable("eventList") {
+                EventListScreen(
                     modifier = Modifier.padding(paddingValue),
-                    snackbarHostState = snackBarHostState,
                 )
             }
+
             composable(
                 route = "user/{id}",
                 arguments = listOf(navArgument("id") { type = NavType.StringType }),
             ) { navBackStackEntry ->
                 val id = navBackStackEntry.arguments?.getString("id") ?: "1"
                 UserScreen(userId = id, modifier = Modifier.padding(paddingValue))
+            }
+
+            composable("form") {
+                FormScreen(
+                    modifier = Modifier.padding(paddingValue),
+                    snackbarHostState = snackBarHostState,
+                )
             }
         }
     }

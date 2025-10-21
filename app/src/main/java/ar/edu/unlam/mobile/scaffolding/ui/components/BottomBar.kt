@@ -20,7 +20,6 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import ar.edu.unlam.mobile.scaffolding.ui.screens.FORM_ROUTE
 import ar.edu.unlam.mobile.scaffolding.ui.theme.ScaffoldingV2Theme
 
 @Composable
@@ -78,7 +77,7 @@ fun BottomBar(controller: NavHostController) {
         )
         // Esta pantalla deberia ser la de EventList pero hasta que sea creada dejo la que estaba
         navigationItem(
-            navRoute = FORM_ROUTE,
+            navRoute = "eventList",
             icon = Icons.Default.CalendarMonth,
             label = "Calendario",
         )

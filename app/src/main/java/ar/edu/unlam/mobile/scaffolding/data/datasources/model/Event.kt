@@ -1,5 +1,6 @@
 package ar.edu.unlam.mobile.scaffolding.data.datasources.model
 
+import com.google.android.gms.maps.model.LatLng
 import java.util.Date
 
     data class Event(
@@ -7,5 +8,5 @@ import java.util.Date
         val title: String,
         val location: String,
         val date: Date,
-        val locationDistance: String? = null
+        val coordinates: LatLng? = null
     )

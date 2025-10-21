@@ -1,5 +1,6 @@
 package ar.edu.unlam.mobile.scaffolding.ui.components
 
+import android.location.Location
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +16,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.google.android.gms.maps.model.LatLng
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -27,7 +29,8 @@ fun EventCard(
     title: String,
     location: String,
     date: Date,
-    locationDistance: String? = null,
+    coordinates: LatLng? = null,
+    myLocation: LatLng? = null,
 ) {
     Card(
         modifier = modifier
@@ -81,9 +84,18 @@ fun EventCard(
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            if(locationDistance != null) {
+            if(coordinates != null && myLocation != null) {
+                val results = FloatArray(1)
+                Location.distanceBetween(
+                    coordinates.latitude,
+                    coordinates.longitude,
+                    myLocation.latitude,
+                    myLocation.longitude,
+                    results
+                )
+
                 Text(
-                    text = "Distance: $locationDistance",
+                    text = "Distancia: ${results[0] /100} Km",
                     style = MaterialTheme.typography.bodySmall
                 )
             } else {
