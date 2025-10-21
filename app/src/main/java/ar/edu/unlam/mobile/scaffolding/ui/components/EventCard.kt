@@ -87,7 +87,7 @@ fun EventCard(
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            if(coordinates != null && myLocation != null) {
+            if (coordinates != null && myLocation != null) {
                 val results = FloatArray(1)
                 Location.distanceBetween(
                     coordinates.latitude,
@@ -134,9 +134,10 @@ fun relativeTimeCustom(date: Date): String {
 @Preview(showBackground = true)
 @Composable
 fun EventCardPreview() {
-    val calendar = Calendar.getInstance().apply {
-        set(2025,11,20,20,15)
-    }
+    val calendar =
+        Calendar.getInstance().apply {
+            set(2025, 11, 20, 20, 15)
+        }
 
     MaterialTheme {
         EventCard(
