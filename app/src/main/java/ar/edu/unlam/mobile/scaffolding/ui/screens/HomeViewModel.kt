@@ -23,6 +23,7 @@ sealed interface HelloMessageUIState {
 }
 
 data class HomeUIState(
+    val currentSearch: String? = "",
     var searchQuery: String? = "",
     val eventList: List<EventList> = emptyList(),
     val helloMessageState: HelloMessageUIState,
@@ -48,7 +49,7 @@ class HomeViewModel
         init {
             _uiState.value =
                 HomeUIState(
-                    helloMessageState = HelloMessageUIState.Success("2b")
+                    helloMessageState = HelloMessageUIState.Success("2b"),
                 )
         }
 
@@ -58,7 +59,20 @@ class HomeViewModel
             }
         }
 
+        fun onCancelSearch() {
+            _uiState.update { currentState ->
+                if (currentState.currentSearch.isNullOrEmpty()) {
+                    currentState.copy(searchQuery = "")
+                } else {
+                    currentState.copy(searchQuery = _uiState.value.currentSearch)
+                }
+            }
+        }
+
         fun onSearch(query: String) {
-            // TODO: Hacer la búsqueda
+            _uiState.update { currentState ->
+                currentState.copy(currentSearch = query)
+            }
+            // TODO Hacer la búsqueda de eventos
         }
     }

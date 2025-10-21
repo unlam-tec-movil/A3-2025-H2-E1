@@ -75,7 +75,6 @@ fun BottomBar(controller: NavHostController) {
             icon = Icons.Default.LocationOn,
             label = "Buscar",
         )
-        // Esta pantalla deberia ser la de EventList pero hasta que sea creada dejo la que estaba
         navigationItem(
             navRoute = "eventList",
             icon = Icons.Default.CalendarMonth,

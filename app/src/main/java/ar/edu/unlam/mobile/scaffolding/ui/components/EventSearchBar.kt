@@ -48,13 +48,15 @@ fun EventSearchBar(
             SearchBarDefaults.InputField(
                 query = searchQuery,
                 onQueryChange = onSearchQueryChange,
-                onSearch = {
-                    onSearch(it)
-                    onActiveChange(false)
-                },
+                onSearch = onSearch,
                 expanded = isExpanded,
                 onExpandedChange = onActiveChange,
-                placeholder = { Text("Buscar") },
+                placeholder = {
+                    Text(
+                        text = "Buscar",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    )
+                },
                 leadingIcon = {
                     if (isExpanded) {
                         IconButton(onClick = { onActiveChange(false) }) {
@@ -75,6 +77,7 @@ fun EventSearchBar(
                         IconButton(
                             onClick = {
                                 onSearchQueryChange("")
+                                onSearch("")
                                 onActiveChange(false)
                             },
                         ) {
@@ -114,7 +117,7 @@ fun EventSearchBar(
                 .fillMaxWidth()
                 .padding(horizontal = paddingSize),
     ) {
-        // TODO: Contenido de la barra de búsqueda
+        // TODO Contenido de la barra de búsqueda
         Box(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = "No hay resultados",

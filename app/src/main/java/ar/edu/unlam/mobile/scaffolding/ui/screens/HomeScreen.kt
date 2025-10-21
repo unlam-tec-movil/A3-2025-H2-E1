@@ -2,7 +2,10 @@ package ar.edu.unlam.mobile.scaffolding.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -13,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventSearchBar
 import ar.edu.unlam.mobile.scaffolding.ui.components.Greeting
@@ -43,11 +47,14 @@ fun HomeScreen(
                         viewModel.onSearchQueryChange(newQuery)
                     },
                     onSearch = { query ->
-                        isSearchActive.value = false
                         viewModel.onSearch(query)
+                        isSearchActive.value = false
                     },
                     onActiveChange = { isActive ->
                         isSearchActive.value = isActive
+                        if (!isActive) {
+                            viewModel.onCancelSearch()
+                        }
                     },
                     isExpanded = isSearchActive.value,
                 )
@@ -58,8 +65,13 @@ fun HomeScreen(
                             .padding(paddingValues)
                             .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)),
                 ) {
-                    Greeting(helloState.message, modifier)
-                    Text("Prueba")
+                    // TODO mapa de eventos
+                    // Column solo de test, eliminar para colocar el mapa
+                    Column {
+                        Greeting(helloState.message, modifier)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(uiState.currentSearch.toString())
+                    }
                 }
             }
         }
