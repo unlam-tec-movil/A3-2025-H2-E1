@@ -28,7 +28,6 @@ fun EventCard(
     location: String,
     date: Date,
     locationDistance: String? = null,
-
 ) {
     Card(
         modifier = modifier
@@ -41,7 +40,7 @@ fun EventCard(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
+            //imagen
             AsyncImage(
                 model = imageUrl,
                 contentDescription = "Imagen del evento",
@@ -60,25 +59,25 @@ fun EventCard(
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                val dateFormat = SimpleDateFormat("dd 'de' MMMM 'de' yyyy", Locale.getDefault())
-                val dateString = dateFormat.format(date)
+            //fechas
+            val dateFormat = SimpleDateFormat("dd 'de' MMMM 'de' yyyy", Locale.getDefault())
+            val dateString = dateFormat.format(date)
+            Text(
+                text = "Fecha: $dateString",
+                style = MaterialTheme.typography.bodyMedium
+            )
 
-                Text(
-                    text = "Fecha: $dateString",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                val timeFormat = SimpleDateFormat("HH:mm 'hs'", Locale.getDefault())
-                val timeString = timeFormat.format(date)
-                Text(
-                    text = "Horario: $timeString",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    text = "Ubicación: $location",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
+            val timeFormat = SimpleDateFormat("HH:mm 'hs'", Locale.getDefault())
+            val timeString = timeFormat.format(date)
+            Text(
+                text = "Horario: $timeString",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            //ubicacion
+            Text(
+                text = "Ubicación: $location",
+                style = MaterialTheme.typography.bodyMedium
+            )
 
             Spacer(modifier = Modifier.height(6.dp))
 
@@ -110,11 +109,10 @@ fun relativeTimeCustom(date: Date): String {
         days >= 2 -> "En $days días"
         days == 1L -> "Mañana"
         days == -1L -> "Ayer"
+        days <= -2 -> "Hace ${-days} días"
         hours in 2..23 -> "En $hours horas"
-        hours in -23..-2 -> "Hace ${-hours} horas"
         minutes in 1..59 -> "En $minutes minutos"
-        minutes in -59..-1 -> "Hace ${-minutes} minutos"
-        else -> if (seconds >= 0) "En unos segundos" else "Hace unos segundos"
+        else -> ""
     }
 }
 
