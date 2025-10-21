@@ -1,14 +1,12 @@
 package ar.edu.unlam.mobile.scaffolding.ui.screens.login
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import ar.edu.unlam.mobile.scaffolding.domain.user.usercase.LoginUseCase
 import ar.edu.unlam.mobile.scaffolding.ui.screens.login.state.LoginFormState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 
 @HiltViewModel
 class LoginViewModel
