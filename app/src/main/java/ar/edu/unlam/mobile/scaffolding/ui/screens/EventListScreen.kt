@@ -68,15 +68,13 @@ private val sampleEvents =
             date = Date(System.currentTimeMillis() - 1000L * 60 * 60 * 24), // 1 día atrás
         ),
         Event(
-            imageUrl = @Suppress("ktlint:standard:max-line-length")
-            "https://images.unsplash.com/photo-1631888717179-7e213fc93e1d?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1176",
+            imageUrl = "https://shorturl.at/QUHmG",
             title = "Feria de Libro",
             location = "Plaza Mayor",
             date = Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 2), // en 2 días
         ),
         Event(
-            imageUrl = @Suppress("ktlint:standard:max-line-length")
-            "https://images.unsplash.com/photo-1592383010275-b028451b2947?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1171",
+            imageUrl = "https://shorturl.at/ZehlK",
             title = "Charla de Tecnología",
             location = "Auditorio 1",
             date = Date(System.currentTimeMillis() + 1000L * 60 * 60 * 5), // en 5 horas
