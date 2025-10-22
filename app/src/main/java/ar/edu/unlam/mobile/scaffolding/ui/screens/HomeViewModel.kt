@@ -2,9 +2,11 @@ package ar.edu.unlam.mobile.scaffolding.ui.screens
 
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
+import ar.edu.unlam.mobile.scaffolding.domain.model.EventList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 @Immutable
@@ -21,6 +23,9 @@ sealed interface HelloMessageUIState {
 }
 
 data class HomeUIState(
+    val currentSearch: String? = "",
+    var searchQuery: String? = "",
+    val eventList: List<EventList> = emptyList(),
     val helloMessageState: HelloMessageUIState,
 )
 
@@ -35,16 +40,39 @@ class HomeViewModel
         private val helloMessage = MutableStateFlow(HelloMessageUIState.Loading)
 
         // _Ui State es el estado general del view model.
-        private val _uiState =
-            MutableStateFlow(
-                HomeUIState(helloMessage.value),
-            )
+        private val _uiState = MutableStateFlow(HomeUIState(helloMessageState = helloMessage.value))
 
         // UIState expone el estado anterior como un Flujo de Estado de solo lectura.
         // Esto impide que se pueda modificar el estado desde fuera del ViewModel.
         val uiState = _uiState.asStateFlow()
 
         init {
-            _uiState.value = HomeUIState(HelloMessageUIState.Success("2b"))
+            _uiState.value =
+                HomeUIState(
+                    helloMessageState = HelloMessageUIState.Success("2b"),
+                )
+        }
+
+        fun onSearchQueryChange(newQuery: String) {
+            _uiState.update { currentState ->
+                currentState.copy(searchQuery = newQuery)
+            }
+        }
+
+        fun onCancelSearch() {
+            _uiState.update { currentState ->
+                if (currentState.currentSearch.isNullOrEmpty()) {
+                    currentState.copy(searchQuery = "")
+                } else {
+                    currentState.copy(searchQuery = _uiState.value.currentSearch)
+                }
+            }
+        }
+
+        fun onSearch(query: String) {
+            _uiState.update { currentState ->
+                currentState.copy(currentSearch = query)
+            }
+            // TODO Hacer la búsqueda de eventos
         }
     }
