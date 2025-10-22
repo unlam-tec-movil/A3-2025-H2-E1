@@ -11,10 +11,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import ar.edu.unlam.mobile.scaffolding.data.datasources.model.Event
+import ar.edu.unlam.mobile.scaffolding.data.model.EventListEntity
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventFilterButton
 import ar.edu.unlam.mobile.scaffolding.ui.components.TopBar
+import com.google.android.gms.maps.model.LatLng
 import java.util.Date
 
 @Composable
@@ -47,11 +48,13 @@ fun EventListScreen(modifier: Modifier = Modifier) {
         ) {
             items(events) { event ->
                 EventCard(
-                    imageUrl = event.imageUrl,
+                    imageUrl = event.image,
                     title = event.title,
-                    location = event.location,
-                    date = event.date,
-                    coordinates = event.coordinates,
+                    location = event.description,
+                    date = event.dateTime,
+                    coordinates = LatLng(event.lat, event.lng),
+                    isDistanceFilter = isDistance.value,
+                    myLocation = LatLng(-33.603684, -58.381559), // TODO obtener mi ubicacion real
                     modifier = Modifier.padding(vertical = 4.dp),
                 )
             }
@@ -61,23 +64,32 @@ fun EventListScreen(modifier: Modifier = Modifier) {
 
 private val sampleEvents =
     listOf(
-        Event(
-            imageUrl = "https://cdn.pixabay.com/photo/2014/07/09/12/17/live-concert-388160_1280.jpg",
+        EventListEntity(
+            id = "1",
+            image = "https://cdn.pixabay.com/photo/2014/07/09/12/17/live-concert-388160_1280.jpg",
             title = "Concierto de Rock",
-            location = "Teatro Central",
-            date = Date(System.currentTimeMillis() - 1000L * 60 * 60 * 24), // 1 día atrás
+            description = "Teatro Central",
+            dateTime = Date(System.currentTimeMillis() - 1000L * 60 * 60 * 24), // 1 día atrás
+            lat = -33.603684,
+            lng = -58.381559,
         ),
-        Event(
-            imageUrl = "https://shorturl.at/QUHmG",
+        EventListEntity(
+            id = "2",
+            image = "https://shorturl.at/QUHmG",
             title = "Feria de Libro",
-            location = "Plaza Mayor",
-            date = Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 2), // en 2 días
+            description = "Plaza Mayor",
+            dateTime = Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 2), // en 2 días
+            lat = -33.603684,
+            lng = -58.381559,
         ),
-        Event(
-            imageUrl = "https://shorturl.at/ZehlK",
+        EventListEntity(
+            id = "3",
+            image = "https://shorturl.at/ZehlK",
             title = "Charla de Tecnología",
-            location = "Auditorio 1",
-            date = Date(System.currentTimeMillis() + 1000L * 60 * 60 * 5), // en 5 horas
+            description = "Auditorio 1",
+            dateTime = Date(System.currentTimeMillis() + 1000L * 60 * 60 * 5), // en 5 horas
+            lat = -33.603684,
+            lng = -58.381559,
         ),
     )
 

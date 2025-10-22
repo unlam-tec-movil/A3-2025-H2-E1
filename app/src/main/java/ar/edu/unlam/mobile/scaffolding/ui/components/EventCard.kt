@@ -25,12 +25,13 @@ import java.util.Locale
 @Composable
 fun EventCard(
     modifier: Modifier = Modifier,
-    imageUrl: String,
+    imageUrl: String?,
     title: String,
     location: String,
     date: Date,
-    coordinates: LatLng? = null,
-    myLocation: LatLng? = null,
+    coordinates: LatLng,
+    myLocation: LatLng,
+    isDistanceFilter: Boolean,
 ) {
     Card(
         modifier =
@@ -87,7 +88,7 @@ fun EventCard(
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            if (coordinates != null && myLocation != null) {
+            if (isDistanceFilter) {
                 val results = FloatArray(1)
                 Location.distanceBetween(
                     coordinates.latitude,
@@ -145,6 +146,9 @@ fun EventCardPreview() {
             title = "Concierto de Rock",
             location = "Estadio River Plate",
             date = calendar.time,
+            coordinates = LatLng(-33.603684, -58.381559),
+            myLocation = LatLng(-34.603684, -58.381559),
+            isDistanceFilter = true,
         )
     }
 }
