@@ -32,6 +32,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import ar.edu.unlam.mobile.scaffolding.ui.components.BottomBar
 import ar.edu.unlam.mobile.scaffolding.ui.components.SnackbarVisualsWithError
+import ar.edu.unlam.mobile.scaffolding.ui.screens.EventDetailsScreen
+import ar.edu.unlam.mobile.scaffolding.ui.screens.EventListScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.FormScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.HOME_SCREEN_ROUTE
 import ar.edu.unlam.mobile.scaffolding.ui.screens.HomeScreen
@@ -69,7 +71,7 @@ fun MainScreen() {
     val snackBarHostState = remember { SnackbarHostState() }
     Scaffold(
         bottomBar = {
-            if (currentRoute == "home" || currentRoute == "form" || currentRoute == "user/{id}") {
+            if (currentRoute == "home" || currentRoute == "eventList" || currentRoute == "user/{id}") {
                 BottomBar(controller = controller)
             }
         },
@@ -122,18 +124,39 @@ fun MainScreen() {
                 // Home es el componente en sí que es el destino de navegación.
                 HomeScreen(modifier = Modifier.padding(paddingValue))
             }
-            composable("form") {
-                FormScreen(
+
+            composable("eventList") {
+                EventListScreen(
                     modifier = Modifier.padding(paddingValue),
-                    snackbarHostState = snackBarHostState,
+                    navController = controller,
                 )
             }
+
             composable(
                 route = "user/{id}",
                 arguments = listOf(navArgument("id") { type = NavType.StringType }),
             ) { navBackStackEntry ->
                 val id = navBackStackEntry.arguments?.getString("id") ?: "1"
                 UserScreen(userId = id, modifier = Modifier.padding(paddingValue))
+            }
+
+            composable("form") {
+                FormScreen(
+                    modifier = Modifier.padding(paddingValue),
+                    snackbarHostState = snackBarHostState,
+                )
+            }
+
+            composable(
+                route = "eventDetails/{id}",
+                arguments = listOf(navArgument("id") { type = NavType.StringType }),
+            ) { navBackStackEntry ->
+                val id = navBackStackEntry.arguments?.getInt("id") ?: 1
+                EventDetailsScreen(
+                    modifier = Modifier.padding(paddingValue),
+                    eventId = id,
+                    navController = controller,
+                )
             }
         }
     }

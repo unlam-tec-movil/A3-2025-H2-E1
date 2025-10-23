@@ -4,7 +4,7 @@ data class EventEntity(
     val eventId: String,
     val title: String,
     val description: String,
-    val dateTime: String,
+    val dateTime: Long,
     val lat: Double,
     val lng: Double,
     val imageUrl: String?,
