@@ -9,12 +9,19 @@ import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ar.edu.unlam.mobile.scaffolding.domain.model.Event
+import ar.edu.unlam.mobile.scaffolding.utils.getAddressFromCoordinates
 import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 
 @Composable
@@ -26,11 +33,17 @@ fun TimePlaceEventCard(
     val dateString = dateFormat.format(event.dateTime)
     val timeFormat = SimpleDateFormat("HH:mm 'hs'", Locale.getDefault())
     val timeString = timeFormat.format(event.dateTime)
+    var address by remember { mutableStateOf("") }
+    val context = LocalContext.current
+
+    LaunchedEffect(event.lat, event.lng) {
+        address = getAddressFromCoordinates(context, event.lat, event.lng)
+    }
 
     Column(
         modifier = modifier,
     ) {
-        Row {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = Icons.Default.Place,
                 contentDescription = "Lugar del evento",
@@ -39,11 +52,11 @@ fun TimePlaceEventCard(
                 modifier =
                     modifier
                         .padding(4.dp),
-                text = event.description,
+                text = address,
             )
         }
 
-        Row {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = Icons.Default.CalendarMonth,
                 contentDescription = "Dia y hora del evento",
@@ -67,9 +80,9 @@ fun TimePlaceEventCardPreview() {
                 id = "1",
                 title = "Evento de prueba",
                 description = "Lugar de prueba",
-                dateTime = Date(),
-                lat = -34.6037,
-                lng = -58.3816,
+                dateTime = System.currentTimeMillis(),
+                lat = -34.622681,
+                lng = -58.611251,
                 image = null,
                 beforeImage = listOf(),
                 afterImage = null,

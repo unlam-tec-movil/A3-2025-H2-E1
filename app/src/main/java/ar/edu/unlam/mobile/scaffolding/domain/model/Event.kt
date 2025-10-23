@@ -1,12 +1,10 @@
 package ar.edu.unlam.mobile.scaffolding.domain.model
 
-import java.util.Date
-
 data class Event(
     val id: String,
     val title: String,
     val description: String,
-    val dateTime: Date,
+    val dateTime: Long,
     val lat: Double,
     val lng: Double,
     val image: String?,
