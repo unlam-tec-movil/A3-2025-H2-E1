@@ -11,7 +11,7 @@ import java.util.Locale
 suspend fun getAddressFromCoordinates(
     context: Context,
     lat: Double,
-    lng: Double
+    lng: Double,
 ): String =
     try {
         val geocoder = Geocoder(context, Locale.getDefault())
