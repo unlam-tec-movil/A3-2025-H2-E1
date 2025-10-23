@@ -88,4 +88,7 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
     androidTestImplementation(libs.google.dagger.hilt.android.testing)
     testImplementation(libs.google.dagger.hilt.android.testing)
+
+    // Coil Compose
+    implementation("io.coil-kt:coil-compose:2.7.0")
 }
