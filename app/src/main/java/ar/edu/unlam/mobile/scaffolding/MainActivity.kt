@@ -31,6 +31,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import ar.edu.unlam.mobile.scaffolding.ui.components.BottomBar
+import ar.edu.unlam.mobile.scaffolding.ui.components.SingleEventPreview
 import ar.edu.unlam.mobile.scaffolding.ui.components.SnackbarVisualsWithError
 import ar.edu.unlam.mobile.scaffolding.ui.screens.FormScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.HOME_SCREEN_ROUTE
@@ -50,7 +51,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    MainScreen()
+                    //MainScreen()
+                    SingleEventPreview()
                 }
             }
         }
