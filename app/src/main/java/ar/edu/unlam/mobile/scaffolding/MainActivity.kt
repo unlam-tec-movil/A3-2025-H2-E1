@@ -32,6 +32,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import ar.edu.unlam.mobile.scaffolding.ui.components.BottomBar
 import ar.edu.unlam.mobile.scaffolding.ui.components.SnackbarVisualsWithError
+import ar.edu.unlam.mobile.scaffolding.ui.screens.EventDetailsScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.EventListScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.FormScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.HOME_SCREEN_ROUTE
@@ -127,6 +128,7 @@ fun MainScreen() {
             composable("eventList") {
                 EventListScreen(
                     modifier = Modifier.padding(paddingValue),
+                    navController = controller,
                 )
             }
 
@@ -142,6 +144,18 @@ fun MainScreen() {
                 FormScreen(
                     modifier = Modifier.padding(paddingValue),
                     snackbarHostState = snackBarHostState,
+                )
+            }
+
+            composable(
+                route = "eventDetails/{id}",
+                arguments = listOf(navArgument("id") { type = NavType.StringType }),
+            ) { navBackStackEntry ->
+                val id = navBackStackEntry.arguments?.getInt("id") ?: 1
+                EventDetailsScreen(
+                    modifier = Modifier.padding(paddingValue),
+                    eventId = id,
+                    navController = controller,
                 )
             }
         }

@@ -10,15 +10,21 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import ar.edu.unlam.mobile.scaffolding.utils.getAddressFromCoordinates
 import coil.compose.AsyncImage
 import com.google.android.gms.maps.model.LatLng
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -27,12 +33,18 @@ fun EventCard(
     modifier: Modifier = Modifier,
     imageUrl: String?,
     title: String,
-    location: String,
-    date: Date,
+    date: Long,
     coordinates: LatLng,
     myLocation: LatLng,
     isDistanceFilter: Boolean,
 ) {
+    var address by remember { mutableStateOf("") }
+    val context = LocalContext.current
+
+    LaunchedEffect(coordinates.latitude, coordinates.longitude) {
+        address = getAddressFromCoordinates(context, coordinates.latitude, coordinates.longitude)
+    }
+
     Card(
         modifier =
             modifier
@@ -82,7 +94,7 @@ fun EventCard(
             )
             // ubicacion
             Text(
-                text = "Ubicación: $location",
+                text = "Ubicación: $address",
                 style = MaterialTheme.typography.bodyMedium,
             )
 
@@ -97,13 +109,15 @@ fun EventCard(
                     myLocation.longitude,
                     results,
                 )
+                val distanceString = String.format(Locale.getDefault(), "%.2f", results[0] / 100)
 
                 Text(
-                    text = "Distancia: ${results[0] / 100} Km",
+                    text = "Distancia: $distanceString Km",
                     style = MaterialTheme.typography.bodySmall,
                 )
             } else {
-                val remaining = relativeTimeCustom(date)
+                val dateInstance = Date(date)
+                val remaining = relativeTimeCustom(dateInstance)
                 Text(
                     text = remaining,
                     style = MaterialTheme.typography.bodySmall,
@@ -135,18 +149,12 @@ fun relativeTimeCustom(date: Date): String {
 @Preview(showBackground = true)
 @Composable
 fun EventCardPreview() {
-    val calendar =
-        Calendar.getInstance().apply {
-            set(2025, 11, 20, 20, 15)
-        }
-
     MaterialTheme {
         EventCard(
             imageUrl = "https://cdn.pixabay.com/photo/2014/07/09/12/17/live-concert-388160_1280.jpg",
-            title = "Concierto de Rock",
-            location = "Estadio River Plate",
-            date = calendar.time,
-            coordinates = LatLng(-33.603684, -58.381559),
+            title = "Limpieza post concierto de Rock",
+            date = System.currentTimeMillis(),
+            coordinates = LatLng(-34.5508002, -58.4548101),
             myLocation = LatLng(-34.603684, -58.381559),
             isDistanceFilter = true,
         )
