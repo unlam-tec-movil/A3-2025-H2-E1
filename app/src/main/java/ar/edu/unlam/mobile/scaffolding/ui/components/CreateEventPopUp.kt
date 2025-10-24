@@ -63,7 +63,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun CreateEventPopUp(
     onDismiss: () -> Unit,
-    onConfirm: (String, String, LocalDateTime, Uri?) -> Unit
+    onConfirm: (String, String, LocalDateTime, Uri?) -> Unit,
 ) {
     var name by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
@@ -75,15 +75,17 @@ fun CreateEventPopUp(
     val openDateDialog = remember { mutableStateOf(false) }
     val openTimeDialog = remember { mutableStateOf(false) }
 
-    val imagePickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
+    val imagePickerLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
             selectedImageUri = uris
-    }
+        }
 
     if (openDateDialog.value) {
         val datePickerState = rememberDatePickerState()
-        val confirmEnabled = remember {
-            derivedStateOf { datePickerState.selectedDateMillis != null }
-        }
+        val confirmEnabled =
+            remember {
+                derivedStateOf { datePickerState.selectedDateMillis != null }
+            }
 
         DatePickerDialog(
             onDismissRequest = {
@@ -114,9 +116,10 @@ fun CreateEventPopUp(
 
     if (openTimeDialog.value) {
         val timePickerState = rememberTimePickerState()
-        val confirmEnabled = remember {
-            derivedStateOf { timePickerState.hour != 0 }
-        }
+        val confirmEnabled =
+            remember {
+                derivedStateOf { timePickerState.hour != 0 }
+            }
 
         TimePickerDialog(
             onDismissRequest = {
@@ -137,7 +140,7 @@ fun CreateEventPopUp(
             dismissButton = {
                 TextButton(onClick = { openTimeDialog.value = false }) { Text("Cancelar") }
             },
-            title = { Text("Hora") }
+            title = { Text("Hora") },
         ) {
             TimePicker(
                 state = timePickerState,
@@ -147,34 +150,35 @@ fun CreateEventPopUp(
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
-            shape  = RoundedCornerShape(16.dp),
-            tonalElevation = 4.dp
+            shape = RoundedCornerShape(16.dp),
+            tonalElevation = 4.dp,
         ) {
-            Column (
-                modifier = Modifier
-                    .padding(20.dp)
-                    .width(IntrinsicSize.Min),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+            Column(
+                modifier =
+                    Modifier
+                        .padding(20.dp)
+                        .width(IntrinsicSize.Min),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Text(
                     text = "Crear nuevo evento",
-                    style = MaterialTheme.typography.headlineSmall
+                    style = MaterialTheme.typography.headlineSmall,
                 )
 
                 // Event Name
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Nombre del evento")},
-                    modifier = Modifier.fillMaxWidth()
+                    label = { Text("Nombre del evento") },
+                    modifier = Modifier.fillMaxWidth(),
                 )
 
                 // Event Location
                 OutlinedTextField(
                     value = name,
                     onValueChange = { location = it },
-                    label = { Text("Ubicación del evento")},
-                    modifier = Modifier.fillMaxWidth()
+                    label = { Text("Ubicación del evento") },
+                    modifier = Modifier.fillMaxWidth(),
                 )
 
                 // Date and Time
@@ -182,22 +186,22 @@ fun CreateEventPopUp(
                     modifier = Modifier.fillMaxWidth(),
                     value = date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")),
                     onValueChange = {},
-                    label = { Text("Fecha del evento")},
+                    label = { Text("Fecha del evento") },
                     readOnly = true,
                     trailingIcon = {
-                        IconButton(onClick = {openDateDialog.value = true}) {
+                        IconButton(onClick = { openDateDialog.value = true }) {
                             Icons.Default.CalendarMonth
                         }
                     },
                 )
                 OutlinedTextField(
                     modifier = Modifier.fillMaxWidth(),
-                    value = "${hour}:${minute} hr",
+                    value = "$hour:$minute hr",
                     onValueChange = {},
-                    label = { Text("Horario del evento")},
+                    label = { Text("Horario del evento") },
                     readOnly = true,
                     trailingIcon = {
-                        IconButton(onClick = {openTimeDialog.value = true}) {
+                        IconButton(onClick = { openTimeDialog.value = true }) {
                             Icons.Default.AccessTime
                         }
                     },
@@ -207,7 +211,7 @@ fun CreateEventPopUp(
                     Card(onClick = { imagePickerLauncher.launch("image/*") }) {
                         Icon(
                             Icons.Default.CameraAlt,
-                            contentDescription = "Upload images"
+                            contentDescription = "Upload images",
                         )
                     }
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -215,11 +219,12 @@ fun CreateEventPopUp(
                             AsyncImage(
                                 model = uri,
                                 contentDescription = "selected image",
-                                modifier = Modifier
-                                    .size(100.dp)
-                                    .clip(RoundedCornerShape(2.dp))
-                                    .border(1.dp, Color.Gray, RoundedCornerShape(2.dp)),
-                                contentScale = ContentScale.Crop
+                                modifier =
+                                    Modifier
+                                        .size(100.dp)
+                                        .clip(RoundedCornerShape(2.dp))
+                                        .border(1.dp, Color.Gray, RoundedCornerShape(2.dp)),
+                                contentScale = ContentScale.Crop,
                             )
                         }
                     }
@@ -227,15 +232,14 @@ fun CreateEventPopUp(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                    horizontalArrangement = Arrangement.SpaceEvenly,
                 ) {
                     val dateTime = date.atTime(hour, minute)
                     // ToDo implementar botones
-                    /* onClick = {
-                        onConfirm(name, location, dateTime, selectedImageUri)
-                        onDismiss()
-                    }
-                    */
+//                    onClick = {
+//                        onConfirm(name, location, dateTime, selectedImageUri)
+//                        onDismiss()
+//                    }
                 }
             }
         }

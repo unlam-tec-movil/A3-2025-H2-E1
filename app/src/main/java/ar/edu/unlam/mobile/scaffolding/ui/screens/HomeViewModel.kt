@@ -1,32 +1,19 @@
 package ar.edu.unlam.mobile.scaffolding.ui.screens
 
-import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
+import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
-@Immutable
-sealed interface HelloMessageUIState {
-    data class Success(
-        val message: String,
-    ) : HelloMessageUIState
-
-    data object Loading : HelloMessageUIState
-
-    data class Error(
-        val message: String,
-    ) : HelloMessageUIState
-}
-
 data class HomeUIState(
     val currentSearch: String? = "",
     var searchQuery: String? = "",
     val eventList: List<EventList> = emptyList(),
-    val helloMessageState: HelloMessageUIState,
+    val helloMessageState: MessageUIState,
 )
 
 @HiltViewModel
@@ -37,7 +24,7 @@ class HomeViewModel
         // actualización de información y de manejo de estados de una aplicación: Cargando, Error, Éxito
         // (https://developer.android.com/kotlin/flow/stateflow-and-sharedflow)
         // _helloMessage State es el estado del componente "HelloMessage" inicializado como "Cargando"
-        private val helloMessage = MutableStateFlow(HelloMessageUIState.Loading)
+        private val helloMessage = MutableStateFlow(MessageUIState.Loading)
 
         // _Ui State es el estado general del view model.
         private val _uiState = MutableStateFlow(HomeUIState(helloMessageState = helloMessage.value))
@@ -49,7 +36,7 @@ class HomeViewModel
         init {
             _uiState.value =
                 HomeUIState(
-                    helloMessageState = HelloMessageUIState.Success("2b"),
+                    helloMessageState = MessageUIState.Success("2b"),
                 )
         }
 

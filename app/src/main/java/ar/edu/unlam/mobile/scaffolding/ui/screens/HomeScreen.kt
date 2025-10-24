@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventSearchBar
 import ar.edu.unlam.mobile.scaffolding.ui.components.Greeting
 
@@ -35,11 +36,11 @@ fun HomeScreen(
     val isSearchActive = remember { mutableStateOf(false) }
 
     when (val helloState = uiState.helloMessageState) {
-        is HelloMessageUIState.Loading -> {
+        is MessageUIState.Loading -> {
             // Loading
         }
 
-        is HelloMessageUIState.Success -> {
+        is MessageUIState.Success -> {
             Scaffold { paddingValues ->
                 EventSearchBar(
                     searchQuery = uiState.searchQuery ?: "",
@@ -76,7 +77,7 @@ fun HomeScreen(
             }
         }
 
-        is HelloMessageUIState.Error -> {
+        is MessageUIState.Error -> {
             // Error
         }
     }
