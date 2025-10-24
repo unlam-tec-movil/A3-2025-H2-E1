@@ -123,24 +123,11 @@ fun MainScreen() {
             composable("home") {
                 // Home es el componente en sí que es el destino de navegación.
                 HomeScreen(modifier = Modifier.padding(paddingValue))
-                /*
-                LoginScreen(
-                    viewModel = hiltViewModel(),
-                    navController = controller,
-                )
-                 */
             }
             composable("form") {
                 FormScreen(
                     modifier = Modifier.padding(paddingValue),
                     snackbarHostState = snackBarHostState,
-                )
-            }
-
-            composable("register") {
-                RegisterScreen(
-                    viewModel = hiltViewModel(),
-                    navController = controller,
                 )
             }
 
