@@ -34,10 +34,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import ar.edu.unlam.mobile.scaffolding.ui.components.PrimaryButton
 
 @Composable
-fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
+fun LoginScreen(
+    viewModel: LoginViewModel = hiltViewModel(),
+    navController: NavController,
+) {
     val formState by viewModel.formState.collectAsState()
 
     Column(
@@ -102,7 +106,7 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
                 color = Color(0xFF2E7D32),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.clickable { },
+                modifier = Modifier.clickable { navController.navigate("register") },
             )
         }
     }
