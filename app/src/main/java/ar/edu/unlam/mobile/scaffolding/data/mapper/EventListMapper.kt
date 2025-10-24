@@ -3,7 +3,7 @@ package ar.edu.unlam.mobile.scaffolding.data.mapper
 import ar.edu.unlam.mobile.scaffolding.data.model.EventListEntity
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
 
-fun EventListEntity.toEventList(): EventList =
+fun EventListEntity.toEvent(): EventList =
     EventList(
         id = id,
         title = title,
