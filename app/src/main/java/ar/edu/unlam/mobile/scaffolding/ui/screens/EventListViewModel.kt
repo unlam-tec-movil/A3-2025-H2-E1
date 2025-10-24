@@ -32,7 +32,7 @@ class EventListViewModel
 
         private fun getEvents() {
             viewModelScope.launch {
-                // quitar delay para ver la lista en EventListScreenPreview
+                // Quitar delay para ver la lista en EventListScreenPreview
                 delay(timeMillis = 1000L)
                 _uiState.update { currentState ->
                     currentState.copy(

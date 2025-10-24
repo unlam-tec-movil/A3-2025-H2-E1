@@ -38,7 +38,7 @@ fun EventListScreen(
     val isDistance = remember { mutableStateOf(false) }
     val state by viewModel.uiState.collectAsState()
 
-    // TODO: obtener mis coordenadas y enviarlas a cada EventCard
+    // TODO obtener mis coordenadas y enviarlas a cada EventCard
 
     Scaffold(
         modifier = modifier,
@@ -50,7 +50,7 @@ fun EventListScreen(
                         isDistance = isDistance,
                         onClick = {
                             isDistance.value = it
-                            // TODO: ordenar events segun el criterio
+                            // TODO ordenar events segun el criterio
                         },
                     )
                 },
