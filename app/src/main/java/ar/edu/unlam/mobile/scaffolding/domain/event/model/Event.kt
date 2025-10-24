@@ -1,4 +1,4 @@
-package ar.edu.unlam.mobile.scaffolding.domain.model
+package ar.edu.unlam.mobile.scaffolding.domain.event.model
 
 data class Event(
     val id: String,

@@ -38,6 +38,7 @@ import ar.edu.unlam.mobile.scaffolding.ui.screens.FormScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.HOME_SCREEN_ROUTE
 import ar.edu.unlam.mobile.scaffolding.ui.screens.HomeScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.UserScreen
+import ar.edu.unlam.mobile.scaffolding.ui.screens.login.LoginScreen
 import ar.edu.unlam.mobile.scaffolding.ui.theme.ScaffoldingV2Theme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -137,7 +138,10 @@ fun MainScreen() {
                 arguments = listOf(navArgument("id") { type = NavType.StringType }),
             ) { navBackStackEntry ->
                 val id = navBackStackEntry.arguments?.getString("id") ?: "1"
-                UserScreen(userId = id, modifier = Modifier.padding(paddingValue))
+                UserScreen(
+                    userId = id,
+                    modifier = Modifier.padding(paddingValue),
+                )
             }
 
             composable("form") {
@@ -157,6 +161,10 @@ fun MainScreen() {
                     eventId = id,
                     navController = controller,
                 )
+            }
+
+            composable("login") {
+                LoginScreen()
             }
         }
     }

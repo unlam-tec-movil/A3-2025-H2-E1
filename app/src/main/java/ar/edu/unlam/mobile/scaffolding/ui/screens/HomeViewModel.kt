@@ -2,7 +2,7 @@ package ar.edu.unlam.mobile.scaffolding.ui.screens
 
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
-import ar.edu.unlam.mobile.scaffolding.domain.model.EventList
+import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

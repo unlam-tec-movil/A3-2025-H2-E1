@@ -1,9 +1,9 @@
 package ar.edu.unlam.mobile.scaffolding.data.mapper
 
 import ar.edu.unlam.mobile.scaffolding.data.model.EventListEntity
-import ar.edu.unlam.mobile.scaffolding.domain.model.EventList
+import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
 
-fun EventListEntity.toDomain(): EventList =
+fun EventListEntity.toEventList(): EventList =
     EventList(
         id = id,
         title = title,
