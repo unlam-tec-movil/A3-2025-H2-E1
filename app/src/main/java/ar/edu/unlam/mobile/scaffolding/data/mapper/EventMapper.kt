@@ -1,9 +1,9 @@
 package ar.edu.unlam.mobile.scaffolding.data.mapper
 
 import ar.edu.unlam.mobile.scaffolding.data.model.EventEntity
-import ar.edu.unlam.mobile.scaffolding.domain.model.Event
+import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
 
-fun EventEntity.toDomain(): Event =
+fun EventEntity.toEvent(): Event =
     Event(
         id = eventId,
         title = title,

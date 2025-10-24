@@ -25,7 +25,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -94,12 +93,12 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
         Row {
             Text(
                 text = "¿No tenés cuenta? ",
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 14.sp,
             )
             Text(
                 text = "Registrate",
-                color = Color(0xFF2E7D32),
+                color = MaterialTheme.colorScheme.secondary,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.clickable { },
