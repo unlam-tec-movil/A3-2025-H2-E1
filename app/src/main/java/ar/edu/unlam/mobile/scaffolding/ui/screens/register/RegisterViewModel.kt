@@ -51,17 +51,18 @@ class RegisterViewModel
 
                 when {
                     !emailValidation.isValid ->
-                        _uiState.value = _uiState.value.copy(errorMessage = emailValidation.errorMessage)
+                        _uiState.value =
+                            _uiState.value.copy(errorMessage = emailValidation.errorMessage)
 
                     !passwordValidation.isValid ->
-                        _uiState.value = _uiState.value.copy(errorMessage = passwordValidation.errorMessage)
+                        _uiState.value =
+                            _uiState.value.copy(errorMessage = passwordValidation.errorMessage)
 
                     !confirmValidation.isValid ->
-                        _uiState.value = _uiState.value.copy(errorMessage = confirmValidation.errorMessage)
+                        _uiState.value =
+                            _uiState.value.copy(errorMessage = confirmValidation.errorMessage)
 
-                    else -> {
-                        _uiState.value = _uiState.value.copy(errorMessage = null)
-                    }
+                    else -> _uiState.value = _uiState.value.copy(errorMessage = null)
                 }
             }
         }

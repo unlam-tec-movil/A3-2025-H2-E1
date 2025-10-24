@@ -15,7 +15,6 @@ class ValidatePasswordUseCase
             if (!password.any { it.isUpperCase() }) {
                 return ValidationResult(false, "Debe contener al menos una mayúscula")
             }
-
             return ValidationResult(true)
         }
     }
