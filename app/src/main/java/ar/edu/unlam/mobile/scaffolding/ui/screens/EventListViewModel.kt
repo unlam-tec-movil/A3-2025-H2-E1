@@ -1,6 +1,5 @@
 package ar.edu.unlam.mobile.scaffolding.ui.screens
 
-import androidx.activity.result.launch
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
@@ -16,6 +15,7 @@ import javax.inject.Inject
 data class EventListUiState(
     val events: List<EventList> = emptyList(),
     val currentState: MessageUIState = MessageUIState.Loading,
+    val isDistance: Boolean = true,
 )
 
 @HiltViewModel
@@ -28,6 +28,15 @@ class EventListViewModel
 
         init {
             getEvents()
+        }
+
+        fun updateFilter(isDistance: Boolean) {
+            _uiState.update { currentState ->
+                currentState.copy(
+                    isDistance = isDistance,
+                )
+            }
+            // TODO ordenar events segun el criterio
         }
 
         private fun getEvents() {

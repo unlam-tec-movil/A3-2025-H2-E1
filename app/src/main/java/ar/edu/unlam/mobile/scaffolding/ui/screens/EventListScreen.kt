@@ -14,8 +14,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,7 +33,6 @@ fun EventListScreen(
     viewModel: EventListViewModel = hiltViewModel(),
     navController: NavController? = null,
 ) {
-    val isDistance = remember { mutableStateOf(false) }
     val state by viewModel.uiState.collectAsState()
 
     // TODO obtener mis coordenadas y enviarlas a cada EventCard
@@ -47,10 +44,9 @@ fun EventListScreen(
                 title = "Próximos eventos",
                 actions = {
                     EventFilterButton(
-                        isDistance = isDistance,
+                        isDistance = state.isDistance,
                         onClick = {
-                            isDistance.value = it
-                            // TODO ordenar events segun el criterio
+                            viewModel.updateFilter(it)
                         },
                     )
                 },
@@ -82,7 +78,7 @@ fun EventListScreen(
                             title = eventList.title,
                             date = eventList.dateTime,
                             coordinates = LatLng(eventList.lat, eventList.lng),
-                            isDistanceFilter = isDistance.value,
+                            isDistanceFilter = state.isDistance,
                             // TODO obtener mi ubicacion real
                             myLocation = LatLng(-33.603684, -58.381559),
                             modifier =
