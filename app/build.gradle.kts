@@ -82,6 +82,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.coil)
+    implementation(libs.play.services.location)
 
     // Dagger + Hilt
     implementation(libs.google.dagger.hilt.android)
