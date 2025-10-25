@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -38,6 +39,8 @@ import ar.edu.unlam.mobile.scaffolding.ui.screens.FormScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.HOME_SCREEN_ROUTE
 import ar.edu.unlam.mobile.scaffolding.ui.screens.HomeScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.UserScreen
+import ar.edu.unlam.mobile.scaffolding.ui.screens.login.LoginScreen
+import ar.edu.unlam.mobile.scaffolding.ui.screens.register.RegisterScreen
 import ar.edu.unlam.mobile.scaffolding.ui.theme.ScaffoldingV2Theme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -163,7 +166,17 @@ fun MainScreen() {
             }
 
             composable("login") {
-                LoginScreen()
+                LoginScreen(
+                    viewModel = hiltViewModel(),
+                    navController = controller,
+                )
+            }
+
+            composable("register") {
+                RegisterScreen(
+                    viewModel = hiltViewModel(),
+                    navController = controller,
+                )
             }
         }
     }

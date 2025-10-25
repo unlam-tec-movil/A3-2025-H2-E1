@@ -22,6 +22,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -44,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import ar.edu.unlam.mobile.scaffolding.ui.components.PrimaryButton
+import ar.edu.unlam.mobile.scaffolding.ui.components.TopBarSignUpScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,166 +59,158 @@ fun RegisterScreen(
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
     var confirmPasswordVisible by rememberSaveable { mutableStateOf(false) }
 
-    Column(
-        modifier =
-            Modifier
-                .fillMaxSize()
-                .padding(horizontal = 32.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            text = "Regístrate",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-        )
+    Scaffold(
+        topBar = {
+            TopBarSignUpScreen(
+                onBackClick = { navController.popBackStack() },
+            )
+        },
+    ) { innerPadding ->
 
-        Spacer(modifier = Modifier.height(32.dp))
-
-        OutlinedTextField(
-            value = uiState.usernameTextField,
-            onValueChange = { viewModel.onUsernameChange(it) },
-            label = { Text("Nombre completo") },
-            singleLine = true,
-            leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = uiState.emailTextField,
-            onValueChange = { viewModel.onEmailChange(it) },
-            label = { Text("Email") },
-            singleLine = true,
-            leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
-            keyboardOptions =
-                KeyboardOptions(
-                    keyboardType = KeyboardType.Email,
-                    imeAction = ImeAction.Next,
-                ),
-            modifier = Modifier.fillMaxWidth(),
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = uiState.passwordTextField,
-            onValueChange = { viewModel.onPasswordChange(it) },
-            label = { Text("Contraseña") },
-            singleLine = true,
-            leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
-            trailingIcon = {
-                val image =
-                    if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                    Icon(
-                        imageVector = image,
-                        contentDescription =
-                            if (passwordVisible) {
-                                "Ocultar contraseña"
-                            } else {
-                                "Mostrar contraseña"
-                            },
-                    )
-                }
-            },
-            visualTransformation =
-                if (passwordVisible) {
-                    VisualTransformation.None
-                } else {
-                    PasswordVisualTransformation()
-                },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions =
-                KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Next,
-                ),
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = uiState.confirmPasswordTextField,
-            onValueChange = { viewModel.onConfirmPasswordChange(it) },
-            label = { Text("Confirmar contraseña") },
-            singleLine = true,
-            leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
-            trailingIcon = {
-                val image =
-                    if (confirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
-                IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
-                    Icon(
-                        imageVector = image,
-                        contentDescription =
-                            if (confirmPasswordVisible) {
-                                "Ocultar contraseña"
-                            } else {
-                                "Mostrar contraseña"
-                            },
-                    )
-                }
-            },
-            visualTransformation =
-                if (confirmPasswordVisible) {
-                    VisualTransformation.None
-                } else {
-                    PasswordVisualTransformation()
-                },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions =
-                KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Done,
-                ),
-            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-        )
-
-        uiState.errorMessage?.let { error ->
-            Spacer(modifier = Modifier.height(8.dp))
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(horizontal = 32.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
             Text(
-                text = error,
-                color = Color.Red,
-                fontSize = 14.sp,
+                text = "Regístrate",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
             )
-        }
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-        PrimaryButton(
-            text = "Crear cuenta",
-            width = 320.dp,
-            onClick = {
-                viewModel.onRegister(
-                    email = uiState.emailTextField,
-                    password = uiState.passwordTextField,
-                    confirmPassword = uiState.confirmPasswordTextField,
+            OutlinedTextField(
+                value = uiState.usernameTextField,
+                onValueChange = { viewModel.onUsernameChange(it) },
+                label = { Text("Nombre completo") },
+                singleLine = true,
+                leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = uiState.emailTextField,
+                onValueChange = { viewModel.onEmailChange(it) },
+                label = { Text("Email") },
+                singleLine = true,
+                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
+                keyboardOptions =
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Email,
+                        imeAction = ImeAction.Next,
+                    ),
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = uiState.passwordTextField,
+                onValueChange = { viewModel.onPasswordChange(it) },
+                label = { Text("Contraseña") },
+                singleLine = true,
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
+                trailingIcon = {
+                    val image =
+                        if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(
+                            imageVector = image,
+                            contentDescription =
+                                if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña",
+                        )
+                    }
+                },
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions =
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Next,
+                    ),
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = uiState.confirmPasswordTextField,
+                onValueChange = { viewModel.onConfirmPasswordChange(it) },
+                label = { Text("Confirmar contraseña") },
+                singleLine = true,
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
+                trailingIcon = {
+                    val image =
+                        if (confirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                    IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                        Icon(
+                            imageVector = image,
+                            contentDescription =
+                                if (confirmPasswordVisible) "Ocultar contraseña" else "Mostrar contraseña",
+                        )
+                    }
+                },
+                visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions =
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Done,
+                    ),
+                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+            )
+
+            uiState.errorMessage?.let { error ->
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = error,
+                    color = Color.Red,
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center,
                 )
-            },
-        )
+            }
 
-        Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        Row {
-            Text(
-                text = "¿Ya tenés cuenta? ",
-                color = Color.Gray,
-                fontSize = 14.sp,
+            PrimaryButton(
+                text = "Crear cuenta",
+                width = 320.dp,
+                onClick = {
+                    viewModel.onRegister(
+                        email = uiState.emailTextField,
+                        password = uiState.passwordTextField,
+                        confirmPassword = uiState.confirmPasswordTextField,
+                    )
+                },
             )
-            Text(
-                text = "Iniciar sesión",
-                color = Color(0xFF2E7D32),
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                modifier =
-                    Modifier.clickable {
-                        navController.navigate("login")
-                    },
-            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row {
+                Text(
+                    text = "¿Ya tenés cuenta? ",
+                    color = Color.Gray,
+                    fontSize = 14.sp,
+                )
+                Text(
+                    text = "Iniciar sesión",
+                    color = Color(0xFF2E7D32),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier =
+                        Modifier.clickable {
+                            navController.navigate("login")
+                        },
+                )
+            }
         }
     }
 }
