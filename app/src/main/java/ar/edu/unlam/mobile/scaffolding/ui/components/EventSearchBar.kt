@@ -177,7 +177,7 @@ fun EventSearchBar(
                 } else if (searchState.currentQuery.length > 3) {
                     Box(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "No se encontraron recetas",
+                            text = "No se encontraron CleanUps con ese nombre",
                             modifier =
                                 Modifier
                                     .padding(16.dp)

@@ -19,19 +19,19 @@ class EventRepositoryImpl
                     listOf(
                         SuggestedEventEntity(
                             id = "1",
-                            title = "Evento de Rock sobre $query",
+                            title = "Limpieza del parque $query",
                             lat = -34.5508002,
                             lng = -58.4548101,
                         ).toSuggestedEvent(),
                         SuggestedEventEntity(
                             id = "2",
-                            title = "Concierto de Jazz con $query",
+                            title = "Se necesita quitar $query",
                             lat = -34.5508002,
                             lng = -58.4548101,
                         ).toSuggestedEvent(),
                         SuggestedEventEntity(
                             id = "3",
-                            title = "Festival de Pop incluyendo $query",
+                            title = "Rio tapado por un $query ",
                             lat = -34.5508002,
                             lng = -58.4548101,
                         ).toSuggestedEvent(),

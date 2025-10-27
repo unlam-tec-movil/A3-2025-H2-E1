@@ -40,7 +40,10 @@ fun TopBar(
         navigationIcon = {
             if (onNavigateBack != null) {
                 IconButton(onClick = onNavigateBack) {
-                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                    )
                 }
             }
         },
