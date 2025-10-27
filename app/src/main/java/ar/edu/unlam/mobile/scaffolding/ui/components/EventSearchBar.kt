@@ -2,13 +2,18 @@ package ar.edu.unlam.mobile.scaffolding.ui.components
 
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.updateTransition
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,17 +29,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
+import ar.edu.unlam.mobile.scaffolding.ui.common.EventSearchState
+import ar.edu.unlam.mobile.scaffolding.ui.screens.SearchUIState
 import ar.edu.unlam.mobile.scaffolding.ui.theme.ScaffoldingV2Theme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventSearchBar(
-    searchQuery: String,
+    searchUiState: SearchUIState,
     onSearchQueryChange: (String) -> Unit,
     onSearch: (String) -> Unit,
-    isExpanded: Boolean,
+    onSuggestionSelected: (SuggestedEvent) -> Unit,
     onActiveChange: (Boolean) -> Unit,
 ) {
+    val isExpanded = searchUiState.isExpanded
+    val searchQuery = searchUiState.currentQuery
+    val searchState = searchUiState.searchState
+
     val transition = updateTransition(isExpanded)
     val paddingSize by transition.animateDp(label = "padding") { state ->
         if (state) 0.dp else 12.dp
@@ -117,15 +129,76 @@ fun EventSearchBar(
                 .fillMaxWidth()
                 .padding(horizontal = paddingSize),
     ) {
-        // TODO Contenido de la barra de búsqueda
-        Box(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = "No hay resultados",
-                modifier =
-                    Modifier
-                        .padding(16.dp)
-                        .align(Alignment.Center),
-            )
+        when (searchState) {
+            EventSearchState.Idle -> {
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Buscar eventos",
+                        modifier =
+                            Modifier
+                                .padding(16.dp)
+                                .align(Alignment.Center),
+                    )
+                }
+            }
+            EventSearchState.Loading -> {
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                    )
+                }
+            }
+            is EventSearchState.Success -> {
+                if (searchState.currentQuery.isNotEmpty()) {
+                    Box(
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                    ) {
+                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                            items(searchState.events) { event ->
+                                Text(
+                                    text = event.title,
+                                    modifier =
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .clickable { onSuggestionSelected(event) }
+                                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                                )
+                            }
+                        }
+                    }
+                } else if (searchState.currentQuery.length > 3) {
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = "No se encontraron recetas",
+                            modifier =
+                                Modifier
+                                    .padding(16.dp)
+                                    .align(Alignment.Center),
+                        )
+                    }
+                }
+            }
+            is EventSearchState.Error -> {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    searchState.message?.let {
+                        Text(
+                            text = it,
+                            modifier =
+                                Modifier
+                                    .padding(16.dp)
+                                    .align(Alignment.Center),
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -135,10 +208,10 @@ fun EventSearchBar(
 fun EventSearchBarPreview() {
     ScaffoldingV2Theme {
         EventSearchBar(
-            searchQuery = "",
+            searchUiState = SearchUIState(isExpanded = false),
             onSearchQueryChange = {},
             onSearch = {},
-            isExpanded = false,
+            onSuggestionSelected = {},
             onActiveChange = {},
         )
     }
@@ -149,10 +222,22 @@ fun EventSearchBarPreview() {
 fun EventSearchBarExpandedPreview() {
     ScaffoldingV2Theme {
         EventSearchBar(
-            searchQuery = "buscar evento",
+            searchUiState =
+                SearchUIState(
+                    isExpanded = true,
+                    currentQuery = "buscar evento",
+                    searchState =
+                        EventSearchState.Success(
+                            "buscar evento",
+                            listOf(
+                                SuggestedEvent(id = "1", title = "Concierto de Rock", lat = 0.0, lng = 0.0),
+                                SuggestedEvent(id = "2", title = "Feria de Libro", lat = 0.0, lng = 0.0),
+                            ),
+                        ),
+                ),
             onSearchQueryChange = {},
             onSearch = {},
-            isExpanded = true,
+            onSuggestionSelected = {},
             onActiveChange = {},
         )
     }
