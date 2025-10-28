@@ -1,10 +1,14 @@
 package ar.edu.unlam.mobile.scaffolding.ui.screens
 
-import androidx.activity.result.launch
+import android.Manifest
+import android.content.Context
+import android.location.Location
+import androidx.annotation.RequiresPermission
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
+import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,6 +20,7 @@ import javax.inject.Inject
 data class EventListUiState(
     val events: List<EventList> = emptyList(),
     val currentState: MessageUIState = MessageUIState.Loading,
+    val isDistance: Boolean = true,
 )
 
 @HiltViewModel
@@ -26,8 +31,70 @@ class EventListViewModel
 
         val uiState = _uiState.asStateFlow()
 
+        var userLocation: Location? = null
+
         init {
             getEvents()
+        }
+
+        fun updateFilter(isDistance: Boolean) {
+            _uiState.update { currentState ->
+                currentState.copy(
+                    isDistance = isDistance,
+                )
+            }
+            viewModelScope.launch {
+                if (isDistance) {
+                    sortEventsByDistance()
+                } else {
+                    sortEventsByDate()
+                }
+            }
+        }
+
+        private fun sortEventsByDistance() {
+            _uiState.update { events ->
+                events.copy(
+                    events =
+                        events.events.sortedBy { event ->
+                            val result = FloatArray(1)
+                            userLocation?.let {
+                                Location.distanceBetween(
+                                    userLocation!!.latitude,
+                                    userLocation!!.longitude,
+                                    event.lat,
+                                    event.lng,
+                                    result,
+                                )
+                                result[0]
+                            }
+                        },
+                )
+            }
+        }
+
+        private fun sortEventsByDate() {
+            val now = System.currentTimeMillis()
+            _uiState.update { state ->
+                state.copy(
+                    events =
+                        state.events.sortedBy { event ->
+                            val remaining = event.dateTime - now
+                            if (remaining > 0L) remaining else Long.MAX_VALUE
+                        },
+                )
+            }
+        }
+
+        @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
+        fun getUserLocation(context: Context) {
+            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+            fusedLocationClient.lastLocation
+                .addOnSuccessListener { location ->
+                    if (location != null) {
+                        userLocation = location
+                    }
+                }
         }
 
         private fun getEvents() {
@@ -61,8 +128,8 @@ private val sampleEvents =
             title = "Feria de Libro",
             description = "Limpieza post feria",
             dateTime = System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 2, // en 2 días
-            lat = -34.5508002,
-            lng = -58.4548101,
+            lat = -34.641347,
+            lng = -58.561187,
         ),
         EventList(
             id = "3",
@@ -70,7 +137,7 @@ private val sampleEvents =
             title = "Festival de Tecnología",
             description = "Limpieza post festival",
             dateTime = System.currentTimeMillis() + 1000L * 60 * 60 * 5, // en 5 horas
-            lat = -34.5508002,
-            lng = -58.4548101,
+            lat = -34.6707531,
+            lng = -58.5676761,
         ),
     )

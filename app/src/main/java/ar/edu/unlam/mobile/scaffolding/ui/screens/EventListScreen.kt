@@ -1,5 +1,9 @@
 package ar.edu.unlam.mobile.scaffolding.ui.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,14 +16,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
@@ -35,10 +40,27 @@ fun EventListScreen(
     viewModel: EventListViewModel = hiltViewModel(),
     navController: NavController? = null,
 ) {
-    val isDistance = remember { mutableStateOf(false) }
     val state by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
-    // TODO obtener mis coordenadas y enviarlas a cada EventCard
+    val launcher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestPermission(),
+        ) { isGranted ->
+            if (isGranted) {
+                viewModel.getUserLocation(context)
+            }
+        }
+
+    LaunchedEffect(Unit) {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            launcher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        } else {
+            viewModel.getUserLocation(context)
+        }
+    }
 
     Scaffold(
         modifier = modifier,
@@ -47,10 +69,9 @@ fun EventListScreen(
                 title = "Próximos eventos",
                 actions = {
                     EventFilterButton(
-                        isDistance = isDistance,
+                        isDistance = state.isDistance,
                         onClick = {
-                            isDistance.value = it
-                            // TODO ordenar events segun el criterio
+                            viewModel.updateFilter(it)
                         },
                     )
                 },
@@ -82,9 +103,8 @@ fun EventListScreen(
                             title = eventList.title,
                             date = eventList.dateTime,
                             coordinates = LatLng(eventList.lat, eventList.lng),
-                            isDistanceFilter = isDistance.value,
-                            // TODO obtener mi ubicacion real
-                            myLocation = LatLng(-33.603684, -58.381559),
+                            isDistanceFilter = state.isDistance,
+                            myLocation = LatLng(viewModel.userLocation?.latitude ?: 0.0, viewModel.userLocation?.longitude ?: 0.0),
                             modifier =
                                 Modifier
                                     .padding(vertical = 4.dp)

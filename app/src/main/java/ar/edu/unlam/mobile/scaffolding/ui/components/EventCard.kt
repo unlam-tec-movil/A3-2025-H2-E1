@@ -19,8 +19,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import ar.edu.unlam.mobile.scaffolding.utils.getAddressFromCoordinates
 import coil.compose.AsyncImage
 import com.google.android.gms.maps.model.LatLng
@@ -73,7 +76,8 @@ fun EventCard(
 
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
             )
 
             Spacer(modifier = Modifier.height(6.dp))
@@ -83,6 +87,7 @@ fun EventCard(
             val dateString = dateFormat.format(date)
             Text(
                 text = "Fecha: $dateString",
+                textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyMedium,
             )
 
@@ -90,11 +95,13 @@ fun EventCard(
             val timeString = timeFormat.format(date)
             Text(
                 text = "Horario: $timeString",
+                textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyMedium,
             )
             // ubicacion
             Text(
                 text = "Ubicación: $address",
+                textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyMedium,
             )
 
@@ -109,7 +116,7 @@ fun EventCard(
                     myLocation.longitude,
                     results,
                 )
-                val distanceString = String.format(Locale.getDefault(), "%.2f", results[0] / 100)
+                val distanceString = String.format(Locale.getDefault(), "%.2f", results[0] / 1000)
 
                 Text(
                     text = "Distancia: $distanceString Km",

@@ -20,6 +20,8 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
+import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
+import ar.edu.unlam.mobile.scaffolding.ui.components.EventParticipant
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventPicturesCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.PrimaryButton
 import ar.edu.unlam.mobile.scaffolding.ui.components.TimePlaceEventCard
@@ -75,9 +77,12 @@ fun EventDetailsScreen(
                 )
             }
 
-            // TODO Componente participantes
-//            EventParticipant(
-//            )
+            item {
+                EventParticipant(
+                    user = event.creator,
+                    members = event.members,
+                )
+            }
 
             item {
                 EventPicturesCard(
@@ -117,6 +122,18 @@ private val imageExamples =
         "https://www.bigfootdigital.co.uk/wp-content/uploads/2020/07/image-optimisation-scaled.jpg",
         "https://i0.wp.com/picjumbo.com/wp-content/uploads/calming-nature-wallpaper-free-image.jpeg?w=600&quality=80",
     )
+
+private val members =
+    (1..20)
+        .map {
+            User(
+                id = it,
+                name = "Usuario $it",
+                avatarUrl = "https://media.vanityfair.com/photos/597f75b706f77f18ffaad3bc/master/w_1440,h_960,c_limit/avatar-2.jpg",
+                description = "",
+            )
+        }
+
 private val event =
     Event(
         id = "1",
@@ -128,8 +145,14 @@ private val event =
         lng = -58.4548101,
         beforeImage = imageExamples,
         afterImage = null,
-        membersId = null,
-        creatorId = 1,
+        members = members,
+        creator =
+            User(
+                id = 1,
+                name = "Pepe Papa",
+                avatarUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBwr_zZjgvmu4BccwDNIHic8K5dyehw7cSYA&s",
+                description = null,
+            ),
         saved = false,
         participating = false,
     )
