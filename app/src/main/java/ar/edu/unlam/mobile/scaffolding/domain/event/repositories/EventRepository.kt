@@ -1,0 +1,16 @@
+package ar.edu.unlam.mobile.scaffolding.domain.event.repositories
+
+import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
+import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
+import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
+import kotlinx.coroutines.flow.Flow
+
+interface EventRepository {
+    suspend fun getSuggestedEvent(query: String): Flow<List<SuggestedEvent>>
+
+    suspend fun getEvents(): Flow<List<EventList>>
+
+    suspend fun getEventList(id: Int): Flow<EventList>
+
+    suspend fun getEvent(id: Int): Flow<Event>
+}

@@ -1,25 +1,46 @@
 package ar.edu.unlam.mobile.scaffolding.ui.screens
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
-import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
+import androidx.lifecycle.viewModelScope
+import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
+import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetSuggestedEventUseCase
+import ar.edu.unlam.mobile.scaffolding.ui.common.EventSearchState
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 data class HomeUIState(
-    val currentSearch: String? = "",
-    var searchQuery: String? = "",
-    val eventList: List<EventList> = emptyList(),
+    val eventList: List<SuggestedEvent> = emptyList(),
     val helloMessageState: MessageUIState,
+)
+
+data class SearchUIState(
+    val eventList: List<SuggestedEvent> = emptyList(),
+    val currentQuery: String = "",
+    val lastQuery: String = "",
+    val isExpanded: Boolean = false,
+    val searchState: EventSearchState = EventSearchState.Idle,
 )
 
 @HiltViewModel
 class HomeViewModel
     @Inject
-    constructor() : ViewModel() {
+    constructor(
+        private val getAutocompleteEvent: GetSuggestedEventUseCase,
+    ) : ViewModel() {
         // Mutable State Flow contiene un objeto de estado mutable. Simplifica la operación de
         // actualización de información y de manejo de estados de una aplicación: Cargando, Error, Éxito
         // (https://developer.android.com/kotlin/flow/stateflow-and-sharedflow)
@@ -33,33 +54,109 @@ class HomeViewModel
         // Esto impide que se pueda modificar el estado desde fuera del ViewModel.
         val uiState = _uiState.asStateFlow()
 
+        private val _searchUiState = MutableStateFlow(SearchUIState())
+        val searchUiState = _searchUiState.asStateFlow()
+
+        private var searchEventJob: Job? = null
+
         init {
-            _uiState.value =
-                HomeUIState(
-                    helloMessageState = MessageUIState.Success("2b"),
-                )
+            _uiState.value = HomeUIState(helloMessageState = MessageUIState.Success("2b"))
         }
 
         fun onSearchQueryChange(newQuery: String) {
-            _uiState.update { currentState ->
-                currentState.copy(searchQuery = newQuery)
+            _searchUiState.update { currentState ->
+                currentState.copy(currentQuery = newQuery)
             }
         }
 
-        fun onCancelSearch() {
-            _uiState.update { currentState ->
-                if (currentState.currentSearch.isNullOrEmpty()) {
-                    currentState.copy(searchQuery = "")
-                } else {
-                    currentState.copy(searchQuery = _uiState.value.currentSearch)
+        @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+        private fun onSearchQueryObserve() {
+            if (searchEventJob?.isActive == true) return
+            searchEventJob =
+                _searchUiState
+                    .map { it.currentQuery }
+                    .distinctUntilChanged()
+                    .debounce(timeoutMillis = 500L)
+                    .filter { query ->
+                        query.isNotBlank() && query.length > 1 && query != _searchUiState.value.lastQuery
+                    }.mapLatest { query ->
+                        Log.d("HomeViewModel", "getSuggestionSearch: $query")
+                        _searchUiState.update { currentState ->
+                            currentState.copy(
+                                searchState = EventSearchState.Loading,
+                            )
+                        }
+                        try {
+                            getAutocompleteEvent(query).collect { suggestedEvents ->
+                                _searchUiState.update {
+                                    it.copy(
+                                        searchState =
+                                            EventSearchState.Success(
+                                                // Para usar en el componente EventSearchBar
+                                                currentQuery = query,
+                                                events = suggestedEvents,
+                                            ),
+                                        // Para usar en HomeScreen o vm
+                                        currentQuery = query,
+                                        eventList = suggestedEvents,
+                                    )
+                                }
+                            }
+                        } catch (e: Exception) {
+                            _searchUiState.update {
+                                it.copy(searchState = EventSearchState.Error(e.message))
+                            }
+                            Log.e("HomeViewModel", "Error al obtener sugerencias: ${e.message}")
+                        }
+                    }.launchIn(viewModelScope)
+        }
+
+        fun onActiveChange(isActive: Boolean) {
+            _searchUiState.update { it.copy(isExpanded = isActive) }
+            when (isActive) {
+                true -> onSearchQueryObserve()
+                false -> {
+                    _searchUiState.update { currentState ->
+                        currentState.copy(currentQuery = currentState.lastQuery)
+                    }
+                    searchEventJob?.cancel()
                 }
             }
         }
 
-        fun onSearch(query: String) {
-            _uiState.update { currentState ->
-                currentState.copy(currentSearch = query)
+        fun onSearch(searchQuery: String) {
+            _searchUiState.update { currentState ->
+                currentState.copy(
+                    lastQuery = searchQuery,
+                    currentQuery = searchQuery,
+                    isExpanded = false,
+                )
             }
-            // TODO Hacer la búsqueda de eventos
+            if (searchQuery.isNotBlank()) {
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        eventList = searchUiState.value.eventList,
+                    )
+                }
+                Log.d("HomeViewModel", "onSearch: ${_uiState.value.eventList.size}")
+                // TODO Mostrar los eventos de _uiState.eventList obtenidos en el mapa
+            } else {
+                // TODO("Si se descarta el query se tienen que obtener los eventos de forma normal")
+            }
+            searchEventJob?.cancel()
+        }
+
+        fun onEventSelected(event: SuggestedEvent) {
+            _searchUiState.update { currentState ->
+                currentState.copy(
+                    lastQuery = event.title,
+                    currentQuery = event.title,
+                    isExpanded = false,
+                )
+            }
+            searchEventJob?.cancel()
+            // TODO Abrir C3: EventHomeCard o mostrar en el mapa el evento seleccionado
+            Log.d("HomeViewModel", "onEventSelected: ${event.title}")
+            Log.d("HomeViewModel", "onEventSelected: ${event.id}, ${event.lat}, ${event.lng}")
         }
     }

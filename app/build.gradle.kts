@@ -74,14 +74,18 @@ dependencies {
     implementation(libs.androidx.material.icon)
     implementation(libs.androidx.compose.material3)
     implementation(libs.play.services.maps)
+
+    // Testing
     testImplementation(libs.junit)
+    testImplementation(libs.org.mockito.android)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    implementation(libs.coil)
+    debugImplementation(libs.androidx.test.core)
+    debugImplementation(libs.org.mockito.kotlin)
 
     // Dagger + Hilt
     implementation(libs.google.dagger.hilt.android)
@@ -92,5 +96,5 @@ dependencies {
     testImplementation(libs.google.dagger.hilt.android.testing)
 
     // Coil Compose
-    implementation("io.coil-kt:coil-compose:2.7.0")
+    implementation(libs.coil)
 }
