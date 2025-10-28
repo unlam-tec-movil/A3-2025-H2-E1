@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
+import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
 import ar.edu.unlam.mobile.scaffolding.utils.getAddressFromCoordinates
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -86,8 +87,14 @@ fun TimePlaceEventCardPreview() {
                 image = null,
                 beforeImage = listOf(),
                 afterImage = null,
-                membersId = null,
-                creatorId = 1,
+                members = null,
+                creator =
+                    User(
+                        id = 1,
+                        name = "Pepe Papa",
+                        avatarUrl = null,
+                        description = null,
+                    ),
                 saved = false,
                 participating = false,
             ),
