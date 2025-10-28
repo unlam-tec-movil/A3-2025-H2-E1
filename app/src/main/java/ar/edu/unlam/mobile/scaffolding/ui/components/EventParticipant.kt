@@ -39,7 +39,7 @@ fun EventParticipant(
     user: User,
     members: List<User>?,
 ) {
-    val isExpanded = remember { mutableStateOf(true) }
+    val isExpanded = remember { mutableStateOf(false) }
     val itemSpacing = 8.dp
     val itemSize = 44.dp
 
