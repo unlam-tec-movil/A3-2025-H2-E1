@@ -38,7 +38,7 @@ fun EventosMenu(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween // separa texto y botón
+        horizontalArrangement = Arrangement.SpaceBetween 
     ) {
         // Texto + subrayado dinámico a la izquierda
         Column(
@@ -49,7 +49,7 @@ fun EventosMenu(
                 text = "Eventos que participe",
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    fontSize = 22.sp // solo aquí se agranda la letra
+                    fontSize = 22.sp //  agranda la letra
                 ),
                 onTextLayout = { textLayoutResult ->
                     textWidth = textLayoutResult.size.width.toFloat()
@@ -62,7 +62,7 @@ fun EventosMenu(
             )
         }
 
-        // Botón circular alineado a la derecha
+        // Botón circular 
         Box(
             modifier = Modifier
                 .size(40.dp)
