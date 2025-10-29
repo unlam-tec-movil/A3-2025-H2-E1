@@ -40,7 +40,7 @@ fun EventosMenu(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween 
     ) {
-        // Texto + subrayado dinámico a la izquierda
+        // Texto + subrayado 
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.Start
