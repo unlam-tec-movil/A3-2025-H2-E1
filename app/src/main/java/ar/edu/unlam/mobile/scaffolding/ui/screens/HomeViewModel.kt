@@ -59,11 +59,43 @@ class HomeViewModel
 
         private var searchEventJob: Job? = null
 
-        init {
-            _uiState.value = HomeUIState(helloMessageState = MessageUIState.Success("2b"))
-        }
+    init {
+        // Lista de eventos iniciales
+        val initialEvents = listOf(
+            SuggestedEvent(
+                id = "1",
+                title = "Concierto de Rock - CABA",
+                lat = -34.5508,
+                lng = -58.4548
+            ),
+            SuggestedEvent(
+                id = "2",
+                title = "Feria del Libro - Ramos Mejía",
+                lat = -34.6415,
+                lng = -58.56346
+            ),
+            SuggestedEvent(
+                id = "3",
+                title = "Festival de Tecnología - Buenos Aires",
+                lat = -34.6811,
+                lng = -58.5589
+            )
+        )
 
-        fun onSearchQueryChange(newQuery: String) {
+        // Inicializamos el estado principal
+        _uiState.value = HomeUIState(
+            helloMessageState = MessageUIState.Success("Bienvenido"),
+            eventList = initialEvents
+        )
+
+        // Inicializamos también el estado de búsqueda para que el mapa y la barra tengan eventos desde el inicio
+        _searchUiState.value = SearchUIState(
+            eventList = initialEvents
+        )
+    }
+
+
+    fun onSearchQueryChange(newQuery: String) {
             _searchUiState.update { currentState ->
                 currentState.copy(currentQuery = newQuery)
             }
