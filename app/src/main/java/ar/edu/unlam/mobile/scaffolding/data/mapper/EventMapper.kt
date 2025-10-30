@@ -14,8 +14,8 @@ fun EventEntity.toEvent(): Event =
         image = imageUrl,
         beforeImage = beforeImageUrl,
         afterImage = afterImageUrl,
-        members = members,
-        creator = creator,
+        members = members.map { it.toUser() },
+        creator = creator.toUser(),
         saved = saved,
         participating = participating,
     )
@@ -31,8 +31,8 @@ fun Event.toEntity(): EventEntity =
         imageUrl = image,
         beforeImageUrl = beforeImage,
         afterImageUrl = afterImage,
-        members = members,
-        creator = creator,
+        members = members.map { it.toEntity() },
+        creator = creator.toEntity(),
         saved = saved,
         participating = participating,
     )

@@ -87,7 +87,7 @@ fun TimePlaceEventCardPreview() {
                 image = null,
                 beforeImage = listOf(),
                 afterImage = null,
-                members = null,
+                members = emptyList(),
                 creator =
                     User(
                         id = 1,

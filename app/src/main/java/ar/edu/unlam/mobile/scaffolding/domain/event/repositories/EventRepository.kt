@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 interface EventRepository {
     suspend fun getSuggestedEvent(query: String): Flow<List<SuggestedEvent>>
 
-    suspend fun getEvents(): Flow<List<EventList>>
+    suspend fun getEventsList(): Flow<List<EventList>>
 
     suspend fun getEventList(id: Int): Flow<EventList>
 

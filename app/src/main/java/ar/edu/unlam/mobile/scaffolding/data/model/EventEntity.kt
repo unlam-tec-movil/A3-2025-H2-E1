@@ -1,7 +1,5 @@
 package ar.edu.unlam.mobile.scaffolding.data.model
 
-import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
-
 data class EventEntity(
     val eventId: String,
     val title: String,
@@ -12,8 +10,8 @@ data class EventEntity(
     val imageUrl: String?,
     val beforeImageUrl: List<String>,
     val afterImageUrl: List<String>?,
-    val members: List<User>?,
-    val creator: User,
+    val members: List<UserEntity>,
+    val creator: UserEntity,
     val saved: Boolean,
     val participating: Boolean,
 )
