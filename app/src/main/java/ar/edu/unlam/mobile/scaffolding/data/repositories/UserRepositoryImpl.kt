@@ -16,31 +16,31 @@ class UserRepositoryImpl
                 UserEntity(
                     id = 1,
                     name = "Juan Rodriguez",
-                    avatarUrl = "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+                    avatarUrl = "https://picsum.photos/id/1005/200",
                     description = "Desarrollador Android y entusiasta de Kotlin.",
                 ),
                 UserEntity(
                     id = 2,
                     name = "Ana García",
-                    avatarUrl = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80",
+                    avatarUrl = "https://picsum.photos/id/1011/200",
                     description = "Diseñadora UX/UI.",
                 ),
                 UserEntity(
                     id = 3,
                     name = "Carlos Martinez",
-                    avatarUrl = "https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+                    avatarUrl = "https://picsum.photos/id/1012/200",
                     description = "Project Manager.",
                 ),
                 UserEntity(
                     id = 4,
                     name = "Sofía López",
-                    avatarUrl = "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+                    avatarUrl = "https://picsum.photos/id/1013/200",
                     description = "Especialista en QA.",
                 ),
                 UserEntity(
                     id = 5,
                     name = "David Gómez",
-                    avatarUrl = "https://images.pexels.com/photos/837358/pexels-photo-837358.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+                    avatarUrl = "https://picsum.photos/id/1014/200",
                     description = "Analista de datos.",
                 ),
             )
