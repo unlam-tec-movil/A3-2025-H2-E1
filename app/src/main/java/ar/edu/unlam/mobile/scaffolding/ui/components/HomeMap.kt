@@ -39,7 +39,7 @@ data class Evento(
 fun NearbyMap(
     nearbyEvents: List<Evento>,
     modifier: Modifier = Modifier,
-    onEventoClick: (Evento) -> Unit = {} // 🔹 callback al hacer clic en un evento
+    onEventoClick: (Evento) -> Unit = {} //  callback al hacer clic en un evento
 ) {
     val context = LocalContext.current
     val permissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -170,27 +170,3 @@ fun MapScreen() {
     }
 }
 
-/* ACLARACIONES PARA UTILIZAR COMPONENTE:
-
- DEPENDENCIAS NECESARIAS:
- // OSMDroid para mapas
-    implementation("org.osmdroid:osmdroid-android:6.1.18")
-
- // Permisos en Compose
-    implementation("com.google.accompanist:accompanist-permissions:0.35.0-alpha")
-
- // PreferenceManager moderno
-    implementation("androidx.preference:preference-ktx:1.2.1")
-
-
-Manifest:
-    <!-- Necesario para OSMDroid -->  colocar dentro de (<application..)
-
-    <uses-library android:name="org.apache.http.legacy" android:required="false" />
-
-como llamar para prueba desde MainActivity
-
-setContent {
-            MapScreen()
-        }
- */
