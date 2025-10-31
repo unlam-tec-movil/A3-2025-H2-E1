@@ -97,4 +97,13 @@ dependencies {
 
     // Coil Compose
     implementation(libs.coil)
+
+    // OSMDroid para mapas
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
+
+    // Permisos en Compose
+    implementation("com.google.accompanist:accompanist-permissions:0.35.0-alpha")
+
+    // PreferenceManager moderno
+    implementation("androidx.preference:preference-ktx:1.2.1")
 }
