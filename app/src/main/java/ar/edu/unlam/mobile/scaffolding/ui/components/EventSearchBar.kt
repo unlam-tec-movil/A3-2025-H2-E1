@@ -1,9 +1,15 @@
 package ar.edu.unlam.mobile.scaffolding.ui.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDp
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,8 +19,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -24,9 +32,15 @@ import androidx.compose.material3.SearchBarDefaults.inputFieldColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
@@ -165,13 +179,69 @@ fun EventSearchBar(
                         )
                     }
                 } else {
-                    Box(
+                    Column(
                         modifier =
                             Modifier
                                 .fillMaxSize()
-                                .padding(16.dp),
+                                .padding(horizontal = 16.dp),
                     ) {
+                        AnimatedVisibility(
+                            visible = searchState.events.size > 1 && searchUiState.currentQuery.isNotEmpty(),
+                            enter =
+                                expandVertically(
+                                    animationSpec = tween(durationMillis = 170),
+                                ),
+                            exit =
+                                shrinkVertically(
+                                    animationSpec = tween(durationMillis = 170),
+                                ),
+                        ) {
+                            Card(
+                                onClick = { onSearch(searchUiState.currentQuery) },
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Text(
+                                    text =
+                                        buildAnnotatedString {
+                                            append("Mostrar resultados para '")
+                                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                                append(searchUiState.currentQuery)
+                                            }
+                                            append("' en el mapa.")
+                                        },
+                                    textAlign = TextAlign.Center,
+                                    modifier =
+                                        Modifier
+                                            .padding(8.dp)
+                                            .fillMaxWidth(),
+                                )
+                            }
+                        }
                         LazyColumn(modifier = Modifier.fillMaxSize()) {
+                            item {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier =
+                                        Modifier
+                                            .padding(top = 4.dp)
+                                            .padding(horizontal = 2.dp),
+                                ) {
+                                    Text(
+                                        text = if (searchState.events.size > 1) "Resultados" else "Resultado",
+                                        color =
+                                            MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                                alpha = 0.7f,
+                                            ),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        modifier = Modifier.padding(horizontal = 8.dp),
+                                    )
+                                    HorizontalDivider(
+                                        thickness = 0.8.dp,
+                                        color = MaterialTheme.colorScheme.outlineVariant,
+                                    )
+                                }
+                            }
+
                             items(searchState.events) { event ->
                                 Text(
                                     text = event.title,

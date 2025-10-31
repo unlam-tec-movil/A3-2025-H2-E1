@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -24,7 +25,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventSearchBar
 import ar.edu.unlam.mobile.scaffolding.ui.components.Evento
-import ar.edu.unlam.mobile.scaffolding.ui.components.Greeting
 import ar.edu.unlam.mobile.scaffolding.ui.components.NearbyMap
 
 const val HOME_SCREEN_ROUTE = "home"
@@ -39,6 +39,7 @@ fun HomeScreen(
 
     var eventoSeleccionado by remember { mutableStateOf<Evento?>(null) }
 
+    // TODO Traer una lista de "suggestedEvents" del viewmodel llamando al repositorio
     // Lista fija de eventos de prueba
     val eventos =
         listOf(
@@ -47,53 +48,59 @@ fun HomeScreen(
         )
 
     Box(modifier = Modifier.fillMaxSize()) {
-        //  Mapa de fondo con los 2 eventos
-        NearbyMap(
-            nearbyEvents = eventos,
-            modifier = Modifier.matchParentSize(),
-            onEventoClick = { eventoSeleccionado = it },
-        )
-
-        //  Contenido encima del mapa (barra de búsqueda y saludo)
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-        ) {
-            // barra de búsqueda
-            EventSearchBar(
-                searchUiState = searchBarState,
-                onSearchQueryChange = viewModel::onSearchQueryChange,
-                onSearch = viewModel::onSearch,
-                onSuggestionSelected = { event -> viewModel.onEventSelected(event) },
-                onActiveChange = viewModel::onActiveChange,
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            when (val helloState = uiState.helloMessageState) {
-                is MessageUIState.Success -> Greeting(helloState.message, modifier)
-                is MessageUIState.Error -> Text("Error: ${helloState.message}")
-                else -> CircularProgressIndicator()
+        when (val helloState = uiState.helloMessageState) {
+            MessageUIState.Loading -> {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                )
             }
+            is MessageUIState.Success -> {
+                //  Mapa de fondo con los 2 eventos
+                NearbyMap(
+                    nearbyEvents = eventos,
+                    modifier = Modifier.matchParentSize(),
+                    onEventoClick = { eventoSeleccionado = it },
+                )
 
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(searchBarState.currentQuery)
-        }
+                //  Contenido encima del mapa (barra de búsqueda y saludo)
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    // barra de búsqueda
+                    EventSearchBar(
+                        searchUiState = searchBarState,
+                        onSearchQueryChange = viewModel::onSearchQueryChange,
+                        onSearch = viewModel::onSearch,
+                        onSuggestionSelected = { event -> viewModel.onEventSelected(event) },
+                        onActiveChange = viewModel::onActiveChange,
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(searchBarState.currentQuery)
+                }
 
-        // Diálogo al tocar un evento
-        eventoSeleccionado?.let { evento ->
-            AlertDialog(
-                onDismissRequest = { eventoSeleccionado = null },
-                confirmButton = {
-                    Button(onClick = { eventoSeleccionado = null }) {
-                        Text("Cerrar")
-                    }
-                },
-                title = { Text(evento.nombre) },
-                text = { Text("Detalles próximamente...") },
-            )
+                // Primero traer una lista de "suggestedEvents" del repositorio. TODO anterior
+                // TODO llamar al eventList e implementar C3 EventHomeCard
+                // Diálogo al tocar un evento de prueba
+                eventoSeleccionado?.let { evento ->
+                    AlertDialog(
+                        onDismissRequest = { eventoSeleccionado = null },
+                        confirmButton = {
+                            Button(onClick = { eventoSeleccionado = null }) {
+                                Text("Cerrar")
+                            }
+                        },
+                        title = { Text(evento.nombre) },
+                        text = { Text("Detalles próximamente...") },
+                    )
+                }
+            }
+            is MessageUIState.Error -> {
+                Text(
+                    text = helloState.message,
+                    modifier =
+                        Modifier
+                            .padding(16.dp)
+                            .align(Alignment.Center),
+                )
+            }
         }
     }
 }
