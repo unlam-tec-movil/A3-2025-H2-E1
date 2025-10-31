@@ -2,9 +2,9 @@ package ar.edu.unlam.mobile.scaffolding.domain.event.usecases
 
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.domain.event.repositories.EventRepository
+import ar.edu.unlam.mobile.scaffolding.domain.utils.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class GetSuggestedEventUseCase
@@ -12,10 +12,10 @@ class GetSuggestedEventUseCase
     constructor(
         private val repository: EventRepository,
     ) {
-        suspend operator fun invoke(query: String): Flow<List<SuggestedEvent>> {
-            if (query.length < 3) {
-                return flowOf(emptyList())
+        suspend operator fun invoke(query: String): Flow<Resource<List<SuggestedEvent>>> {
+            if (query.length < 2) {
+                return flowOf(Resource.Success(emptyList()))
             }
-            return repository.getSuggestedEvent(query).map { it }
+            return repository.getSuggestedEvent(query)
         }
     }

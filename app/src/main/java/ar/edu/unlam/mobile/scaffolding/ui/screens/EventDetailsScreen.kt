@@ -127,7 +127,7 @@ private val members =
     (1..20)
         .map {
             User(
-                id = it,
+                id = it.toLong(),
                 name = "Usuario $it",
                 avatarUrl = "https://media.vanityfair.com/photos/597f75b706f77f18ffaad3bc/master/w_1440,h_960,c_limit/avatar-2.jpg",
                 description = "",

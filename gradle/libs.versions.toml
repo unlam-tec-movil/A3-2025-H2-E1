@@ -13,11 +13,12 @@ ksp = "2.2.10-2.0.2"
 androidXHilt = "1.2.0"
 kover = "0.9.1"
 ktlint = "13.1.0"
-material3 = "1.4.0-beta03"
+material3 = "1.4.0"
 coil_version = "2.7.0"
 material3Version = "1.4.0"
 playServicesMaps = "19.2.0"
 playServicesLocation = "21.2.0"
+mapsCompose = "6.1.0"
 mockitoVersion = "5.3.1"
 mockitoAndroidVersion = "5.14.2"
 testCore = "1.6.1"
@@ -45,7 +46,6 @@ coil = { module = "io.coil-kt:coil-compose", version.ref = "coil_version" }
 google-dagger-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "dagger" }
 google-dagger-hilt-android-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "dagger" }
 google-dagger-hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "dagger" }
-androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3Version" }
 play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 

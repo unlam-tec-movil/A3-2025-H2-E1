@@ -11,7 +11,7 @@ fun EventListEntity.toEventList(): EventList =
         dateTime = dateTime,
         lat = lat,
         lng = lng,
-        image = image,
+        image = imageUrl,
     )
 
 fun EventList.toEntity(): EventListEntity =
@@ -22,5 +22,5 @@ fun EventList.toEntity(): EventListEntity =
         dateTime = dateTime,
         lat = lat,
         lng = lng,
-        image = image,
+        imageUrl = image,
     )
