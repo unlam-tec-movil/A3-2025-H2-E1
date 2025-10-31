@@ -1,5 +1,6 @@
 package ar.edu.unlam.mobile.scaffolding.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -44,9 +45,8 @@ fun UserScreen(
             viewModel.getUser(id)
         } else {
             viewModel.getUser(2)
+            Log.e("UserScreen", "Invalid user ID: $userId")
         }
-        // Esto no funciona correctamente, despues sera arreglado
-        // Pero mientras no sea necesaria la pantalla de User nos sirve
     }
 
     Scaffold { padding ->
@@ -93,7 +93,7 @@ fun UserScreen(
                             color = MaterialTheme.colorScheme.onPrimary,
                         )
                         Text(
-                            text = userUiState.description,
+                            text = userUiState.description ?: "",
                             color = MaterialTheme.colorScheme.onPrimary,
                         )
                     }

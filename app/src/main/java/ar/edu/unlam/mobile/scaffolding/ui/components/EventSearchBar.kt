@@ -154,7 +154,17 @@ fun EventSearchBar(
                 }
             }
             is EventSearchState.Success -> {
-                if (searchState.currentQuery.isNotEmpty()) {
+                if (searchState.events.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = "No se encontraron CleanUps con ese nombre",
+                            modifier =
+                                Modifier
+                                    .padding(16.dp)
+                                    .align(Alignment.Center),
+                        )
+                    }
+                } else {
                     Box(
                         modifier =
                             Modifier
@@ -173,16 +183,6 @@ fun EventSearchBar(
                                 )
                             }
                         }
-                    }
-                } else if (searchState.currentQuery.length > 3) {
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = "No se encontraron CleanUps con ese nombre",
-                            modifier =
-                                Modifier
-                                    .padding(16.dp)
-                                    .align(Alignment.Center),
-                        )
                     }
                 }
             }

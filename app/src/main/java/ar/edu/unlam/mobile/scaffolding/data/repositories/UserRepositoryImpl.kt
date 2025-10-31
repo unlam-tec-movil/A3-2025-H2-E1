@@ -4,6 +4,7 @@ import ar.edu.unlam.mobile.scaffolding.data.mapper.toUser
 import ar.edu.unlam.mobile.scaffolding.data.model.UserEntity
 import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
 import ar.edu.unlam.mobile.scaffolding.domain.user.repositories.UserRepository
+import ar.edu.unlam.mobile.scaffolding.domain.utils.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
@@ -31,23 +32,15 @@ class UserRepositoryImpl
                     avatarUrl = "https://picsum.photos/id/1012/200",
                     description = "Project Manager.",
                 ),
-                UserEntity(
-                    id = 4,
-                    name = "Sofía López",
-                    avatarUrl = "https://picsum.photos/id/1013/200",
-                    description = "Especialista en QA.",
-                ),
-                UserEntity(
-                    id = 5,
-                    name = "David Gómez",
-                    avatarUrl = "https://picsum.photos/id/1014/200",
-                    description = "Analista de datos.",
-                ),
             )
 
-        override suspend fun getUser(userId: Long): Flow<User> =
+        override suspend fun getUser(userId: Long): Flow<Resource<User>> =
             flow {
-                val userEntity = mockUsers.find { it.id == userId } ?: mockUsers.first()
-                emit(userEntity.toUser())
+                val userEntity = mockUsers.find { it.id == userId }
+                if (userEntity != null) {
+                    emit(Resource.Success(data = userEntity.toUser()))
+                } else {
+                    emit(Resource.Error(message = "Usuario con ID $userId no encontrado."))
+                }
             }
     }

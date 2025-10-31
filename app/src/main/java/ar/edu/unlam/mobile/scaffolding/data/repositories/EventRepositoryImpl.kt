@@ -10,6 +10,7 @@ import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.domain.event.repositories.EventRepository
+import ar.edu.unlam.mobile.scaffolding.domain.utils.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
@@ -20,28 +21,58 @@ class EventRepositoryImpl
         private val mockUsers =
             listOf(
                 UserEntity(
-                    1,
-                    "Lucas Rodriguez",
+                    id = 1,
+                    name = "Juan Rodriguez",
+                    avatarUrl = "https://picsum.photos/id/1005/200",
+                    description = "Desarrollador Android y entusiasta de Kotlin.",
+                ),
+                UserEntity(
+                    id = 2,
+                    name = "Ana García",
+                    avatarUrl = "https://picsum.photos/id/1011/200",
+                    description = "Diseñadora UX/UI.",
+                ),
+                UserEntity(
+                    id = 3,
+                    name = "Carlos Martinez",
+                    avatarUrl = "https://picsum.photos/id/1012/200",
+                    description = "Project Manager.",
+                ),
+                UserEntity(
+                    id = 4,
+                    name = "Sofía López",
+                    avatarUrl = "https://picsum.photos/id/1013/200",
+                    description = "Especialista en QA.",
+                ),
+                UserEntity(
+                    id = 5,
+                    name = "David Gómez",
+                    avatarUrl = "https://picsum.photos/id/1014/200",
+                    description = "Analista de datos.",
+                ),
+                UserEntity(
+                    6,
+                    "Juan Pérez",
                     "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg",
                     "Desarrollador Android.",
                 ),
                 UserEntity(
-                    2,
-                    "Ana García",
+                    7,
+                    "María García",
                     "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
                     "Diseñadora UX/UI.",
                 ),
                 UserEntity(
-                    3,
-                    "Carlos Martinez",
+                    8,
+                    "Carlos Rodríguez",
                     "https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg",
                     "Project Manager.",
                 ),
                 UserEntity(
-                    id = 4,
-                    name = "Pepe Papa",
-                    avatarUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBwr_zZjgvmu4BccwDNIHic8K5dyehw7cSYA&s",
-                    description = null,
+                    9,
+                    "Pepe Papa",
+                    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBwr_zZjgvmu4BccwDNIHic8K5dyehw7cSYA&s",
+                    null,
                 ),
             )
 
@@ -54,8 +85,12 @@ class EventRepositoryImpl
                     dateTime = System.currentTimeMillis() - 86400000, // Ayer
                     lat = -34.6415,
                     lng = -58.5714,
-                    imageUrl = "https://www.periodicoelbarrio.com.ar/wp-content/uploads/2021/04/pza-san-martin-vista-aerea-buenosaires.jpg",
-                    beforeImageUrl = listOf("url_antes_1", "url_antes_2"),
+                    imageUrl = "https://turismo.buenosaires.gob.ar/sites/turismo/files/plaza%20san%20martin%20panoramica_0.jpg",
+                    beforeImageUrl =
+                        listOf(
+                            "https://tse4.mm.bing.net/th/id/OIP.qAaQAfjCzVnVppDL9yV4ngHaGH?rs=1&pid=ImgDetMain&o=7&rm=3",
+                            "https://tse3.mm.bing.net/th/id/OIP.l1IS9Myg1X5DeUhv7RNSvgHaE8?rs=1&pid=ImgDetMain&o=7&rm=3",
+                        ),
                     afterImageUrl = null,
                     members = listOf(mockUsers[0], mockUsers[1]),
                     creator = mockUsers[2],
@@ -69,7 +104,7 @@ class EventRepositoryImpl
                     dateTime = System.currentTimeMillis() + 86400000 * 2, // En 2 días
                     lat = -34.5425,
                     lng = -58.4555,
-                    imageUrl = "https://www.diariodecuyo.com.ar/export/sites/diariodecuyo/img/2022/03/17/plastico_1.jpg_1584381838.jpg",
+                    imageUrl = "https://blog.taranna.com/docs/reducir-plasticos-viaje-taranna-001-620x410.jpg",
                     beforeImageUrl = listOf(),
                     afterImageUrl = null,
                     members = listOf(mockUsers[1]),
@@ -84,7 +119,7 @@ class EventRepositoryImpl
                     dateTime = System.currentTimeMillis() + 86400000 * 7, // En una semana
                     lat = -34.6707,
                     lng = -58.5627,
-                    imageUrl = "https://www.lacumbre.gob.ar/wp-content/uploads/2022/08/REFORESTACION-EN-LA-CUMBRE-4.jpg",
+                    imageUrl = "https://www.sedema.cdmx.gob.mx/storage/app/uploads/public/626/c8e/c30/626c8ec30db8d290091621.jpg",
                     beforeImageUrl = listOf(),
                     afterImageUrl = null,
                     members = mockUsers,
@@ -93,7 +128,7 @@ class EventRepositoryImpl
                     participating = false,
                 ),
                 EventEntity(
-                    eventId = "1",
+                    eventId = "4",
                     title = "Concierto de Rock",
                     description = "Limpieza post concierto de rock con bandas locales e internacionales.",
                     dateTime = System.currentTimeMillis(),
@@ -109,7 +144,7 @@ class EventRepositoryImpl
                 ),
             )
 
-        override suspend fun getSuggestedEvent(query: String): Flow<List<SuggestedEvent>> =
+        override suspend fun getSuggestedEvent(query: String): Flow<Resource<List<SuggestedEvent>>> =
             flow {
                 val suggestedEvents =
                     mockEvents
@@ -123,10 +158,10 @@ class EventRepositoryImpl
                                 lng = values.lng,
                             ).toSuggestedEvent()
                         }
-                emit(suggestedEvents)
+                emit(Resource.Success(suggestedEvents))
             }
 
-        override suspend fun getEventsList(): Flow<List<EventList>> =
+        override suspend fun getEventsList(): Flow<Resource<List<EventList>>> =
             flow {
                 val eventList =
                     mockEvents.map { values ->
@@ -140,14 +175,14 @@ class EventRepositoryImpl
                             imageUrl = values.imageUrl,
                         ).toEventList()
                     }
-                emit(eventList)
+                emit(Resource.Success(eventList))
             }
 
-        override suspend fun getEventList(id: Int): Flow<EventList> {
+        override suspend fun getEventList(id: Int): Flow<Resource<EventList>> {
             TODO("Not yet implemented")
         }
 
-        override suspend fun getEvent(id: Int): Flow<Event> {
+        override suspend fun getEvent(id: Int): Flow<Resource<Event>> {
             TODO("Not yet implemented")
         }
     }

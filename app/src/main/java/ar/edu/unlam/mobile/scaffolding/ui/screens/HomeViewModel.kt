@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetSuggestedEventUseCase
+import ar.edu.unlam.mobile.scaffolding.domain.utils.Resource
 import ar.edu.unlam.mobile.scaffolding.ui.common.EventSearchState
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -81,32 +82,33 @@ class HomeViewModel
                         query.isNotBlank() && query.length > 1 && query != _searchUiState.value.lastQuery
                     }.mapLatest { query ->
                         Log.d("HomeViewModel", "getSuggestionSearch: $query")
-                        _searchUiState.update { currentState ->
-                            currentState.copy(
-                                searchState = EventSearchState.Loading,
-                            )
-                        }
-                        try {
-                            getAutocompleteEvent(query).collect { suggestedEvents ->
-                                _searchUiState.update {
-                                    it.copy(
-                                        searchState =
-                                            EventSearchState.Success(
-                                                // Para usar en el componente EventSearchBar
-                                                currentQuery = query,
-                                                events = suggestedEvents,
-                                            ),
-                                        // Para usar en HomeScreen o vm
-                                        currentQuery = query,
-                                        eventList = suggestedEvents,
-                                    )
+                        _searchUiState.update { it.copy(searchState = EventSearchState.Loading) }
+
+                        getAutocompleteEvent(query).collect { result ->
+                            when (result) {
+                                is Resource.Success -> {
+                                    _searchUiState.update {
+                                        it.copy(
+                                            searchState =
+                                                EventSearchState.Success(
+                                                    // Para usar en el componente EventSearchBar
+                                                    currentQuery = query,
+                                                    events = result.data,
+                                                ),
+                                            // Para usar en HomeScreen o vm
+                                            currentQuery = query,
+                                            eventList = result.data,
+                                        )
+                                    }
+                                }
+
+                                is Resource.Error -> {
+                                    _searchUiState.update {
+                                        it.copy(searchState = EventSearchState.Error(result.message))
+                                    }
+                                    Log.e("HomeViewModel", "Error al obtener sugerencias: ${result.message}")
                                 }
                             }
-                        } catch (e: Exception) {
-                            _searchUiState.update {
-                                it.copy(searchState = EventSearchState.Error(e.message))
-                            }
-                            Log.e("HomeViewModel", "Error al obtener sugerencias: ${e.message}")
                         }
                     }.launchIn(viewModelScope)
         }
@@ -116,8 +118,17 @@ class HomeViewModel
             when (isActive) {
                 true -> onSearchQueryObserve()
                 false -> {
-                    _searchUiState.update { currentState ->
-                        currentState.copy(currentQuery = currentState.lastQuery)
+                    if (_searchUiState.value.eventList.isEmpty()) {
+                        _searchUiState.update { currentState ->
+                            currentState.copy(
+                                searchState = EventSearchState.Idle,
+                                currentQuery = currentState.lastQuery,
+                            )
+                        }
+                    } else {
+                        _searchUiState.update { currentState ->
+                            currentState.copy(currentQuery = currentState.lastQuery)
+                        }
                     }
                     searchEventJob?.cancel()
                 }
