@@ -12,7 +12,7 @@ data class Event(
     val image: String?,
     val beforeImage: List<String>,
     val afterImage: List<String>?,
-    val members: List<User>?,
+    val members: List<User>,
     val creator: User,
     val saved: Boolean,
     val participating: Boolean,

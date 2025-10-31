@@ -7,5 +7,5 @@ data class EventListEntity(
     val dateTime: Long,
     val lat: Double,
     val lng: Double,
-    val image: String?,
+    val imageUrl: String?,
 )

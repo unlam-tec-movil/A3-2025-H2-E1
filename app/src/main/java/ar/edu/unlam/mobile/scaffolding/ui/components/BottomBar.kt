@@ -26,6 +26,9 @@ import ar.edu.unlam.mobile.scaffolding.ui.theme.ScaffoldingV2Theme
 fun BottomBar(controller: NavHostController) {
     val navBackStackEntry by controller.currentBackStackEntryAsState()
 
+    // id del usuario logeado, de momento es hardcodeado hasta que se pueda logear
+    val idLogUser = "1"
+
     @Composable
     fun RowScope.navigationItem(
         navRoute: String,
@@ -86,7 +89,7 @@ fun BottomBar(controller: NavHostController) {
         NavigationBarItem(
             selected = navBackStackEntry?.destination?.hierarchy?.any { it.route == "user/{id}" } == true,
             onClick = {
-                controller.navigate("user/usuario") {
+                controller.navigate("user/$idLogUser") {
                     popUpTo(controller.graph.findStartDestination().id) {
                         saveState = true
                     }
