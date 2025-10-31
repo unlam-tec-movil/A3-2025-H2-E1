@@ -1,7 +1,5 @@
 package ar.edu.unlam.mobile.scaffolding.ui.components
 
-
-
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
@@ -31,7 +29,7 @@ import org.osmdroid.views.overlay.Marker
 data class Evento(
     val nombre: String,
     val lat: Double,
-    val lon: Double
+    val lon: Double,
 )
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -39,7 +37,7 @@ data class Evento(
 fun NearbyMap(
     nearbyEvents: List<Evento>,
     modifier: Modifier = Modifier,
-    onEventoClick: (Evento) -> Unit = {} //  callback al hacer clic en un evento
+    onEventoClick: (Evento) -> Unit = {}, //  callback al hacer clic en un evento
 ) {
     val context = LocalContext.current
     val permissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -68,18 +66,19 @@ fun NearbyMap(
         return
     }
 
-    val mapView = remember {
-        Configuration.getInstance().load(
-            context,
-            PreferenceManager.getDefaultSharedPreferences(context)
-        )
-        MapView(context).apply {
-            setTileSource(TileSourceFactory.MAPNIK)
-            setMultiTouchControls(true)
-            controller.setZoom(15.0)
-            controller.setCenter(currentLocation.value)
+    val mapView =
+        remember {
+            Configuration.getInstance().load(
+                context,
+                PreferenceManager.getDefaultSharedPreferences(context),
+            )
+            MapView(context).apply {
+                setTileSource(TileSourceFactory.MAPNIK)
+                setMultiTouchControls(true)
+                controller.setZoom(15.0)
+                controller.setCenter(currentLocation.value)
+            }
         }
-    }
 
     DisposableEffect(Unit) {
         onDispose { mapView.onDetach() }
@@ -89,32 +88,34 @@ fun NearbyMap(
         mv.overlays.clear()
 
         //  Tu ubicación
-        val myMarker = Marker(mv).apply {
-            position = currentLocation.value!!
-            title = "Estás aquí"
-            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-            // esta linea muestra error en R  porque es un icono interno de OSMDroid
-            icon = ContextCompat.getDrawable(context, org.osmdroid.library.R.drawable.marker_default)
-            icon?.setTint(android.graphics.Color.BLUE)
-        }
+        val myMarker =
+            Marker(mv).apply {
+                position = currentLocation.value!!
+                title = "Estás aquí"
+                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                // esta linea muestra error en R  porque es un icono interno de OSMDroid
+                icon = ContextCompat.getDrawable(context, org.osmdroid.library.R.drawable.marker_default)
+                icon?.setTint(android.graphics.Color.BLUE)
+            }
         mv.overlays.add(myMarker)
 
         //  Eventos con click
         nearbyEvents.forEach { evento ->
-            val marker = Marker(mv).apply {
-                position = GeoPoint(evento.lat, evento.lon)
-                title = evento.nombre
-                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                // esta linea muestra un error en R  porque es un icono interno de OSMDroid
-                icon = ContextCompat.getDrawable(context, org.osmdroid.library.R.drawable.marker_default)
-                icon?.setTint(android.graphics.Color.RED)
+            val marker =
+                Marker(mv).apply {
+                    position = GeoPoint(evento.lat, evento.lon)
+                    title = evento.nombre
+                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                    // esta linea muestra un error en R  porque es un icono interno de OSMDroid
+                    icon = ContextCompat.getDrawable(context, org.osmdroid.library.R.drawable.marker_default)
+                    icon?.setTint(android.graphics.Color.RED)
 
-                // Acción al hacer clic
-                setOnMarkerClickListener { _, _ ->
-                    onEventoClick(evento)
-                    true // devuelve true para indicar que el evento fue manejado
+                    // Acción al hacer clic
+                    setOnMarkerClickListener { _, _ ->
+                        onEventoClick(evento)
+                        true // devuelve true para indicar que el evento fue manejado
+                    }
                 }
-            }
             mv.overlays.add(marker)
         }
 
@@ -127,7 +128,9 @@ private fun getCurrentLocation(context: Context): Location? {
     val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
         != PackageManager.PERMISSION_GRANTED
-    ) return null
+    ) {
+        return null
+    }
 
     return locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
         ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
@@ -137,13 +140,14 @@ private fun getCurrentLocation(context: Context): Location? {
 @Composable
 fun MapScreen() {
     //  Lista de eventos en Buenos Aires
-    val eventos = listOf(
-        Evento("Evento 1 - Obelisco", -34.603722, -58.381592),
-        Evento("Evento 2 - Casa Rosada", -34.608056, -58.370278),
-        Evento("Evento 3 - Puerto Madero", -34.616389, -58.364167),
-        Evento("Evento 4 - Recoleta", -34.588056, -58.397222),
-        Evento("Evento 5 - Palermo", -34.571667, -58.423056)
-    )
+    val eventos =
+        listOf(
+            Evento("Evento 1 - Obelisco", -34.603722, -58.381592),
+            Evento("Evento 2 - Casa Rosada", -34.608056, -58.370278),
+            Evento("Evento 3 - Puerto Madero", -34.616389, -58.364167),
+            Evento("Evento 4 - Recoleta", -34.588056, -58.397222),
+            Evento("Evento 5 - Palermo", -34.571667, -58.423056),
+        )
 
     var eventoSeleccionado by remember { mutableStateOf<Evento?>(null) }
 
@@ -152,7 +156,7 @@ fun MapScreen() {
         nearbyEvents = eventos,
         onEventoClick = { evento ->
             eventoSeleccionado = evento
-        }
+        },
     )
 
     //  Diálogo al tocar un evento
@@ -165,8 +169,7 @@ fun MapScreen() {
                 }
             },
             title = { Text(evento.nombre) },
-            text = { Text("Detalles próximamente...") }
+            text = { Text("Detalles próximamente...") },
         )
     }
 }
-

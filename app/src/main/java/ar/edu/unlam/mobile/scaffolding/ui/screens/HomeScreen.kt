@@ -40,24 +40,26 @@ fun HomeScreen(
     var eventoSeleccionado by remember { mutableStateOf<Evento?>(null) }
 
     // Lista fija de eventos de prueba
-    val eventos = listOf(
-        Evento("Concierto de Rock", -34.5508002, -58.4548101),
-        Evento("Feria de Libro", -34.641347, -58.561187)
-    )
+    val eventos =
+        listOf(
+            Evento("Concierto de Rock", -34.5508002, -58.4548101),
+            Evento("Feria de Libro", -34.641347, -58.561187),
+        )
 
     Box(modifier = Modifier.fillMaxSize()) {
         //  Mapa de fondo con los 2 eventos
         NearbyMap(
             nearbyEvents = eventos,
             modifier = Modifier.matchParentSize(),
-            onEventoClick = { eventoSeleccionado = it }
+            onEventoClick = { eventoSeleccionado = it },
         )
 
         //  Contenido encima del mapa (barra de búsqueda y saludo)
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
         ) {
             // barra de búsqueda
             EventSearchBar(
@@ -65,7 +67,7 @@ fun HomeScreen(
                 onSearchQueryChange = viewModel::onSearchQueryChange,
                 onSearch = viewModel::onSearch,
                 onSuggestionSelected = { event -> viewModel.onEventSelected(event) },
-                onActiveChange = viewModel::onActiveChange
+                onActiveChange = viewModel::onActiveChange,
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -90,7 +92,7 @@ fun HomeScreen(
                     }
                 },
                 title = { Text(evento.nombre) },
-                text = { Text("Detalles próximamente...") }
+                text = { Text("Detalles próximamente...") },
             )
         }
     }
