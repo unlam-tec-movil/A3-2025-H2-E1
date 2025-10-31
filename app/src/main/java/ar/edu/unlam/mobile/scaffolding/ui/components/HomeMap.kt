@@ -169,32 +169,7 @@ fun MapScreen() {
         )
     }
 }
-@Composable
-fun MapScreenPreview() {
-    // Lista de ejemplo de 2 eventos
-    val eventos = listOf(
-        Evento("Concierto de Rock", -34.5508002, -58.4548101),
-        Evento("Feria de Libro", -34.641347, -58.561187)
-    )
 
-    var eventoSeleccionado by remember { mutableStateOf<Evento?>(null) }
-
-    NearbyMap(
-        nearbyEvents = eventos,
-        onEventoClick = { eventoSeleccionado = it }
-    )
-
-    eventoSeleccionado?.let { evento ->
-        AlertDialog(
-            onDismissRequest = { eventoSeleccionado = null },
-            confirmButton = {
-                Button(onClick = { eventoSeleccionado = null }) { Text("Cerrar") }
-            },
-            title = { Text(evento.nombre) },
-            text = { Text("Detalles próximamente...") }
-        )
-    }
-}
 /* ACLARACIONES PARA UTILIZAR COMPONENTE:
 
  DEPENDENCIAS NECESARIAS:
