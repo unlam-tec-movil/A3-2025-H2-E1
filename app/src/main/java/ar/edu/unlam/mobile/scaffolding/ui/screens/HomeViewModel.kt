@@ -1,9 +1,7 @@
 package ar.edu.unlam.mobile.scaffolding.ui.screens
 
 import android.net.Uri
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
@@ -185,7 +183,6 @@ class HomeViewModel
             Log.d("HomeViewModel", "onEventSelected: ${event.id}, ${event.lat}, ${event.lng}")
         }
 
-        @RequiresApi(Build.VERSION_CODES.O)
         fun createEvent(
             title: String,
             location: String,
