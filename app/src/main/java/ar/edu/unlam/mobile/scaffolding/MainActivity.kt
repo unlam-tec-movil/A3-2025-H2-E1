@@ -7,10 +7,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
@@ -32,6 +32,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import ar.edu.unlam.mobile.scaffolding.ui.components.BottomBar
+import ar.edu.unlam.mobile.scaffolding.ui.components.NavigationItem
 import ar.edu.unlam.mobile.scaffolding.ui.components.SnackbarVisualsWithError
 import ar.edu.unlam.mobile.scaffolding.ui.screens.EventDetailsScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.EventListScreen
@@ -71,16 +72,35 @@ fun MainScreen() {
     val navBackStackEntry by controller.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+    // id del usuario logeado, de momento es hardcodeado hasta que se pueda logear
+    val idLogUser = "1"
+
     val snackBarHostState = remember { SnackbarHostState() }
     Scaffold(
         bottomBar = {
             if (currentRoute == "home" || currentRoute == "eventList" || currentRoute == "user/{id}") {
-                BottomBar(controller = controller)
-            }
-        },
-        floatingActionButton = {
-            IconButton(onClick = { controller.navigate("home") }) {
-                Icon(Icons.Filled.Home, contentDescription = "Home")
+                BottomBar(
+                    controller = controller,
+                    navItems =
+                        listOf(
+                            NavigationItem(
+                                navRoute = "home",
+                                icon = Icons.Default.LocationOn,
+                                label = "Buscar",
+                            ),
+                            NavigationItem(
+                                navRoute = "eventList",
+                                icon = Icons.Default.CalendarMonth,
+                                label = "Calendario",
+                            ),
+                            NavigationItem(
+                                navRoute = "user/{id}",
+                                navRouteWithArgs = "user/$idLogUser",
+                                icon = Icons.Default.AccountCircle,
+                                label = "User",
+                            ),
+                        ),
+                )
             }
         },
         snackbarHost = {
@@ -123,7 +143,7 @@ fun MainScreen() {
         NavHost(navController = controller, startDestination = HOME_SCREEN_ROUTE) {
             // composable es el componente que se usa para definir un destino de navegación.
             // Por parámetro recibe la ruta que se utilizará para navegar a dicho destino.
-            composable("home") {
+            composable(HOME_SCREEN_ROUTE) {
                 // Home es el componente en sí que es el destino de navegación.
                 HomeScreen(modifier = Modifier.padding(paddingValue))
             }
