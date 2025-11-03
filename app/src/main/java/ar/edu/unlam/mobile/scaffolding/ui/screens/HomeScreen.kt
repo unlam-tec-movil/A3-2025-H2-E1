@@ -2,6 +2,7 @@ package ar.edu.unlam.mobile.scaffolding.ui.screens
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -46,7 +47,7 @@ fun HomeScreen(
 
     var showCreateEventDialog by remember { mutableStateOf(false) }
 
-    val isSessionActive by remember { mutableStateOf(false) }
+    var isSessionActive by remember { mutableStateOf(false) }
 
     // TODO Traer una lista de "suggestedEvents" del viewmodel llamando al repositorio
     // Lista fija de eventos de prueba
@@ -101,20 +102,21 @@ fun HomeScreen(
                         text = { Text("Detalles próximamente...") },
                     )
                 }
-                Box(
+                Column(
                     modifier =
                         Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(
-                                end = 80.dp,
-                                bottom = 16.dp,
-                            ),
+                            .align(Alignment.BottomStart)
+                            .padding(16.dp, bottom = 85.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalAlignment = Alignment.Start,
                 ) {
                     FloatingButtons(
                         isSessionActive = isSessionActive,
                         onClickCamera = { },
                         onClickAddEvent = { showCreateEventDialog = true },
-                        onClickStartSession = { },
+                        onClickStartSession = {
+                            isSessionActive = !isSessionActive
+                        },
                     )
                 }
                 if (showCreateEventDialog) {
