@@ -19,8 +19,8 @@ private val DarkColorScheme =
     darkColorScheme(
         primary = PrimaryBlue,
         onPrimary = White,
-        secondary = PurpleGrey80,
-        secondaryContainer = GreenDark,
+        secondary = GreenDark,
+        secondaryContainer = Green,
         tertiary = Pink80,
     )
 
@@ -64,7 +64,8 @@ fun ScaffoldingV2Theme(
         SideEffect {
             val window = (view.context as Activity).window
             window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            window.navigationBarColor = colorScheme.primary.toArgb()
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
         }
     }
 
