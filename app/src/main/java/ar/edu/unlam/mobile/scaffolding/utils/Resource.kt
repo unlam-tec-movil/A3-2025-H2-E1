@@ -1,4 +1,4 @@
-package ar.edu.unlam.mobile.scaffolding.domain.utils
+package ar.edu.unlam.mobile.scaffolding.utils
 
 sealed class Resource<out T> {
     data class Success<out T>(

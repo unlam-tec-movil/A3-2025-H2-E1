@@ -1,13 +1,14 @@
 package ar.edu.unlam.mobile.scaffolding.ui.screens
 
 import android.util.Log
+import androidx.compose.ui.geometry.isEmpty
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetSuggestedEventUseCase
-import ar.edu.unlam.mobile.scaffolding.domain.utils.Resource
 import ar.edu.unlam.mobile.scaffolding.ui.common.EventSearchState
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
+import ar.edu.unlam.mobile.scaffolding.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -68,6 +69,11 @@ class HomeViewModel
             _searchUiState.update { currentState ->
                 currentState.copy(currentQuery = newQuery)
             }
+            if (newQuery.isEmpty()) {
+                _searchUiState.update { currentState ->
+                    currentState.copy(searchState = EventSearchState.Idle)
+                }
+            }
         }
 
         @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
@@ -78,9 +84,8 @@ class HomeViewModel
                     .map { it.currentQuery }
                     .distinctUntilChanged()
                     .debounce(timeoutMillis = 500L)
-                    .filter { query ->
-                        query.isNotBlank() && query.length > 1 && query != _searchUiState.value.lastQuery
-                    }.mapLatest { query ->
+                    .filter { query -> query.isNotBlank() && query.length > 1 }
+                    .mapLatest { query ->
                         Log.d("HomeViewModel", "getSuggestionSearch: $query")
                         _searchUiState.update { it.copy(searchState = EventSearchState.Loading) }
 
@@ -95,7 +100,7 @@ class HomeViewModel
                                                     currentQuery = query,
                                                     events = result.data,
                                                 ),
-                                            // Para usar en HomeScreen o vm
+                                            // Para usar en HomeScreen (en el mapa para ser mas exactos) o vm
                                             currentQuery = query,
                                             eventList = result.data,
                                         )
@@ -122,13 +127,11 @@ class HomeViewModel
                         _searchUiState.update { currentState ->
                             currentState.copy(
                                 searchState = EventSearchState.Idle,
-                                currentQuery = currentState.lastQuery,
+                                lastQuery = "",
+                                currentQuery = "",
                             )
                         }
-                    } else {
-                        _searchUiState.update { currentState ->
-                            currentState.copy(currentQuery = currentState.lastQuery)
-                        }
+                        Log.d("HomeViewModel", "onActiveChange: eventList is empty")
                     }
                     searchEventJob?.cancel()
                 }
@@ -136,25 +139,24 @@ class HomeViewModel
         }
 
         fun onSearch(searchQuery: String) {
+            searchEventJob?.cancel()
             _searchUiState.update { currentState ->
                 currentState.copy(
-                    lastQuery = searchQuery,
-                    currentQuery = searchQuery,
                     isExpanded = false,
+                    lastQuery = searchQuery,
                 )
             }
             if (searchQuery.isNotBlank()) {
                 _uiState.update { currentState ->
-                    currentState.copy(
-                        eventList = searchUiState.value.eventList,
-                    )
+                    currentState.copy(eventList = _searchUiState.value.eventList)
                 }
-                Log.d("HomeViewModel", "onSearch: ${_uiState.value.eventList.size}")
-                // TODO Mostrar los eventos de _uiState.eventList obtenidos en el mapa
+                Log.d(
+                    "HomeViewModel",
+                    "onSearch: Mostrando ${_uiState.value.eventList.size} eventos en el mapa.",
+                )
             } else {
                 // TODO("Si se descarta el query se tienen que obtener los eventos de forma normal")
             }
-            searchEventJob?.cancel()
         }
 
         fun onEventSelected(event: SuggestedEvent) {

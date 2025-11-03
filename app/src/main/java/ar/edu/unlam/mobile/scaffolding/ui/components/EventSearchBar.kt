@@ -1,5 +1,6 @@
 package ar.edu.unlam.mobile.scaffolding.ui.components
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.tween
@@ -8,7 +9,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,8 +18,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -32,23 +34,19 @@ import androidx.compose.material3.SearchBarDefaults.inputFieldColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.ui.common.EventSearchState
 import ar.edu.unlam.mobile.scaffolding.ui.screens.SearchUIState
 import ar.edu.unlam.mobile.scaffolding.ui.theme.ScaffoldingV2Theme
+import kotlinx.coroutines.FlowPreview
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
 @Composable
 fun EventSearchBar(
     searchUiState: SearchUIState,
@@ -74,7 +72,11 @@ fun EventSearchBar(
             SearchBarDefaults.InputField(
                 query = searchQuery,
                 onQueryChange = onSearchQueryChange,
-                onSearch = onSearch,
+                onSearch = { currentQuery ->
+                    if (searchState is EventSearchState.Success && searchState.events.isNotEmpty()) {
+                        onSearch(currentQuery)
+                    }
+                },
                 expanded = isExpanded,
                 onExpandedChange = onActiveChange,
                 placeholder = {
@@ -94,6 +96,7 @@ fun EventSearchBar(
                     } else {
                         Icon(
                             imageVector = Icons.Filled.Search,
+                            tint = MaterialTheme.colorScheme.tertiary,
                             contentDescription = "Buscar eventos",
                         )
                     }
@@ -141,83 +144,112 @@ fun EventSearchBar(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = paddingSize),
+                .shadow(
+                    elevation = 24.dp,
+                    shape = SearchBarDefaults.inputFieldShape,
+                    clip = false,
+                ).padding(horizontal = paddingSize),
     ) {
-        when (searchState) {
-            EventSearchState.Idle -> {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = "Buscar eventos",
-                        modifier =
-                            Modifier
-                                .padding(16.dp)
-                                .align(Alignment.Center),
-                    )
+        AnimatedContent(
+            targetState = searchState,
+            contentKey = { state ->
+                when (state) {
+                    EventSearchState.Idle -> "idle"
+                    EventSearchState.Loading -> "loading"
+                    is EventSearchState.Success -> {
+                        if (state.events.isEmpty()) {
+                            "success_empty"
+                        } else {
+                            "success_with_results"
+                        }
+                    }
+                    is EventSearchState.Error -> "error"
                 }
-            }
-            EventSearchState.Loading -> {
-                Box(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center),
-                    )
-                }
-            }
-            is EventSearchState.Success -> {
-                if (searchState.events.isEmpty()) {
+            },
+        ) { searchState ->
+            when (searchState) {
+                EventSearchState.Idle -> {
                     Box(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "No se encontraron CleanUps con ese nombre",
+                            text = "Buscar eventos",
                             modifier =
                                 Modifier
                                     .padding(16.dp)
                                     .align(Alignment.Center),
                         )
                     }
-                } else {
-                    Column(
+                }
+
+                EventSearchState.Loading -> {
+                    Box(
                         modifier =
                             Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 16.dp),
+                                .fillMaxWidth()
+                                .padding(16.dp),
                     ) {
-                        AnimatedVisibility(
-                            visible = searchState.events.size > 1 && searchUiState.currentQuery.isNotEmpty(),
-                            enter =
-                                expandVertically(
-                                    animationSpec = tween(durationMillis = 170),
-                                ),
-                            exit =
-                                shrinkVertically(
-                                    animationSpec = tween(durationMillis = 170),
-                                ),
-                        ) {
-                            Card(
-                                onClick = { onSearch(searchUiState.currentQuery) },
-                                modifier = Modifier.fillMaxWidth(),
-                            ) {
-                                Text(
-                                    text =
-                                        buildAnnotatedString {
-                                            append("Mostrar resultados para '")
-                                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                                                append(searchUiState.currentQuery)
-                                            }
-                                            append("' en el mapa.")
-                                        },
-                                    textAlign = TextAlign.Center,
-                                    modifier =
-                                        Modifier
-                                            .padding(8.dp)
-                                            .fillMaxWidth(),
-                                )
-                            }
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.Center),
+                        )
+                    }
+                }
+
+                is EventSearchState.Success -> {
+                    if (searchState.events.isEmpty()) {
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                text = "No se encontraron CleanUps con ese nombre",
+                                modifier =
+                                    Modifier
+                                        .padding(16.dp)
+                                        .align(Alignment.Center),
+                            )
                         }
-                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    } else {
+                        LazyColumn(
+                            modifier =
+                                Modifier
+                                    .fillMaxSize()
+                                    .padding(horizontal = 8.dp),
+                        ) {
+                            item {
+                                AnimatedVisibility(
+                                    visible = searchState.events.size > 1 && searchState.currentQuery.isNotEmpty(),
+                                    enter = expandVertically(animationSpec = tween(durationMillis = 170)),
+                                    exit = shrinkVertically(animationSpec = tween(durationMillis = 170)),
+                                ) {
+                                    Card(
+                                        onClick = { onSearch(searchState.currentQuery) },
+                                        colors =
+                                            CardDefaults.cardColors(
+                                                containerColor =
+                                                    MaterialTheme.colorScheme.surfaceContainer.copy(
+                                                        alpha = 0.7f,
+                                                    ),
+                                            ),
+                                        modifier =
+                                            Modifier
+                                                .padding(8.dp)
+                                                .fillMaxWidth(),
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.padding(8.dp),
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Filled.LocationOn,
+                                                contentDescription = "Buscar eventos",
+                                                tint = MaterialTheme.colorScheme.secondary,
+                                                modifier = Modifier.padding(4.dp),
+                                            )
+                                            Text(
+                                                text = "Mostrar resultados en el mapa",
+                                                modifier = Modifier.padding(4.dp),
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
                             item {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
@@ -228,10 +260,7 @@ fun EventSearchBar(
                                 ) {
                                     Text(
                                         text = if (searchState.events.size > 1) "Resultados" else "Resultado",
-                                        color =
-                                            MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                                                alpha = 0.7f,
-                                            ),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                         style = MaterialTheme.typography.bodySmall,
                                         modifier = Modifier.padding(horizontal = 8.dp),
                                     )
@@ -242,30 +271,31 @@ fun EventSearchBar(
                                 }
                             }
 
-                            items(searchState.events) { event ->
+                            items(items = searchState.events, key = { it.id }) { event ->
                                 Text(
                                     text = event.title,
                                     modifier =
                                         Modifier
                                             .fillMaxWidth()
                                             .clickable { onSuggestionSelected(event) }
-                                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                                            .padding(8.dp),
                                 )
                             }
                         }
                     }
                 }
-            }
-            is EventSearchState.Error -> {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    searchState.message?.let {
-                        Text(
-                            text = it,
-                            modifier =
-                                Modifier
-                                    .padding(16.dp)
-                                    .align(Alignment.Center),
-                        )
+
+                is EventSearchState.Error -> {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        searchState.message?.let {
+                            Text(
+                                text = it,
+                                modifier =
+                                    Modifier
+                                        .padding(16.dp)
+                                        .align(Alignment.Center),
+                            )
+                        }
                     }
                 }
             }

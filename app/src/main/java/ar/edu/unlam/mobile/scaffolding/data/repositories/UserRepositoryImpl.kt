@@ -4,7 +4,7 @@ import ar.edu.unlam.mobile.scaffolding.data.mapper.toUser
 import ar.edu.unlam.mobile.scaffolding.data.model.UserEntity
 import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
 import ar.edu.unlam.mobile.scaffolding.domain.user.repositories.UserRepository
-import ar.edu.unlam.mobile.scaffolding.domain.utils.Resource
+import ar.edu.unlam.mobile.scaffolding.utils.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
