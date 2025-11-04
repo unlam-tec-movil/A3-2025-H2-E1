@@ -14,10 +14,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.tooling.preview.Preview
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,7 +26,7 @@ fun ConfirmParticipationScreen(
     eventPlace: String = "sin informacion",
     onBackClick: () -> Unit = {},
     onAddToCalendarClick: () -> Unit = {},
-    onParticipateClick: () -> Unit = {}
+    onParticipateClick: () -> Unit = {},
 ) {
     Scaffold(
         topBar = {
@@ -38,21 +37,23 @@ fun ConfirmParticipationScreen(
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White,
-                    titleContentColor = Color.Black,
-                    navigationIconContentColor = Color.Black
-                )
+                colors =
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.White,
+                        titleContentColor = Color.Black,
+                        navigationIconContentColor = Color.Black,
+                    ),
             )
-        }
+        },
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .padding(horizontal = 24.dp),
+            modifier =
+                Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top)
+            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
         ) {
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -61,41 +62,42 @@ fun ConfirmParticipationScreen(
                 imageVector = Icons.Default.CheckCircle,
                 contentDescription = "Confirmación",
                 tint = Color(0xFF4CAF50),
-                modifier = Modifier.size(96.dp)
+                modifier = Modifier.size(96.dp),
             )
 
             // descripcion
             Text(
-                text = "Compruebe los detalles del evento para confirmar su participación. " +
+                text =
+                    "Compruebe los detalles del evento para confirmar su participación. " +
                         "Apreciamos su esfuerzo para mantener limpia nuestra comunidad.",
                 fontSize = 14.sp,
                 color = Color.Gray,
                 textAlign = TextAlign.Center,
-                lineHeight = 18.sp
+                lineHeight = 18.sp,
             )
 
             Text(
                 text = eventName,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
-                color = Color.Black
+                color = Color.Black,
             )
 
             //  Card con fecha y lugar
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF7F7F7))
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFF7F7F7)),
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.CalendarToday,
                             contentDescription = "Fecha",
-                            tint = Color(0xFF616161)
+                            tint = Color(0xFF616161),
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(text = eventDate, color = Color.Black)
@@ -105,7 +107,7 @@ fun ConfirmParticipationScreen(
                         Icon(
                             imageVector = Icons.Default.Place,
                             contentDescription = "Lugar",
-                            tint = Color(0xFF616161)
+                            tint = Color(0xFF616161),
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(text = eventPlace, color = Color.Black)
@@ -117,15 +119,16 @@ fun ConfirmParticipationScreen(
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 OutlinedButton(
                     onClick = onAddToCalendarClick,
                     modifier = Modifier.fillMaxWidth(0.7f),
                     shape = RoundedCornerShape(24.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color(0xFF4CAF50)
-                    )
+                    colors =
+                        ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color(0xFF4CAF50),
+                        ),
                 ) {
                     Text("Agregar al calendario")
                 }
@@ -134,10 +137,11 @@ fun ConfirmParticipationScreen(
                     onClick = onParticipateClick,
                     modifier = Modifier.fillMaxWidth(0.7f),
                     shape = RoundedCornerShape(24.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4CAF50),
-                        contentColor = Color.White
-                    )
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF4CAF50),
+                            contentColor = Color.White,
+                        ),
                 ) {
                     Text("Participar")
                 }
@@ -145,7 +149,6 @@ fun ConfirmParticipationScreen(
         }
     }
 }
-
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 640)
 @Composable
@@ -156,6 +159,6 @@ fun ConfirmParticipationScreenPreview() {
         eventPlace = "Playa Grande, Mar del Plata",
         onBackClick = {},
         onAddToCalendarClick = {},
-        onParticipateClick = {}
+        onParticipateClick = {},
     )
 }

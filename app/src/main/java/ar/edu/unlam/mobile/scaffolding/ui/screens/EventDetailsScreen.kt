@@ -113,10 +113,12 @@ fun EventDetailsScreen(
                 width = 200.dp,
                 onClick = {
                     //  fecha
-                    val eventDateFormatted = java.text.SimpleDateFormat(
-                        "EEEE d 'de' MMMM, HH:mm 'hs'",
-                        java.util.Locale("es", "AR")
-                    ).format(java.util.Date(event.dateTime))
+                    val eventDateFormatted =
+                        java.text
+                            .SimpleDateFormat(
+                                "EEEE d 'de' MMMM, HH:mm 'hs'",
+                                java.util.Locale("es", "AR"),
+                            ).format(java.util.Date(event.dateTime))
 
                     // texto  con la ubicación (lat/lng)
                     val eventPlace = "Ubicación: ${event.lat}, ${event.lng}"
@@ -127,7 +129,7 @@ fun EventDetailsScreen(
                     val encodedPlace = java.net.URLEncoder.encode(eventPlace, "UTF-8")
 
                     navController?.navigate(
-                        "confirmParticipation/${event.id}/$encodedName/$encodedDate/$encodedPlace"
+                        "confirmParticipation/${event.id}/$encodedName/$encodedDate/$encodedPlace",
                     )
                 },
             )

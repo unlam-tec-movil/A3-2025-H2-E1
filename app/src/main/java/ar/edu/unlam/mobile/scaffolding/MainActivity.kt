@@ -32,6 +32,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import ar.edu.unlam.mobile.scaffolding.ui.components.BottomBar
+import ar.edu.unlam.mobile.scaffolding.ui.components.ConfirmParticipationScreen
 import ar.edu.unlam.mobile.scaffolding.ui.components.NavigationItem
 import ar.edu.unlam.mobile.scaffolding.ui.components.SnackbarVisualsWithError
 import ar.edu.unlam.mobile.scaffolding.ui.screens.EventDetailsScreen
@@ -44,7 +45,6 @@ import ar.edu.unlam.mobile.scaffolding.ui.screens.login.LoginScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.register.RegisterScreen
 import ar.edu.unlam.mobile.scaffolding.ui.theme.ScaffoldingV2Theme
 import dagger.hilt.android.AndroidEntryPoint
-import ar.edu.unlam.mobile.scaffolding.ui.components.ConfirmParticipationScreen
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -201,12 +201,13 @@ fun MainScreen() {
             }
             composable(
                 route = "confirmParticipation/{eventId}/{eventName}/{eventDate}/{eventPlace}",
-                arguments = listOf(
-                    navArgument("eventId") { type = NavType.StringType },
-                    navArgument("eventName") { type = NavType.StringType },
-                    navArgument("eventDate") { type = NavType.StringType },
-                    navArgument("eventPlace") { type = NavType.StringType },
-                )
+                arguments =
+                    listOf(
+                        navArgument("eventId") { type = NavType.StringType },
+                        navArgument("eventName") { type = NavType.StringType },
+                        navArgument("eventDate") { type = NavType.StringType },
+                        navArgument("eventPlace") { type = NavType.StringType },
+                    ),
             ) { navBackStackEntry ->
                 val eventName = navBackStackEntry.arguments?.getString("eventName") ?: "Evento"
                 val eventDate = navBackStackEntry.arguments?.getString("eventDate") ?: "Sin fecha"
@@ -218,7 +219,7 @@ fun MainScreen() {
                     eventPlace = eventPlace,
                     onBackClick = { controller.popBackStack() },
                     onAddToCalendarClick = { /* TODO */ },
-                    onParticipateClick = {/*todo*/  }
+                    onParticipateClick = { /*todo*/ },
                 )
             }
         }
