@@ -44,6 +44,7 @@ import ar.edu.unlam.mobile.scaffolding.ui.screens.login.LoginScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.register.RegisterScreen
 import ar.edu.unlam.mobile.scaffolding.ui.theme.ScaffoldingV2Theme
 import dagger.hilt.android.AndroidEntryPoint
+import ar.edu.unlam.mobile.scaffolding.ui.components.ConfirmParticipationScreen
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -196,6 +197,28 @@ fun MainScreen() {
                 RegisterScreen(
                     viewModel = hiltViewModel(),
                     navController = controller,
+                )
+            }
+            composable(
+                route = "confirmParticipation/{eventId}/{eventName}/{eventDate}/{eventPlace}",
+                arguments = listOf(
+                    navArgument("eventId") { type = NavType.StringType },
+                    navArgument("eventName") { type = NavType.StringType },
+                    navArgument("eventDate") { type = NavType.StringType },
+                    navArgument("eventPlace") { type = NavType.StringType },
+                )
+            ) { navBackStackEntry ->
+                val eventName = navBackStackEntry.arguments?.getString("eventName") ?: "Evento"
+                val eventDate = navBackStackEntry.arguments?.getString("eventDate") ?: "Sin fecha"
+                val eventPlace = navBackStackEntry.arguments?.getString("eventPlace") ?: "Sin lugar"
+
+                ConfirmParticipationScreen(
+                    eventName = eventName,
+                    eventDate = eventDate,
+                    eventPlace = eventPlace,
+                    onBackClick = { controller.popBackStack() },
+                    onAddToCalendarClick = { /* TODO */ },
+                    onParticipateClick = {/*todo*/  }
                 )
             }
         }
