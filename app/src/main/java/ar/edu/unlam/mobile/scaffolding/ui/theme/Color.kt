@@ -21,3 +21,4 @@ val TertiaryBlueLight = Color(0xFF0078D4)
 val White = Color(0xFFFFFFFF)
 
 val Black = Color(0xFF000000)
+val PrimaryGreen = Color(0xFF4CAF50) // verde Material clásico

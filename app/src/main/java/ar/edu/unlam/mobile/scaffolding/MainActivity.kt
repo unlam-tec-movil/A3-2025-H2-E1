@@ -34,6 +34,7 @@ import androidx.navigation.navArgument
 import ar.edu.unlam.mobile.scaffolding.ui.components.BottomBar
 import ar.edu.unlam.mobile.scaffolding.ui.components.NavigationItem
 import ar.edu.unlam.mobile.scaffolding.ui.components.SnackbarVisualsWithError
+import ar.edu.unlam.mobile.scaffolding.ui.screens.ConfirmParticipationScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.EventDetailsScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.EventListScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.FormScreen
@@ -196,6 +197,29 @@ fun MainScreen() {
                 RegisterScreen(
                     viewModel = hiltViewModel(),
                     navController = controller,
+                )
+            }
+            composable(
+                route = "confirmParticipation/{eventId}/{eventName}/{eventDate}/{eventPlace}",
+                arguments =
+                    listOf(
+                        navArgument("eventId") { type = NavType.StringType },
+                        navArgument("eventName") { type = NavType.StringType },
+                        navArgument("eventDate") { type = NavType.StringType },
+                        navArgument("eventPlace") { type = NavType.StringType },
+                    ),
+            ) { navBackStackEntry ->
+                val eventName = navBackStackEntry.arguments?.getString("eventName") ?: "Evento"
+                val eventDate = navBackStackEntry.arguments?.getString("eventDate") ?: "Sin fecha"
+                val eventPlace = navBackStackEntry.arguments?.getString("eventPlace") ?: "Sin lugar"
+
+                ConfirmParticipationScreen(
+                    eventName = eventName,
+                    eventDate = eventDate,
+                    eventPlace = eventPlace,
+                    onBackClick = { controller.popBackStack() },
+                    onAddToCalendarClick = { /* TODO */ },
+                    onParticipateClick = { /*todo*/ },
                 )
             }
         }
