@@ -22,6 +22,7 @@ mapsCompose = "6.1.0"
 mockitoVersion = "5.3.1"
 mockitoAndroidVersion = "5.14.2"
 testCore = "1.6.1"
+animation = "1.9.4"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -51,6 +52,7 @@ play-services-location = { group = "com.google.android.gms", name = "play-servic
 
 org-mockito-kotlin = { group = "org.mockito.kotlin", name = "mockito-kotlin", version.ref = "mockitoVersion" }
 org-mockito-android = { group = "org.mockito", name = "mockito-android", version.ref = "mockitoAndroidVersion" }
+androidx-compose-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "animation" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
