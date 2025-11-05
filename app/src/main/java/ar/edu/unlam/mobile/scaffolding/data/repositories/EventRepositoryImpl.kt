@@ -133,8 +133,8 @@ class EventRepositoryImpl
                     description = "Limpieza post concierto de rock con bandas locales e internacionales.",
                     dateTime = System.currentTimeMillis(),
                     imageUrl = "https://cdn.pixabay.com/photo/2014/07/09/12/17/live-concert-388160_1280.jpg",
-                    lat = -34.5508002,
-                    lng = -58.4548101,
+                    lat = -34.550773663334006,
+                    lng = -58.45480473855864,
                     beforeImageUrl = listOf(),
                     afterImageUrl = null,
                     members = listOf(mockUsers[1]),
@@ -142,7 +142,102 @@ class EventRepositoryImpl
                     saved = false,
                     participating = false,
                 ),
+                EventEntity(
+                    eventId = "5",
+                    title = "Mantenimiento en el Rosedal de Palermo",
+                    description = "Jornada de cuidado de los rosales y limpieza de los caminos del Rosedal.",
+                    dateTime = System.currentTimeMillis() + 86400000 * 3, // En 3 días
+                    lat = -34.5701,
+                    lng = -58.4115,
+                    imageUrl = "https://bichosdecampo.com/wp-content/uploads/2023/08/17-1.jpg",
+                    beforeImageUrl = listOf(),
+                    afterImageUrl = null,
+                    members = listOf(mockUsers[3], mockUsers[4]),
+                    creator = mockUsers[0],
+                    saved = false,
+                    participating = false,
+                ),
+                EventEntity(
+                    eventId = "6",
+                    title = "Limpieza en el Jardín Japonés",
+                    description = "Ayudemos a mantener la belleza del Jardín Japonés, recogiendo hojas y basura menor.",
+                    dateTime = System.currentTimeMillis() + 86400000 * 5, // En 5 días
+                    lat = -34.5752,
+                    lng = -58.4124,
+                    imageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzjpTqofLlQ1aciko3AWc3a23ZVn-tPtZRSw&s",
+                    beforeImageUrl = listOf(),
+                    afterImageUrl = null,
+                    members = listOf(mockUsers[0], mockUsers[2], mockUsers[4]),
+                    creator = mockUsers[1],
+                    saved = true,
+                    participating = true,
+                ),
+                EventEntity(
+                    eventId = "7",
+                    title = "Clasificación de residuos en la Reserva Ecológica",
+                    description = "Evento educativo para aprender y practicar la clasificación de residuos en la Costanera Sur.",
+                    dateTime = System.currentTimeMillis() + 86400000 * 10, // En 10 días
+                    lat = -34.6175,
+                    lng = -58.3533,
+                    imageUrl = "https://www.reservacostanera.com.ar/wp-content/uploads/2016/10/basura-NGG-20-10-16.jpg",
+                    beforeImageUrl = listOf(),
+                    afterImageUrl = null,
+                    members = listOf(mockUsers[0]),
+                    creator = mockUsers[4],
+                    saved = false,
+                    participating = false,
+                ),
+                EventEntity(
+                    eventId = "8",
+                    title = "Decoración y limpieza del Barrio Chino",
+                    description = "Preparativos para el festival de la luna, decorando y limpiando las calles principales.",
+                    dateTime = System.currentTimeMillis() + 86400000 * 4, // En 4 días
+                    lat = -34.5458,
+                    lng = -58.4552,
+                    imageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAGDxzmN9kPnzEWZyQdkVjUpoK_AA-Noy_7Q&s",
+                    beforeImageUrl =
+                        listOf(
+                            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAGDxzmN9kPnzEWZyQdkVjUpoK_AA-Noy_7Q&s",
+                        ),
+                    afterImageUrl = null,
+                    members = listOf(mockUsers[1], mockUsers[2], mockUsers[3]),
+                    creator = mockUsers[0],
+                    saved = false,
+                    participating = true,
+                ),
+                EventEntity(
+                    eventId = "9",
+                    title = "Cuidado del césped en el Planetario",
+                    description = "Ayudemos a mantener el campo verde alrededor del Planetario Galileo Galilei.",
+                    dateTime = System.currentTimeMillis() + 86400000 * 6, // En 6 días
+                    lat = -34.5732,
+                    lng = -58.4116,
+                    imageUrl = "https://media.jardineriadelvalles.com/category/cuidados-del-cesped-1024x1024.jpeg?width=1200",
+                    beforeImageUrl =
+                        listOf(
+                            "https://media.jardineriadelvalles.com/category/cuidados-del-cesped-1024x1024.jpeg?width=1200",
+                        ),
+                    afterImageUrl = null,
+                    members = listOf(mockUsers[2], mockUsers[4]),
+                    creator = mockUsers[3],
+                    saved = true,
+                    participating = false,
+                ),
             )
+
+        override suspend fun getMapEvents(): Flow<Resource<List<SuggestedEvent>>> =
+            flow {
+                val suggestedEvents =
+                    mockEvents.map { values ->
+                        SuggestedEventEntity(
+                            id = values.eventId,
+                            title = values.title,
+                            lat = values.lat,
+                            lng = values.lng,
+                        ).toSuggestedEvent()
+                    }
+                emit(Resource.Success(suggestedEvents))
+            }
 
         override suspend fun getSuggestedEvent(query: String): Flow<Resource<List<SuggestedEvent>>> =
             flow {

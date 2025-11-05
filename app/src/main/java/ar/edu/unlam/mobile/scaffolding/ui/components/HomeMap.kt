@@ -7,8 +7,6 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -16,6 +14,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
+import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -25,19 +24,12 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 
-//  clase de datos para los eventos
-data class Evento(
-    val nombre: String,
-    val lat: Double,
-    val lon: Double,
-)
-
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun NearbyMap(
-    nearbyEvents: List<Evento>,
+    nearbyEvents: List<SuggestedEvent>,
     modifier: Modifier = Modifier,
-    onEventoClick: (Evento) -> Unit = {}, //  callback al hacer clic en un evento
+    onEventoClick: (SuggestedEvent) -> Unit = {}, //  callback al hacer clic en un evento
 ) {
     val context = LocalContext.current
     val permissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -103,8 +95,8 @@ fun NearbyMap(
         nearbyEvents.forEach { evento ->
             val marker =
                 Marker(mv).apply {
-                    position = GeoPoint(evento.lat, evento.lon)
-                    title = evento.nombre
+                    position = GeoPoint(evento.lat, evento.lng)
+                    title = evento.title
                     setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                     // esta linea muestra un error en R  porque es un icono interno de OSMDroid
                     icon = ContextCompat.getDrawable(context, org.osmdroid.library.R.drawable.marker_default)
@@ -136,7 +128,7 @@ private fun getCurrentLocation(context: Context): Location? {
         ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
 }
 
-// pantalla mapa: manejo del componente desde la implementacion
+/* pantalla mapa: manejo del componente desde la implementacion
 @Composable
 fun MapScreen() {
     //  Lista de eventos en Buenos Aires
@@ -172,4 +164,4 @@ fun MapScreen() {
             text = { Text("Detalles próximamente...") },
         )
     }
-}
+}*/

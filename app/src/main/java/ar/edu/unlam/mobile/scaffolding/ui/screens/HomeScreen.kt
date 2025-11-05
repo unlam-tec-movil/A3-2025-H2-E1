@@ -20,13 +20,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.ui.components.AnimatedEventCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.Event
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventSearchBar
-import ar.edu.unlam.mobile.scaffolding.ui.components.Evento
 import ar.edu.unlam.mobile.scaffolding.ui.components.NearbyMap
 
 const val HOME_SCREEN_ROUTE = "home"
@@ -39,17 +40,10 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
     val searchBarState by viewModel.searchUiState.collectAsStateWithLifecycle()
 
-    var eventoSeleccionado by remember { mutableStateOf<Evento?>(null) }
+    // cambiar por un EventList despues, y que sea un valor del uiState de paso
+    var eventoSeleccionado by remember { mutableStateOf<SuggestedEvent?>(null) }
 
-    // TODO Traer una lista de "suggestedEvents" del viewmodel llamando al repositorio
-    // Lista fija de eventos de prueba
-    val eventos =
-        listOf(
-            Evento("Concierto de Rock", -34.5508002, -58.4548101),
-            Evento("Feria de Libro", -34.641347, -58.561187),
-        )
-
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = modifier.fillMaxSize()) {
         when (val helloState = uiState.helloMessageState) {
             MessageUIState.Loading -> {
                 CircularProgressIndicator(
@@ -57,21 +51,46 @@ fun HomeScreen(
                 )
             }
             is MessageUIState.Success -> {
-                //  Mapa de fondo con los 2 eventos
                 NearbyMap(
-                    nearbyEvents = eventos,
+                    nearbyEvents = uiState.eventList,
                     modifier = Modifier.matchParentSize(),
                     onEventoClick = { eventoSeleccionado = it },
                 )
 
                 //  Contenido encima del mapa (barra de búsqueda y saludo)
-                Column(modifier = Modifier.fillMaxWidth()) {
+                // TODO llamar al "eventList" con la id del "suggestedEvent" del repositorio
+                // De momento solo muestra los datos de suggestedEvent
+                eventoSeleccionado?.let { evento ->
+                    val eventCard =
+                        Event(
+                            id = evento.id,
+                            name = evento.title,
+                            dateTime = "01/12/2025 - 20:00 hs",
+                            image1 = "https://picsum.photos/300/200",
+                            image2 = "https://picsum.photos/301/200",
+                            creatorId = 1,
+                            lat = evento.lat,
+                            lng = evento.lng,
+                        )
+
+                    AnimatedEventCard(eventCard = eventCard, onClose = { eventoSeleccionado = null })
+                }
+
+                Column(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .zIndex(20f),
+                ) {
                     // barra de búsqueda
                     EventSearchBar(
                         searchUiState = searchBarState,
                         onSearchQueryChange = viewModel::onSearchQueryChange,
                         onSearch = viewModel::onSearch,
-                        onSuggestionSelected = { event -> viewModel.onEventSelected(event) },
+                        onSuggestionSelected = { event ->
+                            viewModel.onEventSelected(event)
+                            eventoSeleccionado = event
+                        },
                         onActiveChange = viewModel::onActiveChange,
                     )
                     AnimatedVisibility(searchBarState.lastQuery.isNotEmpty()) {
@@ -84,30 +103,16 @@ fun HomeScreen(
                             modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
                         ) {
                             Text(
-                                text = "Resultado de búsqueda",
+                                text =
+                                    if (uiState.eventList.size > 1) {
+                                        "Resultados de búsqueda: ${uiState.eventList.size}"
+                                    } else {
+                                        "Resultado de búsqueda"
+                                    },
                                 modifier = Modifier.padding(horizontal = 6.dp),
                             )
                         }
                     }
-                }
-
-                // Primero traer una lista de "suggestedEvents" del repositorio. TODO anterior
-                // TODO llamar al eventList e implementar C3 EventHomeCard
-                // Diálogo al tocar un evento de prueba
-                eventoSeleccionado?.let { evento ->
-                    val eventCard =
-                        Event(
-                            id = "id-${evento.nombre}",
-                            name = evento.nombre,
-                            dateTime = "01/12/2025 - 20:00 hs",
-                            image1 = "https://picsum.photos/300/200",
-                            image2 = "https://picsum.photos/301/200",
-                            creatorId = 1,
-                            lat = evento.lat,
-                            lng = evento.lon,
-                        )
-
-                    AnimatedEventCard(eventCard = eventCard, onClose = { eventoSeleccionado = null })
                 }
             }
             is MessageUIState.Error -> {
