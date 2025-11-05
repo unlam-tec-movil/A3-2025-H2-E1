@@ -1,6 +1,7 @@
 package ar.edu.unlam.mobile.scaffolding.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,8 +27,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.ui.components.AnimatedEventCard
+import ar.edu.unlam.mobile.scaffolding.ui.components.CreateEventPopUp
 import ar.edu.unlam.mobile.scaffolding.ui.components.Event
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventSearchBar
+import ar.edu.unlam.mobile.scaffolding.ui.components.FloatingButtons
 import ar.edu.unlam.mobile.scaffolding.ui.components.NearbyMap
 
 const val HOME_SCREEN_ROUTE = "home"
@@ -43,13 +46,19 @@ fun HomeScreen(
     // cambiar por un EventList despues, y que sea un valor del uiState de paso
     var eventoSeleccionado by remember { mutableStateOf<SuggestedEvent?>(null) }
 
-    Box(modifier = modifier.fillMaxSize()) {
+    var showCreateEventDialog by remember { mutableStateOf(false) }
+
+    // este seguramente tambien terminen en uiState
+    var isSessionActive by remember { mutableStateOf(false) }
+
+    Box(modifier = Modifier.fillMaxSize()) {
         when (val helloState = uiState.helloMessageState) {
             MessageUIState.Loading -> {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
                 )
             }
+
             is MessageUIState.Success -> {
                 NearbyMap(
                     nearbyEvents = uiState.eventList,
@@ -114,13 +123,41 @@ fun HomeScreen(
                         }
                     }
                 }
+
+                Column(
+                    modifier =
+                        Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(16.dp, bottom = 85.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalAlignment = Alignment.Start,
+                ) {
+                    FloatingButtons(
+                        isSessionActive = isSessionActive,
+                        onClickCamera = { },
+                        onClickAddEvent = { showCreateEventDialog = true },
+                        onClickStartSession = {
+                            isSessionActive = !isSessionActive
+                        },
+                    )
+                }
+                if (showCreateEventDialog) {
+                    CreateEventPopUp(
+                        onDismiss = { showCreateEventDialog = false },
+                        onConfirm = { name, location, dateTime, imageUri ->
+                            viewModel.createEvent(name, location, dateTime, imageUri)
+                            showCreateEventDialog = false
+                        },
+                    )
+                }
             }
+
             is MessageUIState.Error -> {
                 Text(
                     text = helloState.message,
                     modifier =
                         Modifier
-                            .padding(16.dp)
+                            .padding(96.dp)
                             .align(Alignment.Center),
                 )
             }

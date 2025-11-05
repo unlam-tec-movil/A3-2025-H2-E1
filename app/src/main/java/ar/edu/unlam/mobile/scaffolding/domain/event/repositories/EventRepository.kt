@@ -16,4 +16,6 @@ interface EventRepository {
     suspend fun getEventList(id: Int): Flow<Resource<EventList>>
 
     suspend fun getEvent(id: Int): Flow<Resource<Event>>
+
+    suspend fun createEvent(event: Event): Resource<Unit>
 }

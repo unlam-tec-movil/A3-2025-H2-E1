@@ -280,4 +280,8 @@ class EventRepositoryImpl
         override suspend fun getEvent(id: Int): Flow<Resource<Event>> {
             TODO("Not yet implemented")
         }
+
+        override suspend fun createEvent(event: Event): Resource<Unit> {
+            TODO("Not yet implemented")
+        }
     }

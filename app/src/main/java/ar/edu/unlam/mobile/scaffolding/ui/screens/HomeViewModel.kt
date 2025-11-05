@@ -1,11 +1,15 @@
 package ar.edu.unlam.mobile.scaffolding.ui.screens
 
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
+import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.CreateEventUseCase
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetMapEventsUseCase
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetSuggestedEventsUseCase
+import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
 import ar.edu.unlam.mobile.scaffolding.ui.common.EventSearchState
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.utils.Resource
@@ -23,6 +27,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.util.UUID
 import javax.inject.Inject
 
 data class HomeUIState(
@@ -42,8 +49,9 @@ data class SearchUIState(
 class HomeViewModel
     @Inject
     constructor(
-        private val getAutocompleteEvent: GetSuggestedEventsUseCase,
         private val getMapEvent: GetMapEventsUseCase,
+        private val getAutocompleteEvent: GetSuggestedEventsUseCase,
+        private val createEventUseCase: CreateEventUseCase,
     ) : ViewModel() {
         // Mutable State Flow contiene un objeto de estado mutable. Simplifica la operación de
         // actualización de información y de manejo de estados de una aplicación: Cargando, Error, Éxito
@@ -137,7 +145,10 @@ class HomeViewModel
                                     _searchUiState.update {
                                         it.copy(searchState = EventSearchState.Error(result.message))
                                     }
-                                    Log.e("HomeViewModel", "Error al obtener sugerencias: ${result.message}")
+                                    Log.e(
+                                        "HomeViewModel",
+                                        "Error al obtener sugerencias: ${result.message}",
+                                    )
                                 }
                             }
                         }
@@ -200,5 +211,44 @@ class HomeViewModel
             // TODO Abrir C3: EventHomeCard o mostrar en el mapa el evento seleccionado
             Log.d("HomeViewModel", "onEventSelected: ${event.title}")
             Log.d("HomeViewModel", "onEventSelected: ${event.id}, ${event.lat}, ${event.lng}")
+        }
+
+        fun createEvent(
+            title: String,
+            location: String,
+            dateTime: LocalDateTime,
+            imageUri: Uri?,
+        ) {
+            viewModelScope.launch {
+                val timestamp = dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+                val imageString = imageUri?.toString()
+
+                val user =
+                    User(
+                        id = 0L,
+                        name = "",
+                        avatarUrl = null,
+                        description = null,
+                    )
+
+                val newEvent =
+                    Event(
+                        id = UUID.randomUUID().toString(),
+                        title = title,
+                        description = "",
+                        dateTime = timestamp,
+                        lat = 0.0,
+                        lng = 0.0,
+                        image = imageString,
+                        beforeImage = emptyList(),
+                        afterImage = null,
+                        members = emptyList(),
+                        creator = user,
+                        saved = false,
+                        participating = false,
+                    )
+                createEventUseCase(newEvent)
+            }
         }
     }
