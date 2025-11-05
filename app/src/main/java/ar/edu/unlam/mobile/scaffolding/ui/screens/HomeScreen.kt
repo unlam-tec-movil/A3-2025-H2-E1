@@ -1,6 +1,7 @@
 package ar.edu.unlam.mobile.scaffolding.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,9 +25,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.ui.components.AnimatedEventCard
+import ar.edu.unlam.mobile.scaffolding.ui.components.CreateEventPopUp
 import ar.edu.unlam.mobile.scaffolding.ui.components.Event
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventSearchBar
 import ar.edu.unlam.mobile.scaffolding.ui.components.Evento
+import ar.edu.unlam.mobile.scaffolding.ui.components.FloatingButtons
 import ar.edu.unlam.mobile.scaffolding.ui.components.NearbyMap
 
 const val HOME_SCREEN_ROUTE = "home"
@@ -40,6 +43,10 @@ fun HomeScreen(
     val searchBarState by viewModel.searchUiState.collectAsStateWithLifecycle()
 
     var eventoSeleccionado by remember { mutableStateOf<Evento?>(null) }
+
+    var showCreateEventDialog by remember { mutableStateOf(false) }
+
+    var isSessionActive by remember { mutableStateOf(false) }
 
     // TODO Traer una lista de "suggestedEvents" del viewmodel llamando al repositorio
     // Lista fija de eventos de prueba
@@ -56,6 +63,7 @@ fun HomeScreen(
                     modifier = Modifier.align(Alignment.Center),
                 )
             }
+
             is MessageUIState.Success -> {
                 //  Mapa de fondo con los 2 eventos
                 NearbyMap(
@@ -107,15 +115,45 @@ fun HomeScreen(
                             lng = evento.lon,
                         )
 
-                    AnimatedEventCard(eventCard = eventCard, onClose = { eventoSeleccionado = null })
+                    AnimatedEventCard(
+                        eventCard = eventCard,
+                        onClose = { eventoSeleccionado = null },
+                    )
+                }
+                Column(
+                    modifier =
+                        Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(16.dp, bottom = 85.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalAlignment = Alignment.Start,
+                ) {
+                    FloatingButtons(
+                        isSessionActive = isSessionActive,
+                        onClickCamera = { },
+                        onClickAddEvent = { showCreateEventDialog = true },
+                        onClickStartSession = {
+                            isSessionActive = !isSessionActive
+                        },
+                    )
+                }
+                if (showCreateEventDialog) {
+                    CreateEventPopUp(
+                        onDismiss = { showCreateEventDialog = false },
+                        onConfirm = { name, location, dateTime, imageUri ->
+                            viewModel.createEvent(name, location, dateTime, imageUri)
+                            showCreateEventDialog = false
+                        },
+                    )
                 }
             }
+
             is MessageUIState.Error -> {
                 Text(
                     text = helloState.message,
                     modifier =
                         Modifier
-                            .padding(16.dp)
+                            .padding(96.dp)
                             .align(Alignment.Center),
                 )
             }
