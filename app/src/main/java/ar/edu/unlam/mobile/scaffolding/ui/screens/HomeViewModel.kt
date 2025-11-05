@@ -2,7 +2,6 @@ package ar.edu.unlam.mobile.scaffolding.ui.screens
 
 import android.net.Uri
 import android.util.Log
-import androidx.compose.ui.geometry.isEmpty
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
@@ -10,7 +9,6 @@ import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.CreateEventUseCase
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetSuggestedEventUseCase
 import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
-import ar.edu.unlam.mobile.scaffolding.domain.utils.Resource
 import ar.edu.unlam.mobile.scaffolding.ui.common.EventSearchState
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.utils.Resource
