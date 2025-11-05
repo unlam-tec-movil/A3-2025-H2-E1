@@ -7,7 +7,8 @@ import androidx.lifecycle.viewModelScope
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.CreateEventUseCase
-import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetSuggestedEventUseCase
+import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetMapEventsUseCase
+import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetSuggestedEventsUseCase
 import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
 import ar.edu.unlam.mobile.scaffolding.ui.common.EventSearchState
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
@@ -48,7 +49,8 @@ data class SearchUIState(
 class HomeViewModel
     @Inject
     constructor(
-        private val getAutocompleteEvent: GetSuggestedEventUseCase,
+        private val getMapEvent: GetMapEventsUseCase,
+        private val getAutocompleteEvent: GetSuggestedEventsUseCase,
         private val createEventUseCase: CreateEventUseCase,
     ) : ViewModel() {
         // Mutable State Flow contiene un objeto de estado mutable. Simplifica la operación de
@@ -67,10 +69,34 @@ class HomeViewModel
         private val _searchUiState = MutableStateFlow(SearchUIState())
         val searchUiState = _searchUiState.asStateFlow()
 
+        private var mapEventJob: Job? = null
         private var searchEventJob: Job? = null
 
         init {
             _uiState.value = HomeUIState(helloMessageState = MessageUIState.Success("2b"))
+            fetchEvents()
+        }
+
+        private fun fetchEvents() {
+            mapEventJob?.cancel()
+            mapEventJob =
+                viewModelScope.launch {
+                    getMapEvent().collect { result ->
+                        when (result) {
+                            is Resource.Success -> {
+                                _uiState.update {
+                                    it.copy(eventList = result.data)
+                                }
+                            }
+
+                            is Resource.Error -> {
+                                _uiState.update {
+                                    it.copy(helloMessageState = MessageUIState.Error(result.message))
+                                }
+                            }
+                        }
+                    }
+                }
         }
 
         fun onSearchQueryChange(newQuery: String) {
@@ -166,7 +192,7 @@ class HomeViewModel
                     "onSearch: Mostrando ${_uiState.value.eventList.size} eventos en el mapa.",
                 )
             } else {
-                // TODO("Si se descarta el query se tienen que obtener los eventos de forma normal")
+                fetchEvents()
             }
         }
 
@@ -177,6 +203,9 @@ class HomeViewModel
                     currentQuery = event.title,
                     isExpanded = false,
                 )
+            }
+            _uiState.update { currentState ->
+                currentState.copy(eventList = listOf(event))
             }
             searchEventJob?.cancel()
             // TODO Abrir C3: EventHomeCard o mostrar en el mapa el evento seleccionado

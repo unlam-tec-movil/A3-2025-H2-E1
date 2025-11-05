@@ -44,9 +44,8 @@ import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.ui.common.EventSearchState
 import ar.edu.unlam.mobile.scaffolding.ui.screens.SearchUIState
 import ar.edu.unlam.mobile.scaffolding.ui.theme.ScaffoldingV2Theme
-import kotlinx.coroutines.FlowPreview
 
-@OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventSearchBar(
     searchUiState: SearchUIState,

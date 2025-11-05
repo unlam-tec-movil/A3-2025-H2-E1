@@ -26,7 +26,7 @@ fun AnimatedEventCard(
     val screenHeightPx = with(density) { screenHeightDp.toPx() }
 
     //  sube hasta la mitad de la pantalla
-    val finalPositionPx = screenHeightPx / 2
+    val finalPositionPx = screenHeightPx * 0.4f
 
     val offsetY = remember { Animatable(screenHeightPx) }
 

@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import javax.inject.Inject
 
-class GetSuggestedEventUseCase
+class GetSuggestedEventsUseCase
     @Inject
     constructor(
         private val repository: EventRepository,
