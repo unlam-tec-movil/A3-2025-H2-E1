@@ -24,8 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
-import ar.edu.unlam.mobile.scaffolding.ui.components.CreateEventPopUp
 import ar.edu.unlam.mobile.scaffolding.ui.components.AnimatedEventCard
+import ar.edu.unlam.mobile.scaffolding.ui.components.CreateEventPopUp
 import ar.edu.unlam.mobile.scaffolding.ui.components.Event
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventSearchBar
 import ar.edu.unlam.mobile.scaffolding.ui.components.Evento
@@ -115,7 +115,10 @@ fun HomeScreen(
                             lng = evento.lon,
                         )
 
-                    AnimatedEventCard(eventCard = eventCard, onClose = { eventoSeleccionado = null })
+                    AnimatedEventCard(
+                        eventCard = eventCard,
+                        onClose = { eventoSeleccionado = null },
+                    )
                 }
                 Column(
                     modifier =
