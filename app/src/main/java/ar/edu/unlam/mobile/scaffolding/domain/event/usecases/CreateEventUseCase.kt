@@ -2,7 +2,7 @@ package ar.edu.unlam.mobile.scaffolding.domain.event.usecases
 
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
 import ar.edu.unlam.mobile.scaffolding.domain.event.repositories.EventRepository
-import ar.edu.unlam.mobile.scaffolding.domain.utils.Resource
+import ar.edu.unlam.mobile.scaffolding.utils.Resource
 import jakarta.inject.Inject
 
 class CreateEventUseCase
