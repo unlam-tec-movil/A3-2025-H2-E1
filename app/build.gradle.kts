@@ -74,6 +74,7 @@ dependencies {
     implementation(libs.androidx.material.icon)
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
+    implementation(libs.androidx.compose.animation)
 
     // Testing
     testImplementation(libs.junit)

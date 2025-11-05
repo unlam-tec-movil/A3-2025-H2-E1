@@ -27,6 +27,9 @@ import ar.edu.unlam.mobile.scaffolding.ui.components.PrimaryButton
 import ar.edu.unlam.mobile.scaffolding.ui.components.TimePlaceEventCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.TopBar
 import coil.compose.AsyncImage
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -108,7 +111,27 @@ fun EventDetailsScreen(
             PrimaryButton(
                 "Participar",
                 width = 200.dp,
-                onClick = { /*TODO*/ },
+                onClick = {
+                    //  fecha
+                    val eventDateFormatted =
+                        java.text
+                            .SimpleDateFormat(
+                                "EEEE d 'de' MMMM, HH:mm 'hs'",
+                                java.util.Locale("es", "AR"),
+                            ).format(java.util.Date(event.dateTime))
+
+                    // texto  con la ubicación (lat/lng)
+                    val eventPlace = "Ubicación: ${event.lat}, ${event.lng}"
+
+                    // para que la ruta no falle con espacios o acentos
+                    val encodedName = java.net.URLEncoder.encode(event.title, "UTF-8")
+                    val encodedDate = java.net.URLEncoder.encode(eventDateFormatted, "UTF-8")
+                    val encodedPlace = java.net.URLEncoder.encode(eventPlace, "UTF-8")
+
+                    navController?.navigate(
+                        "confirmParticipation/${event.id}/$encodedName/$encodedDate/$encodedPlace",
+                    )
+                },
             )
         }
     }

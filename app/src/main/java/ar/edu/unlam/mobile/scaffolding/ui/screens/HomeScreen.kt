@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -27,6 +25,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.ui.components.CreateEventPopUp
+import ar.edu.unlam.mobile.scaffolding.ui.components.AnimatedEventCard
+import ar.edu.unlam.mobile.scaffolding.ui.components.Event
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventSearchBar
 import ar.edu.unlam.mobile.scaffolding.ui.components.Evento
 import ar.edu.unlam.mobile.scaffolding.ui.components.FloatingButtons
@@ -103,16 +103,19 @@ fun HomeScreen(
                 // TODO llamar al eventList e implementar C3 EventHomeCard
                 // Diálogo al tocar un evento de prueba
                 eventoSeleccionado?.let { evento ->
-                    AlertDialog(
-                        onDismissRequest = { eventoSeleccionado = null },
-                        confirmButton = {
-                            Button(onClick = { eventoSeleccionado = null }) {
-                                Text("Cerrar")
-                            }
-                        },
-                        title = { Text(evento.nombre) },
-                        text = { Text("Detalles próximamente...") },
-                    )
+                    val eventCard =
+                        Event(
+                            id = "id-${evento.nombre}",
+                            name = evento.nombre,
+                            dateTime = "01/12/2025 - 20:00 hs",
+                            image1 = "https://picsum.photos/300/200",
+                            image2 = "https://picsum.photos/301/200",
+                            creatorId = 1,
+                            lat = evento.lat,
+                            lng = evento.lon,
+                        )
+
+                    AnimatedEventCard(eventCard = eventCard, onClose = { eventoSeleccionado = null })
                 }
                 Column(
                     modifier =
