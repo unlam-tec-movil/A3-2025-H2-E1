@@ -12,6 +12,5 @@ data class EventEntity(
     val afterImageUrl: List<String>?,
     val members: List<UserEntity>,
     val creator: UserEntity,
-    val saved: Boolean,
-    val participating: Boolean,
+    val saved: List<Long>,
 )

@@ -12,7 +12,7 @@ import javax.inject.Inject
 class UserRepositoryImpl
     @Inject
     constructor() : UserRepository {
-        private val mockUsers =
+        private var mockUsers =
             listOf(
                 UserEntity(
                     id = 1,
