@@ -76,13 +76,13 @@ class EventRepositoryImpl
                 ),
             )
 
-        private val mockEvents =
+        private var mockEvents =
             listOf(
                 EventEntity(
                     eventId = "1",
                     title = "Limpieza de la Plaza San Martín",
                     description = "Nos juntamos a limpiar la plaza principal de la ciudad. Traer bolsas y guantes.",
-                    dateTime = System.currentTimeMillis() - 86400000, // Ayer
+                    dateTime = System.currentTimeMillis() + 86400000, // En 23 horas
                     lat = -34.6415,
                     lng = -58.5714,
                     imageUrl = "https://turismo.buenosaires.gob.ar/sites/turismo/files/plaza%20san%20martin%20panoramica_0.jpg",
@@ -94,8 +94,7 @@ class EventRepositoryImpl
                     afterImageUrl = null,
                     members = listOf(mockUsers[0], mockUsers[1]),
                     creator = mockUsers[2],
-                    saved = false,
-                    participating = true,
+                    saved = listOf(2L),
                 ),
                 EventEntity(
                     eventId = "2",
@@ -107,10 +106,9 @@ class EventRepositoryImpl
                     imageUrl = "https://blog.taranna.com/docs/reducir-plasticos-viaje-taranna-001-620x410.jpg",
                     beforeImageUrl = listOf(),
                     afterImageUrl = null,
-                    members = listOf(mockUsers[1]),
+                    members = listOf(mockUsers[1], mockUsers[3]),
                     creator = mockUsers[0],
-                    saved = true,
-                    participating = false,
+                    saved = listOf(3L),
                 ),
                 EventEntity(
                     eventId = "3",
@@ -124,8 +122,7 @@ class EventRepositoryImpl
                     afterImageUrl = null,
                     members = mockUsers,
                     creator = mockUsers[1],
-                    saved = false,
-                    participating = false,
+                    saved = listOf(3L),
                 ),
                 EventEntity(
                     eventId = "4",
@@ -137,10 +134,9 @@ class EventRepositoryImpl
                     lng = -58.45480473855864,
                     beforeImageUrl = listOf(),
                     afterImageUrl = null,
-                    members = listOf(mockUsers[1]),
+                    members = listOf(mockUsers[4], mockUsers[5]),
                     creator = mockUsers[3],
-                    saved = false,
-                    participating = false,
+                    saved = listOf(2L),
                 ),
                 EventEntity(
                     eventId = "5",
@@ -152,10 +148,9 @@ class EventRepositoryImpl
                     imageUrl = "https://bichosdecampo.com/wp-content/uploads/2023/08/17-1.jpg",
                     beforeImageUrl = listOf(),
                     afterImageUrl = null,
-                    members = listOf(mockUsers[3], mockUsers[4]),
+                    members = listOf(mockUsers[3], mockUsers[4], mockUsers[6]),
                     creator = mockUsers[0],
-                    saved = false,
-                    participating = false,
+                    saved = listOf(2L),
                 ),
                 EventEntity(
                     eventId = "6",
@@ -169,8 +164,7 @@ class EventRepositoryImpl
                     afterImageUrl = null,
                     members = listOf(mockUsers[0], mockUsers[2], mockUsers[4]),
                     creator = mockUsers[1],
-                    saved = true,
-                    participating = true,
+                    saved = listOf(),
                 ),
                 EventEntity(
                     eventId = "7",
@@ -182,10 +176,9 @@ class EventRepositoryImpl
                     imageUrl = "https://www.reservacostanera.com.ar/wp-content/uploads/2016/10/basura-NGG-20-10-16.jpg",
                     beforeImageUrl = listOf(),
                     afterImageUrl = null,
-                    members = listOf(mockUsers[0]),
+                    members = listOf(mockUsers[0], mockUsers[7]),
                     creator = mockUsers[4],
-                    saved = false,
-                    participating = false,
+                    saved = listOf(),
                 ),
                 EventEntity(
                     eventId = "8",
@@ -200,10 +193,9 @@ class EventRepositoryImpl
                             "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAGDxzmN9kPnzEWZyQdkVjUpoK_AA-Noy_7Q&s",
                         ),
                     afterImageUrl = null,
-                    members = listOf(mockUsers[1], mockUsers[2], mockUsers[3]),
+                    members = listOf(mockUsers[6], mockUsers[7], mockUsers[8]),
                     creator = mockUsers[0],
-                    saved = false,
-                    participating = true,
+                    saved = listOf(3L),
                 ),
                 EventEntity(
                     eventId = "9",
@@ -218,10 +210,9 @@ class EventRepositoryImpl
                             "https://media.jardineriadelvalles.com/category/cuidados-del-cesped-1024x1024.jpeg?width=1200",
                         ),
                     afterImageUrl = null,
-                    members = listOf(mockUsers[2], mockUsers[4]),
+                    members = listOf(mockUsers[2], mockUsers[4], mockUsers[8]),
                     creator = mockUsers[3],
-                    saved = true,
-                    participating = false,
+                    saved = listOf(2L),
                 ),
             )
 
@@ -256,9 +247,15 @@ class EventRepositoryImpl
                 emit(Resource.Success(suggestedEvents))
             }
 
-        override suspend fun getEventsList(): Flow<Resource<List<EventList>>> =
+        // El parametro sort solo soporta "date" como parametro de entrada, ya que ordenar por "distance",
+        // lo hace en el viewModel (en el vm de UserScreen esta por ejemplo).
+        override suspend fun getEventsList(
+            sort: String?,
+            order: String?,
+            size: Int?,
+        ): Flow<Resource<List<EventList>>> =
             flow {
-                val eventList =
+                val eventListEntity =
                     mockEvents.map { values ->
                         EventListEntity(
                             id = values.eventId,
@@ -268,8 +265,59 @@ class EventRepositoryImpl
                             lat = values.lat,
                             lng = values.lng,
                             imageUrl = values.imageUrl,
-                        ).toEventList()
+                        )
                     }
+                // Esto podria mejorarse con un when() para poner mas tipos de ordenados.
+                val sortedEvents =
+                    if (sort == "date") {
+                        if (order == "asc") {
+                            eventListEntity.sortedBy { it.dateTime }
+                        } else {
+                            eventListEntity.sortedByDescending { it.dateTime }
+                        }
+                    } else {
+                        eventListEntity
+                    }
+
+                val eventList = sortedEvents.map { it.toEventList() }
+                emit(Resource.Success(eventList))
+            }
+
+        // Se aplica lo mismo que el anterior
+        override suspend fun getJoinedEventsList(
+            sort: String?,
+            order: String?,
+            userId: Long,
+        ): Flow<Resource<List<EventList>>> =
+            flow {
+                val filteredEvents =
+                    mockEvents
+                        .filter { eventEntity ->
+                            eventEntity.members.any { member -> member.id == userId }
+                        }.map { eventListEntity ->
+                            EventListEntity(
+                                id = eventListEntity.eventId,
+                                title = eventListEntity.title,
+                                description = eventListEntity.description,
+                                dateTime = eventListEntity.dateTime,
+                                lat = eventListEntity.lat,
+                                lng = eventListEntity.lng,
+                                imageUrl = eventListEntity.imageUrl,
+                            )
+                        }
+
+                val sortedEvents =
+                    if (sort == "date") {
+                        if (order == "asc") {
+                            filteredEvents.sortedBy { it.dateTime }
+                        } else {
+                            filteredEvents.sortedByDescending { it.dateTime }
+                        }
+                    } else {
+                        filteredEvents
+                    }
+
+                val eventList = sortedEvents.map { it.toEventList() }
                 emit(Resource.Success(eventList))
             }
 

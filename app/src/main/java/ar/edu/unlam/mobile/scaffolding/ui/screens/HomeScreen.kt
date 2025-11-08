@@ -1,7 +1,6 @@
 package ar.edu.unlam.mobile.scaffolding.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -51,7 +50,7 @@ fun HomeScreen(
     // este seguramente tambien terminen en uiState
     var isSessionActive by remember { mutableStateOf(false) }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = modifier.fillMaxSize()) {
         when (val helloState = uiState.helloMessageState) {
             MessageUIState.Loading -> {
                 CircularProgressIndicator(
@@ -89,7 +88,7 @@ fun HomeScreen(
                     modifier =
                         Modifier
                             .fillMaxWidth()
-                            .zIndex(20f),
+                            .zIndex(zIndex = 20f),
                 ) {
                     // barra de búsqueda
                     EventSearchBar(
@@ -127,10 +126,8 @@ fun HomeScreen(
                 Column(
                     modifier =
                         Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(16.dp, bottom = 85.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalAlignment = Alignment.Start,
+                            .align(Alignment.BottomEnd)
+                            .padding(8.dp),
                 ) {
                     FloatingButtons(
                         isSessionActive = isSessionActive,
@@ -157,7 +154,7 @@ fun HomeScreen(
                     text = helloState.message,
                     modifier =
                         Modifier
-                            .padding(96.dp)
+                            .padding(16.dp)
                             .align(Alignment.Center),
                 )
             }

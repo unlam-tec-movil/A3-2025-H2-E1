@@ -38,7 +38,7 @@ fun EventCard(
     title: String,
     date: Long,
     coordinates: LatLng,
-    myLocation: LatLng,
+    myLocation: LatLng?,
     isDistanceFilter: Boolean,
 ) {
     var address by remember { mutableStateOf("") }
@@ -107,7 +107,7 @@ fun EventCard(
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            if (isDistanceFilter) {
+            if (isDistanceFilter && myLocation != null) {
                 val results = FloatArray(1)
                 Location.distanceBetween(
                     coordinates.latitude,
