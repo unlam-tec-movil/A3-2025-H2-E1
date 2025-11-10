@@ -4,13 +4,13 @@ import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ar.edu.unlam.mobile.scaffolding.domain.navigation.model.Route
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.CreateEventUseCase
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetMapEventsUseCase
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetSuggestedEventsUseCase
 import ar.edu.unlam.mobile.scaffolding.domain.navigation.model.Coordinates
+import ar.edu.unlam.mobile.scaffolding.domain.navigation.model.Route
 import ar.edu.unlam.mobile.scaffolding.domain.navigation.repositories.NavigationRepository
 import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
 import ar.edu.unlam.mobile.scaffolding.ui.common.EventSearchState
