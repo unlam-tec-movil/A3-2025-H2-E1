@@ -1,6 +1,8 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.io.FileInputStream
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.androidApplication)
@@ -35,6 +37,13 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        val p = Properties()
+        val localProps = File(rootProject.rootDir, "local.properties")
+        if (localProps.exists()) {
+            p.load(FileInputStream(localProps))
+        }
+        buildConfigField("String", "API_KEY", "\"${p.getProperty("API_KEY", "")}\"")
     }
 
     buildTypes {
@@ -52,6 +61,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     packaging {
         resources {
@@ -107,4 +117,9 @@ dependencies {
 
     // PreferenceManager moderno
     implementation("androidx.preference:preference-ktx:1.2.1")
+
+    // Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.google.code.gson:gson:2.11.0")
 }
