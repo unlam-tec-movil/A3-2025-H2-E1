@@ -246,7 +246,7 @@ fun CreateEventPopUp(
 
                 // Ubicación del evento
                 OutlinedTextField(
-                    value = name,
+                    value = location,
                     onValueChange = { location = it },
                     label = { Text("Ubicación del evento") },
                     modifier = Modifier.fillMaxWidth(),
@@ -427,7 +427,12 @@ fun CreateEventPopUp(
                                 showSheet = false
                                 if (cameraPermission.status.isGranted) {
                                     val file = createImageFile(context)
-                                    val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+                                    val uri =
+                                        FileProvider.getUriForFile(
+                                            context,
+                                            "${context.packageName}.provider",
+                                            file,
+                                        )
                                     cameraImageUri.value = uri
                                     cameraLauncher.launch(uri)
                                 } else {
