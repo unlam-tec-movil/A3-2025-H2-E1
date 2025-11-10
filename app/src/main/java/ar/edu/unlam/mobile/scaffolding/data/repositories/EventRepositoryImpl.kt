@@ -1,5 +1,6 @@
 package ar.edu.unlam.mobile.scaffolding.data.repositories
 
+import ar.edu.unlam.mobile.scaffolding.data.mapper.toEntity
 import ar.edu.unlam.mobile.scaffolding.data.mapper.toEventList
 import ar.edu.unlam.mobile.scaffolding.data.mapper.toSuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.data.model.EventEntity
@@ -12,6 +13,8 @@ import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.domain.event.repositories.EventRepository
 import ar.edu.unlam.mobile.scaffolding.utils.Resource
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
@@ -77,7 +80,7 @@ class EventRepositoryImpl
             )
 
         private var mockEvents =
-            listOf(
+            mutableListOf(
                 EventEntity(
                     eventId = "1",
                     title = "Limpieza de la Plaza San Martín",
@@ -215,6 +218,8 @@ class EventRepositoryImpl
                     saved = listOf(2L),
                 ),
             )
+        private val _eventsFlow = MutableStateFlow(mockEvents.toList())
+        val eventsFlow: StateFlow<List<EventEntity>> get() = _eventsFlow
 
         override suspend fun getMapEvents(): Flow<Resource<List<SuggestedEvent>>> =
             flow {
@@ -329,7 +334,15 @@ class EventRepositoryImpl
             TODO("Not yet implemented")
         }
 
-        override suspend fun createEvent(event: Event): Resource<Unit> {
-            TODO("Not yet implemented")
-        }
+        override suspend fun createEvent(event: Event): Resource<Unit> =
+            try {
+                val entity = event.toEntity()
+                mockEvents.add(entity)
+
+                _eventsFlow.value = mockEvents.toList()
+
+                Resource.Success(Unit)
+            } catch (e: Exception) {
+                Resource.Error(message = e.message ?: "Error al crear el evento")
+            }
     }
