@@ -11,7 +11,17 @@ interface EventRepository {
 
     suspend fun getSuggestedEvent(query: String): Flow<Resource<List<SuggestedEvent>>>
 
-    suspend fun getEventsList(): Flow<Resource<List<EventList>>>
+    suspend fun getEventsList(
+        sort: String?,
+        order: String?,
+        size: Int?,
+    ): Flow<Resource<List<EventList>>>
+
+    suspend fun getJoinedEventsList(
+        sort: String?,
+        order: String?,
+        userId: Long,
+    ): Flow<Resource<List<EventList>>>
 
     suspend fun getEventList(id: Int): Flow<Resource<EventList>>
 

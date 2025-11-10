@@ -3,7 +3,7 @@ package ar.edu.unlam.mobile.scaffolding.data.mapper
 import ar.edu.unlam.mobile.scaffolding.data.model.EventEntity
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
 
-fun EventEntity.toEvent(): Event =
+fun EventEntity.toEvent(userId: Long): Event =
     Event(
         id = eventId,
         title = title,
@@ -16,8 +16,8 @@ fun EventEntity.toEvent(): Event =
         afterImage = afterImageUrl,
         members = members.map { it.toUser() },
         creator = creator.toUser(),
-        saved = saved,
-        participating = participating,
+        saved = this.saved.any { it == userId },
+        participating = this.members.any { it.id == userId },
     )
 
 fun Event.toEntity(): EventEntity =
@@ -33,6 +33,7 @@ fun Event.toEntity(): EventEntity =
         afterImageUrl = afterImage,
         members = members.map { it.toEntity() },
         creator = creator.toEntity(),
-        saved = saved,
-        participating = participating,
+        // Esto en un caso real se manejaría con una operación de "update" o "save",
+        // pero por simplicidad lo dejo así.
+        saved = emptyList(),
     )

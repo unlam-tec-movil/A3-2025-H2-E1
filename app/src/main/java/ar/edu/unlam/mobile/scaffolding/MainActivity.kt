@@ -24,7 +24,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -162,7 +161,7 @@ fun MainScreen() {
                 route = "user/{id}",
                 arguments = listOf(navArgument("id") { type = NavType.LongType }),
             ) { navBackStackEntry ->
-                val id = navBackStackEntry.arguments?.getLong("id") ?: 1L
+                val id = navBackStackEntry.arguments?.getLong("id") ?: 1
                 UserScreen(
                     userId = id,
                     modifier = Modifier.padding(paddingValue),
@@ -202,14 +201,12 @@ fun MainScreen() {
 
             composable("login") {
                 LoginScreen(
-                    viewModel = hiltViewModel(),
                     navController = controller,
                 )
             }
 
             composable("register") {
                 RegisterScreen(
-                    viewModel = hiltViewModel(),
                     navController = controller,
                 )
             }

@@ -93,7 +93,8 @@ fun NearbyMap(
                 controller.setZoom(15.0)
                 controller.setCenter(currentLocation.value)
 
-                // Esto se usa para rotar la brujula (por gestos o sensor)
+                // Esto se usa para rotar la brujula (por gestos o sensor) notificando al
+                // exterior el cambio de orientacion utilizando el override de ObservableMapView
                 onOrientationChange = { orientation ->
                     onMapRotationChanged(orientation)
                 }
@@ -113,7 +114,7 @@ fun NearbyMap(
             // Habilitar/deshabilitar rotación por gestos
             rotationGestureOverlay.isEnabled = mapProperties.rotationByGesture
 
-            // Si está activado el sensor, el icono se invierte para que funcione como brujula
+            // Si se activa el sensor, el icono se invierte para que funcione como brujula
             if (mapProperties.rotationBySensor) {
                 mv.mapOrientation = -mapProperties.mapOrientation
             } else {
@@ -167,6 +168,7 @@ data class MapProperties(
     val rotationBySensor: Boolean = false,
 )
 
+// Esto hay que moverlo, si puede ser al vm
 @SuppressLint("MissingPermission")
 private fun getCurrentLocation(context: Context): Location? {
     val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -180,6 +182,9 @@ private fun getCurrentLocation(context: Context): Location? {
         ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
 }
 
+// Esto basicamente es para obtener los cambios de orientacion del dispositivo.
+// Es el "MapView", con su funcionalidad intacta, pero le añade la capacidad de
+// notificar al exterior cuando su orientación cambia.
 class ObservableMapView(
     context: Context,
 ) : MapView(context) {
