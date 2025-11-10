@@ -11,6 +11,9 @@ import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.CreateEventUseCase
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetMapEventsUseCase
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetSuggestedEventsUseCase
+import ar.edu.unlam.mobile.scaffolding.domain.navigation.model.Coordinates
+import ar.edu.unlam.mobile.scaffolding.domain.navigation.model.Route
+import ar.edu.unlam.mobile.scaffolding.domain.navigation.repositories.NavigationRepository
 import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
 import ar.edu.unlam.mobile.scaffolding.ui.common.EventSearchState
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
@@ -21,6 +24,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -54,6 +58,7 @@ class HomeViewModel
         private val getMapEvent: GetMapEventsUseCase,
         private val getAutocompleteEvent: GetSuggestedEventsUseCase,
         private val createEventUseCase: CreateEventUseCase,
+        private val navigationRepository: NavigationRepository,
     ) : ViewModel() {
         // Mutable State Flow contiene un objeto de estado mutable. Simplifica la operación de
         // actualización de información y de manejo de estados de una aplicación: Cargando, Error, Éxito
@@ -71,8 +76,12 @@ class HomeViewModel
         private val _searchUiState = MutableStateFlow(SearchUIState())
         val searchUiState = _searchUiState.asStateFlow()
 
+        private val _currentRouteState = MutableStateFlow<Route?>(null)
+        val currentRouteState = _currentRouteState.asStateFlow()
+
         private var mapEventJob: Job? = null
         private var searchEventJob: Job? = null
+        private var navigationJob: Job? = null
 
         init {
             _uiState.value = HomeUIState(helloMessageState = MessageUIState.Success("2b"))
@@ -253,5 +262,31 @@ class HomeViewModel
                     )
                 createEventUseCase(newEvent)
             }
+        }
+
+        fun getRoute(
+            userCoordinates: Coordinates,
+            eventCoordinates: Coordinates,
+        ) {
+            navigationJob?.cancel()
+            navigationJob =
+                viewModelScope.launch {
+                    navigationRepository
+                        .getRoute(
+                            startLat = userCoordinates.lat,
+                            endLat = eventCoordinates.lat,
+                            startLon = userCoordinates.lon,
+                            endLon = userCoordinates.lon,
+                        ).collectLatest { result ->
+                            when (result) {
+                                is Resource.Success -> {
+                                    _currentRouteState.value = result.data
+                                }
+                                is Resource.Error -> {
+                                    Log.e("API call", result.message ?: "Error 400 - Bad Request")
+                                }
+                            }
+                        }
+                }
         }
     }
