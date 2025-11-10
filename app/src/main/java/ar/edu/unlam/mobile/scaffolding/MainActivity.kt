@@ -40,6 +40,7 @@ import ar.edu.unlam.mobile.scaffolding.ui.screens.EventListScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.FormScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.HOME_SCREEN_ROUTE
 import ar.edu.unlam.mobile.scaffolding.ui.screens.HomeScreen
+import ar.edu.unlam.mobile.scaffolding.ui.screens.UserProfileScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.UserScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.login.LoginScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.register.RegisterScreen
@@ -50,6 +51,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // enableEdgeToEdge()
         setContent {
             ScaffoldingV2Theme {
                 // A surface container using the 'background' color from the theme
@@ -74,7 +76,7 @@ fun MainScreen() {
     val currentRoute = navBackStackEntry?.destination?.route
 
     // id del usuario logeado, de momento es hardcodeado hasta que se pueda logear
-    val idLogUser = "1"
+    val idLogUser = 1L
 
     val snackBarHostState = remember { SnackbarHostState() }
     Scaffold(
@@ -158,12 +160,24 @@ fun MainScreen() {
 
             composable(
                 route = "user/{id}",
-                arguments = listOf(navArgument("id") { type = NavType.StringType }),
+                arguments = listOf(navArgument("id") { type = NavType.LongType }),
             ) { navBackStackEntry ->
-                val id = navBackStackEntry.arguments?.getString("id") ?: "1"
+                val id = navBackStackEntry.arguments?.getLong("id") ?: 1L
                 UserScreen(
                     userId = id,
                     modifier = Modifier.padding(paddingValue),
+                    navController = controller,
+                )
+            }
+
+            composable(
+                route = "userProfile/{id}",
+                arguments = listOf(navArgument("id") { type = NavType.LongType }),
+            ) {
+                val id = navBackStackEntry?.arguments?.getLong("id") ?: 1L
+                UserProfileScreen(
+                    userId = id,
+                    navController = controller,
                 )
             }
 

@@ -12,6 +12,7 @@ import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetSuggestedEventsU
 import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
 import ar.edu.unlam.mobile.scaffolding.ui.common.EventSearchState
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
+import ar.edu.unlam.mobile.scaffolding.ui.components.MapProperties
 import ar.edu.unlam.mobile.scaffolding.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -34,6 +35,7 @@ import javax.inject.Inject
 
 data class HomeUIState(
     val eventList: List<SuggestedEvent> = emptyList(),
+    val mapProperties: MapProperties = MapProperties(),
     val helloMessageState: MessageUIState,
 )
 
@@ -75,6 +77,12 @@ class HomeViewModel
         init {
             _uiState.value = HomeUIState(helloMessageState = MessageUIState.Success("2b"))
             fetchEvents()
+        }
+
+        fun onMapPropertiesChanged(newProperties: MapProperties) {
+            _uiState.update { currentState ->
+                currentState.copy(mapProperties = newProperties)
+            }
         }
 
         private fun fetchEvents() {

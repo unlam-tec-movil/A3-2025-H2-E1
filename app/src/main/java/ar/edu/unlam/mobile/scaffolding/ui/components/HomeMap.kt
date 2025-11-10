@@ -6,11 +6,19 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
@@ -23,12 +31,16 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.gestures.RotationGestureOverlay
+import kotlin.math.abs
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun NearbyMap(
     nearbyEvents: List<SuggestedEvent>,
     modifier: Modifier = Modifier,
+    mapProperties: MapProperties,
+    onMapRotationChanged: (Float) -> Unit = {},
     onEventoClick: (SuggestedEvent) -> Unit = {}, //  callback al hacer clic en un evento
 ) {
     val context = LocalContext.current
@@ -41,7 +53,17 @@ fun NearbyMap(
     }
 
     if (!permissionState.status.isGranted) {
-        Text("Se necesita permiso de ubicación para mostrar el mapa")
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Column {
+                Text(
+                    "Se necesita permiso de ubicación para usar el mapa.",
+                    textAlign = TextAlign.Center,
+                )
+                Button(onClick = { permissionState.launchPermissionRequest() }) {
+                    Text("Conceder Permiso")
+                }
+            }
+        }
         return
     }
 
@@ -58,62 +80,92 @@ fun NearbyMap(
         return
     }
 
-    val mapView =
-        remember {
-            Configuration.getInstance().load(
-                context,
-                PreferenceManager.getDefaultSharedPreferences(context),
-            )
-            MapView(context).apply {
+    AndroidView(
+        modifier = modifier.fillMaxSize(),
+        factory = { context ->
+            ObservableMapView(context).apply {
+                Configuration.getInstance().load(
+                    context,
+                    PreferenceManager.getDefaultSharedPreferences(context),
+                )
                 setTileSource(TileSourceFactory.MAPNIK)
                 setMultiTouchControls(true)
                 controller.setZoom(15.0)
                 controller.setCenter(currentLocation.value)
-            }
-        }
 
-    DisposableEffect(Unit) {
-        onDispose { mapView.onDetach() }
-    }
-
-    AndroidView(factory = { mapView }, modifier = modifier.fillMaxSize()) { mv ->
-        mv.overlays.clear()
-
-        //  Tu ubicación
-        val myMarker =
-            Marker(mv).apply {
-                position = currentLocation.value!!
-                title = "Estás aquí"
-                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                // esta linea muestra error en R  porque es un icono interno de OSMDroid
-                icon = ContextCompat.getDrawable(context, org.osmdroid.library.R.drawable.marker_default)
-                icon?.setTint(android.graphics.Color.BLUE)
-            }
-        mv.overlays.add(myMarker)
-
-        //  Eventos con click
-        nearbyEvents.forEach { evento ->
-            val marker =
-                Marker(mv).apply {
-                    position = GeoPoint(evento.lat, evento.lng)
-                    title = evento.title
-                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                    // esta linea muestra un error en R  porque es un icono interno de OSMDroid
-                    icon = ContextCompat.getDrawable(context, org.osmdroid.library.R.drawable.marker_default)
-                    icon?.setTint(android.graphics.Color.RED)
-
-                    // Acción al hacer clic
-                    setOnMarkerClickListener { _, _ ->
-                        onEventoClick(evento)
-                        true // devuelve true para indicar que el evento fue manejado
-                    }
+                // Esto se usa para rotar la brujula (por gestos o sensor)
+                onOrientationChange = { orientation ->
+                    onMapRotationChanged(orientation)
                 }
-            mv.overlays.add(marker)
-        }
 
-        mv.invalidate()
-    }
+                // Gestos de rotación
+                val rotationGesture = RotationGestureOverlay(this)
+                rotationGesture.isEnabled = mapProperties.rotationByGesture
+                overlays.add(rotationGesture)
+
+                tag = mapOf("gesture" to rotationGesture)
+            }
+        },
+        update = { mv ->
+            val tagMap = mv.tag as? Map<*, *> ?: return@AndroidView
+            val rotationGestureOverlay = tagMap["gesture"] as RotationGestureOverlay
+
+            // Habilitar/deshabilitar rotación por gestos
+            rotationGestureOverlay.isEnabled = mapProperties.rotationByGesture
+
+            // Si está activado el sensor, el icono se invierte para que funcione como brujula
+            if (mapProperties.rotationBySensor) {
+                mv.mapOrientation = -mapProperties.mapOrientation
+            } else {
+                mv.mapOrientation = mapProperties.mapOrientation
+            }
+
+            mv.overlays.removeAll { it is Marker }
+
+            //  Tu ubicación
+            val myMarker =
+                Marker(mv).apply {
+                    position = currentLocation.value!!
+                    title = "Estás aquí"
+                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                    // esta linea muestra error en R  porque es un icono interno de OSMDroid
+                    icon = ContextCompat.getDrawable(context, org.osmdroid.library.R.drawable.marker_default)
+                    icon?.setTint(android.graphics.Color.BLUE)
+                }
+            mv.overlays.add(myMarker)
+
+            //  Eventos con click
+            nearbyEvents.forEach { evento ->
+                val marker =
+                    Marker(mv).apply {
+                        position = GeoPoint(evento.lat, evento.lng)
+                        title = evento.title
+                        setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                        // esta linea muestra un error en R  porque es un icono interno de OSMDroid
+                        icon = ContextCompat.getDrawable(context, org.osmdroid.library.R.drawable.marker_default)
+                        icon?.setTint(android.graphics.Color.RED)
+
+                        // Acción al hacer clic
+                        setOnMarkerClickListener { _, _ ->
+                            onEventoClick(evento)
+                            true // devuelve true para indicar que el evento fue manejado
+                        }
+                    }
+                mv.overlays.add(marker)
+            }
+            mv.invalidate()
+        },
+        onRelease = { mv ->
+            mv.onDetach()
+        },
+    )
 }
+
+data class MapProperties(
+    val mapOrientation: Float = 0f,
+    val rotationByGesture: Boolean = true,
+    val rotationBySensor: Boolean = false,
+)
 
 @SuppressLint("MissingPermission")
 private fun getCurrentLocation(context: Context): Location? {
@@ -128,40 +180,19 @@ private fun getCurrentLocation(context: Context): Location? {
         ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
 }
 
-/* pantalla mapa: manejo del componente desde la implementacion
-@Composable
-fun MapScreen() {
-    //  Lista de eventos en Buenos Aires
-    val eventos =
-        listOf(
-            Evento("Evento 1 - Obelisco", -34.603722, -58.381592),
-            Evento("Evento 2 - Casa Rosada", -34.608056, -58.370278),
-            Evento("Evento 3 - Puerto Madero", -34.616389, -58.364167),
-            Evento("Evento 4 - Recoleta", -34.588056, -58.397222),
-            Evento("Evento 5 - Palermo", -34.571667, -58.423056),
-        )
+class ObservableMapView(
+    context: Context,
+) : MapView(context) {
+    var onOrientationChange: ((Float) -> Unit)? = null
 
-    var eventoSeleccionado by remember { mutableStateOf<Evento?>(null) }
-
-    //  Mapa interactivo
-    NearbyMap(
-        nearbyEvents = eventos,
-        onEventoClick = { evento ->
-            eventoSeleccionado = evento
-        },
-    )
-
-    //  Diálogo al tocar un evento
-    eventoSeleccionado?.let { evento ->
-        AlertDialog(
-            onDismissRequest = { eventoSeleccionado = null },
-            confirmButton = {
-                Button(onClick = { eventoSeleccionado = null }) {
-                    Text("Cerrar")
-                }
-            },
-            title = { Text(evento.nombre) },
-            text = { Text("Detalles próximamente...") },
-        )
+    override fun setMapOrientation(
+        orientation: Float,
+        force: Boolean,
+    ) {
+        val oldOrientation = mapOrientation
+        super.setMapOrientation(orientation, force)
+        if (abs(mapOrientation - oldOrientation) > 0.5f) {
+            onOrientationChange?.invoke(mapOrientation)
+        }
     }
-}*/
+}
