@@ -241,16 +241,7 @@ class HomeViewModel
         ) {
             viewModelScope.launch {
                 val timestamp = dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-
-                val imageString = imageUri?.toString()
-
-                val user =
-                    User(
-                        id = 0L,
-                        name = "",
-                        avatarUrl = null,
-                        description = null,
-                    )
+                val imageString = imageUri.firstOrNull()?.toString()
 
                 val newEvent =
                     Event(
@@ -264,11 +255,20 @@ class HomeViewModel
                         beforeImage = emptyList(),
                         afterImage = null,
                         members = emptyList(),
-                        creator = user,
+                        creator = User(0L, "Usuario", null, null),
                         saved = false,
                         participating = false,
                     )
-                createEventUseCase(newEvent)
+                val result = createEventUseCase(newEvent)
+                when (result) {
+                    is Resource.Success -> {
+                        Log.d("HomeViewModel", "Evento creado correctamente")
+                    }
+
+                    is Resource.Error -> {
+                        Log.e("HomeViewModel", "Error: ${result.message}")
+                    }
+                }
             }
         }
 
@@ -290,6 +290,7 @@ class HomeViewModel
                                 is Resource.Success -> {
                                     _currentRouteState.value = result.data
                                 }
+
                                 is Resource.Error -> {
                                     Log.e("API call", result.message ?: "Error 400 - Bad Request")
                                 }
