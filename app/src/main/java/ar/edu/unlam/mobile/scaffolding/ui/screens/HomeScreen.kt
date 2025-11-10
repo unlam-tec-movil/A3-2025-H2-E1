@@ -1,19 +1,36 @@
 package ar.edu.unlam.mobile.scaffolding.ui.screens
 
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,6 +38,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -49,9 +68,23 @@ fun HomeScreen(
     var eventoSeleccionado by remember { mutableStateOf<SuggestedEvent?>(null) }
 
     var showCreateEventDialog by remember { mutableStateOf(false) }
-
-    // este seguramente tambien terminen en uiState
     var isSessionActive by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val sensorManager =
+        remember {
+            context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        }
+    MapRotationSensor(
+        enabled = uiState.mapProperties.rotationBySensor,
+        sensorManager = sensorManager,
+        currentOrientation = uiState.mapProperties.mapOrientation,
+        onOrientationChanged = { newAngle ->
+            viewModel.onMapPropertiesChanged(
+                uiState.mapProperties.copy(mapOrientation = newAngle),
+            )
+        },
+    )
 
     Box(modifier = modifier.fillMaxSize()) {
         when (val helloState = uiState.helloMessageState) {
@@ -65,6 +98,14 @@ fun HomeScreen(
                 NearbyMap(
                     nearbyEvents = uiState.eventList,
                     modifier = Modifier.matchParentSize(),
+                    mapProperties = uiState.mapProperties,
+                    onMapRotationChanged = { orientation ->
+                        if (!uiState.mapProperties.rotationBySensor) {
+                            viewModel.onMapPropertiesChanged(
+                                uiState.mapProperties.copy(mapOrientation = orientation),
+                            )
+                        }
+                    },
                     onEventoClick = { eventoSeleccionado = it },
                 )
 
@@ -104,23 +145,61 @@ fun HomeScreen(
                         },
                         onActiveChange = viewModel::onActiveChange,
                     )
-                    AnimatedVisibility(searchBarState.lastQuery.isNotEmpty()) {
-                        Card(
-                            colors =
-                                CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surface,
-                                ),
-                            shape = MaterialTheme.shapes.medium,
-                            modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
+                    Row {
+                        // Cantidad de resultados de búsqueda
+                        AnimatedVisibility(searchBarState.lastQuery.isNotEmpty()) {
+                            Card(
+                                colors =
+                                    CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.surface,
+                                    ),
+                                shape = MaterialTheme.shapes.medium,
+                                modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
+                            ) {
+                                Text(
+                                    text =
+                                        if (uiState.eventList.size > 1) {
+                                            "Resultados de búsqueda: ${uiState.eventList.size}"
+                                        } else {
+                                            "Resultado de búsqueda"
+                                        },
+                                    modifier = Modifier.padding(horizontal = 6.dp),
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        // Botón para cambiar modo de rotación y brujula
+                        FloatingActionButton(
+                            onClick = {
+                                val props = uiState.mapProperties
+                                viewModel.onMapPropertiesChanged(
+                                    props.copy(
+                                        rotationBySensor = !props.rotationBySensor,
+                                        rotationByGesture = !props.rotationByGesture,
+                                    ),
+                                )
+                            },
+                            containerColor =
+                                if (uiState.mapProperties.rotationBySensor) {
+                                    MaterialTheme.colorScheme.secondary
+                                } else {
+                                    MaterialTheme.colorScheme.surfaceContainer
+                                },
+                            shape = CircleShape,
+                            modifier =
+                                Modifier
+                                    .size(52.dp)
+                                    .padding(12.dp),
                         ) {
-                            Text(
-                                text =
-                                    if (uiState.eventList.size > 1) {
-                                        "Resultados de búsqueda: ${uiState.eventList.size}"
-                                    } else {
-                                        "Resultado de búsqueda"
-                                    },
-                                modifier = Modifier.padding(horizontal = 6.dp),
+                            val animatedOrientation by animateFloatAsState(
+                                targetValue = uiState.mapProperties.mapOrientation,
+                                animationSpec = tween(300, easing = LinearOutSlowInEasing),
+                            )
+                            Icon(
+                                imageVector = Icons.Default.Navigation,
+                                contentDescription = "Cambiar modo de rotación",
+                                modifier = Modifier.rotate(animatedOrientation),
                             )
                         }
                     }
@@ -161,6 +240,53 @@ fun HomeScreen(
                             .align(Alignment.Center),
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun MapRotationSensor(
+    enabled: Boolean,
+    sensorManager: SensorManager,
+    currentOrientation: Float,
+    onOrientationChanged: (Float) -> Unit,
+) {
+    DisposableEffect(enabled) {
+        val rotationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+
+        if (enabled && rotationSensor != null) {
+            val listener =
+                object : SensorEventListener {
+                    private var lastSmoothed = currentOrientation
+                    private val alpha = 0.2f
+
+                    override fun onSensorChanged(event: SensorEvent?) {
+                        if (event?.sensor?.type == Sensor.TYPE_ROTATION_VECTOR) {
+                            val rotationMatrix = FloatArray(9)
+                            SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
+                            val orientation = FloatArray(3)
+                            SensorManager.getOrientation(rotationMatrix, orientation)
+
+                            // Intento de suavizado de la rotación, en el emulador va bien, en celu maso
+                            val azimuth = Math.toDegrees(orientation[0].toDouble()).toFloat()
+                            val diff = ((azimuth - lastSmoothed + 540f) % 360f) - 180f
+                            lastSmoothed += alpha * diff
+
+                            onOrientationChanged(lastSmoothed)
+                        }
+                    }
+
+                    override fun onAccuracyChanged(
+                        sensor: Sensor?,
+                        accuracy: Int,
+                    ) {}
+                }
+
+            sensorManager.registerListener(listener, rotationSensor, SensorManager.SENSOR_DELAY_UI)
+
+            onDispose { sensorManager.unregisterListener(listener) }
+        } else {
+            onDispose {}
         }
     }
 }

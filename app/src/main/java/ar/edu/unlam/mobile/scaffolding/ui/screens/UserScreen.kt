@@ -4,14 +4,12 @@ import android.Manifest
 import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -54,7 +52,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventCard
 import coil.compose.AsyncImage
@@ -69,7 +66,7 @@ fun UserScreen(
     userId: Long,
     modifier: Modifier = Modifier,
     viewModel: UserViewModel = hiltViewModel(),
-    navController: NavController = rememberNavController(),
+    navController: NavController,
 ) {
     val uiState by viewModel.userUiState.collectAsState()
     val topAppBarState = rememberTopAppBarState()
@@ -110,64 +107,71 @@ fun UserScreen(
                     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                 ) { scaffoldPadding ->
                     Column(modifier = Modifier.padding(scaffoldPadding)) {
-                        Box(
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.primary),
-                        ) {
-                            Row(
-                                modifier =
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 12.dp)
-                                        .padding(start = 5.dp),
-                            ) {
-                                AsyncImage(
-                                    model = uiState.avatar,
-                                    contentDescription = "Avatar",
-                                    contentScale = ContentScale.Crop,
+                        TopAppBar(
+                            title = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
                                     modifier =
                                         Modifier
-                                            .size(64.dp)
-                                            .clip(CircleShape)
-                                            .border(
-                                                BorderStroke(
-                                                    2.dp,
-                                                    MaterialTheme.colorScheme.secondary,
-                                                ),
-                                                shape = CircleShape,
+                                            .fillMaxWidth()
+                                            .padding(bottom = 4.dp)
+                                            .clickable(
+                                                onClick = { navController.navigate("userProfile/$userId") },
                                             ),
-                                )
-
-                                Column(
-                                    modifier =
-                                        Modifier
-                                            .padding(start = 5.dp)
-                                            .align(Alignment.CenterVertically),
                                 ) {
-                                    Text(
-                                        text = uiState.name,
-                                        style = MaterialTheme.typography.titleLarge,
-                                        color = MaterialTheme.colorScheme.onPrimary,
+                                    AsyncImage(
+                                        model = uiState.avatar,
+                                        contentDescription = "Avatar",
+                                        contentScale = ContentScale.Crop,
+                                        modifier =
+                                            Modifier
+                                                .size(64.dp)
+                                                .clip(CircleShape)
+                                                .border(
+                                                    BorderStroke(
+                                                        2.dp,
+                                                        MaterialTheme.colorScheme.secondary,
+                                                    ),
+                                                    shape = CircleShape,
+                                                ),
                                     )
-                                    Text(
-                                        text = uiState.description ?: "",
-                                        color = MaterialTheme.colorScheme.onPrimary,
-                                    )
-                                }
 
-                                Spacer(modifier = Modifier.weight(1f))
-
-                                IconButton(onClick = { /*TODO*/ }) {
-                                    Icon(
-                                        imageVector = Icons.Filled.MoreVert,
-                                        contentDescription = "Edit",
-                                        tint = MaterialTheme.colorScheme.onPrimary,
-                                    )
+                                    Column(
+                                        modifier =
+                                            Modifier
+                                                .padding(start = 5.dp)
+                                                .weight(1f),
+                                    ) {
+                                        Text(
+                                            text = uiState.name,
+                                            style = MaterialTheme.typography.titleLarge,
+                                            color = MaterialTheme.colorScheme.onPrimary,
+                                        )
+                                        Text(
+                                            text = uiState.description ?: "",
+                                            color = MaterialTheme.colorScheme.onPrimary,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                        )
+                                    }
+                                    IconButton(
+                                        onClick = { navController.navigate("userProfile/$userId") },
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.MoreVert,
+                                            contentDescription = "Más opciones",
+                                            tint = MaterialTheme.colorScheme.onPrimary,
+                                        )
+                                    }
                                 }
-                            }
-                        }
+                            },
+                            colors =
+                                TopAppBarDefaults.topAppBarColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    scrolledContainerColor = MaterialTheme.colorScheme.primary,
+                                ),
+                            modifier = Modifier.fillMaxWidth(),
+                            scrollBehavior = scrollBehavior,
+                        )
 
                         // Agregue esta topBar hasta que este el componente C15: DropDownMenu
                         TopAppBar(
@@ -232,7 +236,6 @@ fun UserScreen(
                                     }
                                 }
                             },
-                            scrollBehavior = scrollBehavior,
                         )
                         LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             if (uiState.joinedEvents.isNotEmpty()) {
