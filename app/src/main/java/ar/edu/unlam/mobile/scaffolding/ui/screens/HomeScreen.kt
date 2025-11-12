@@ -31,7 +31,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,18 +44,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
-import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
-//import ar.edu.unlam.mobile.scaffolding.ui.components.AnimatedEventCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.CreateEventPopUp
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventHomeCard
-//import ar.edu.unlam.mobile.scaffolding.ui.components.Event
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventSearchBar
 import ar.edu.unlam.mobile.scaffolding.ui.components.FloatingButtons
 import ar.edu.unlam.mobile.scaffolding.ui.components.NearbyMap
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 const val HOME_SCREEN_ROUTE = "home"
 
@@ -74,9 +67,10 @@ fun HomeScreen(
     var isSessionActive by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
-    val sensorManager = remember {
-        context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-    }
+    val sensorManager =
+        remember {
+            context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        }
 
     // Actualiza la rotación del mapa según el sensor
     MapRotationSensor(
@@ -85,16 +79,16 @@ fun HomeScreen(
         currentOrientation = uiState.mapProperties.mapOrientation,
         onOrientationChanged = { newAngle ->
             viewModel.onMapPropertiesChanged(
-                uiState.mapProperties.copy(mapOrientation = newAngle)
+                uiState.mapProperties.copy(mapOrientation = newAngle),
             )
-        }
+        },
     )
 
     Box(modifier = modifier.fillMaxSize()) {
         when (val helloState = uiState.helloMessageState) {
             MessageUIState.Loading -> {
                 CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
+                    modifier = Modifier.align(Alignment.Center),
                 )
             }
 
@@ -107,40 +101,43 @@ fun HomeScreen(
                     onMapRotationChanged = { orientation ->
                         if (!uiState.mapProperties.rotationBySensor) {
                             viewModel.onMapPropertiesChanged(
-                                uiState.mapProperties.copy(mapOrientation = orientation)
+                                uiState.mapProperties.copy(mapOrientation = orientation),
                             )
                         }
                     },
                     onEventoClick = { evento ->
                         // Traemos el evento completo del repositorio
                         viewModel.fetchEventById(evento.id.toInt())
-                    }
+                    },
                 )
 
                 // --- EVENTO SELECCIONADO ---
                 selectedEvent?.let { event ->
                     Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxSize(),
-                        contentAlignment = Alignment.Center
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .fillMaxSize(),
+                        contentAlignment = Alignment.Center,
                     ) {
                         EventHomeCard(
                             event = event,
                             distance = "350 mts",
                             onViewEventClick = { viewModel.clearSelectedEvent() },
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp)
-                                .padding(top = 100.dp)
+                            modifier =
+                                Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .padding(top = 100.dp),
                         )
                     }
                 }
 
                 // --- BARRA DE BÚSQUEDA ---
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .zIndex(20f)
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .zIndex(20f),
                 ) {
                     EventSearchBar(
                         searchUiState = searchBarState,
@@ -156,18 +153,21 @@ fun HomeScreen(
                     Row {
                         AnimatedVisibility(searchBarState.lastQuery.isNotEmpty()) {
                             Card(
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surface
-                                ),
+                                colors =
+                                    CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.surface,
+                                    ),
                                 shape = MaterialTheme.shapes.medium,
                                 modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
                             ) {
                                 Text(
-                                    text = if (uiState.eventList.size > 1)
-                                        "Resultados de búsqueda: ${uiState.eventList.size}"
-                                    else
-                                        "Resultado de búsqueda",
-                                    modifier = Modifier.padding(horizontal = 6.dp)
+                                    text =
+                                        if (uiState.eventList.size > 1) {
+                                            "Resultados de búsqueda: ${uiState.eventList.size}"
+                                        } else {
+                                            "Resultado de búsqueda"
+                                        },
+                                    modifier = Modifier.padding(horizontal = 6.dp),
                                 )
                             }
                         }
@@ -181,27 +181,30 @@ fun HomeScreen(
                                 viewModel.onMapPropertiesChanged(
                                     props.copy(
                                         rotationBySensor = !props.rotationBySensor,
-                                        rotationByGesture = !props.rotationByGesture
-                                    )
+                                        rotationByGesture = !props.rotationByGesture,
+                                    ),
                                 )
                             },
-                            containerColor = if (uiState.mapProperties.rotationBySensor)
-                                MaterialTheme.colorScheme.secondary
-                            else
-                                MaterialTheme.colorScheme.surfaceContainer,
+                            containerColor =
+                                if (uiState.mapProperties.rotationBySensor) {
+                                    MaterialTheme.colorScheme.secondary
+                                } else {
+                                    MaterialTheme.colorScheme.surfaceContainer
+                                },
                             shape = CircleShape,
-                            modifier = Modifier
-                                .size(52.dp)
-                                .padding(12.dp),
+                            modifier =
+                                Modifier
+                                    .size(52.dp)
+                                    .padding(12.dp),
                         ) {
                             val animatedOrientation by animateFloatAsState(
                                 targetValue = uiState.mapProperties.mapOrientation,
-                                animationSpec = tween(300, easing = LinearOutSlowInEasing)
+                                animationSpec = tween(300, easing = LinearOutSlowInEasing),
                             )
                             Icon(
                                 imageVector = Icons.Default.Navigation,
                                 contentDescription = "Cambiar modo de rotación",
-                                modifier = Modifier.rotate(animatedOrientation)
+                                modifier = Modifier.rotate(animatedOrientation),
                             )
                         }
                     }
@@ -209,9 +212,10 @@ fun HomeScreen(
 
                 // --- BOTONES FLOTANTES ---
                 Column(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(8.dp)
+                    modifier =
+                        Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(8.dp),
                 ) {
                     FloatingButtons(
                         isSessionActive = isSessionActive,
@@ -228,7 +232,7 @@ fun HomeScreen(
                         onConfirm = { name, location, dateTime, imageUri ->
                             viewModel.createEvent(name, location, dateTime, imageUri)
                             showCreateEventDialog = false
-                        }
+                        },
                     )
                 }
             }
@@ -236,9 +240,10 @@ fun HomeScreen(
             is MessageUIState.Error -> {
                 Text(
                     text = helloState.message,
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .align(Alignment.Center)
+                    modifier =
+                        Modifier
+                            .padding(16.dp)
+                            .align(Alignment.Center),
                 )
             }
         }

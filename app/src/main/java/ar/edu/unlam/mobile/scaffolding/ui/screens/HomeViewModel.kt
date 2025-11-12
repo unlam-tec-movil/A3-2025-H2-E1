@@ -65,8 +65,6 @@ class HomeViewModel
         private val navigationRepository: NavigationRepository,
         private val getEventByIdUseCase: GetEventByIdUseCase,
     ) : ViewModel() {
-
-
         // Mutable State Flow contiene un objeto de estado mutable. Simplifica la operación de
         // actualización de información y de manejo de estados de una aplicación: Cargando, Error, Éxito
         // (https://developer.android.com/kotlin/flow/stateflow-and-sharedflow)
@@ -92,7 +90,7 @@ class HomeViewModel
         private val _selectedEvent = MutableStateFlow<EventList?>(null)
         val selectedEvent = _selectedEvent.asStateFlow()
 
-    init {
+        init {
             _uiState.value = HomeUIState(helloMessageState = MessageUIState.Success("2b"))
             fetchEvents()
         }
@@ -306,21 +304,21 @@ class HomeViewModel
                 }
         }
 
-    fun fetchEventById(eventId: Int) {
-        viewModelScope.launch {
-            getEventByIdUseCase(eventId).collect { resource ->
-                when (resource) {
-                    is Resource.Success -> _selectedEvent.value = resource.data
-                    is Resource.Error -> {
-                        Log.e("HomeViewModel", "Evento no encontrado: ${resource.message}")
-                        _selectedEvent.value = null
+        fun fetchEventById(eventId: Int) {
+            viewModelScope.launch {
+                getEventByIdUseCase(eventId).collect { resource ->
+                    when (resource) {
+                        is Resource.Success -> _selectedEvent.value = resource.data
+                        is Resource.Error -> {
+                            Log.e("HomeViewModel", "Evento no encontrado: ${resource.message}")
+                            _selectedEvent.value = null
+                        }
                     }
                 }
             }
         }
-    }
-    fun clearSelectedEvent() {
-        _selectedEvent.value = null
-    }
 
-}
+        fun clearSelectedEvent() {
+            _selectedEvent.value = null
+        }
+    }

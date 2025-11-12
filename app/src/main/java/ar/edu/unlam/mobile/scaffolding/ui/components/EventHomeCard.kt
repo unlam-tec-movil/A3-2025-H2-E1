@@ -27,28 +27,30 @@ fun EventHomeCard(
     modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             // Título
             Text(
                 text = event.title,
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             )
 
             // Fecha formateada
-            val formattedDate = remember(event.dateTime) {
-                val sdf = SimpleDateFormat("dd/MM/yyyy - HH:mm", Locale.getDefault())
-                sdf.format(Date(event.dateTime))
-            }
+            val formattedDate =
+                remember(event.dateTime) {
+                    val sdf = SimpleDateFormat("dd/MM/yyyy - HH:mm", Locale.getDefault())
+                    sdf.format(Date(event.dateTime))
+                }
             Text(text = "Fecha: $formattedDate", style = MaterialTheme.typography.bodyMedium)
 
             // Descripción
@@ -56,7 +58,7 @@ fun EventHomeCard(
                 Text(
                     text = event.description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
                 )
             }
 
@@ -66,11 +68,12 @@ fun EventHomeCard(
                 contentDescription = "Imagen del evento",
                 placeholder = rememberAsyncImagePainter(R.drawable.sin_imagen),
                 error = rememberAsyncImagePainter(R.drawable.sin_imagen),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
-                    .clip(RoundedCornerShape(12.dp)),
-                contentScale = ContentScale.Crop
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .clip(RoundedCornerShape(12.dp)),
+                contentScale = ContentScale.Crop,
             )
 
             // Distancia
@@ -81,13 +84,15 @@ fun EventHomeCard(
                 onClick = onViewEventClick,
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(8.dp),
             ) {
                 Text("Ver Evento", color = MaterialTheme.colorScheme.onPrimary)
             }
         }
     }
 }
-fun getEventDateById(eventList: List<EventList>, eventId: String): Long? {
-    return eventList.find { it.id == eventId }?.dateTime
-}
+
+fun getEventDateById(
+    eventList: List<EventList>,
+    eventId: String,
+): Long? = eventList.find { it.id == eventId }?.dateTime
