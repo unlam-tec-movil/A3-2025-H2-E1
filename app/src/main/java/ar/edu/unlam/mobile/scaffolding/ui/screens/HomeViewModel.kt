@@ -7,8 +7,10 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
+import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.CreateEventUseCase
+import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetEventByIdUseCase
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetMapEventsUseCase
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetSuggestedEventsUseCase
 import ar.edu.unlam.mobile.scaffolding.domain.navigation.model.Coordinates
@@ -61,7 +63,10 @@ class HomeViewModel
         private val getAutocompleteEvent: GetSuggestedEventsUseCase,
         private val createEventUseCase: CreateEventUseCase,
         private val navigationRepository: NavigationRepository,
+        private val getEventByIdUseCase: GetEventByIdUseCase,
     ) : ViewModel() {
+
+
         // Mutable State Flow contiene un objeto de estado mutable. Simplifica la operación de
         // actualización de información y de manejo de estados de una aplicación: Cargando, Error, Éxito
         // (https://developer.android.com/kotlin/flow/stateflow-and-sharedflow)
@@ -84,8 +89,10 @@ class HomeViewModel
         private var mapEventJob: Job? = null
         private var searchEventJob: Job? = null
         private var navigationJob: Job? = null
+        private val _selectedEvent = MutableStateFlow<EventList?>(null)
+        val selectedEvent = _selectedEvent.asStateFlow()
 
-        init {
+    init {
             _uiState.value = HomeUIState(helloMessageState = MessageUIState.Success("2b"))
             fetchEvents()
         }
@@ -298,4 +305,22 @@ class HomeViewModel
                         }
                 }
         }
+
+    fun fetchEventById(eventId: Int) {
+        viewModelScope.launch {
+            getEventByIdUseCase(eventId).collect { resource ->
+                when (resource) {
+                    is Resource.Success -> _selectedEvent.value = resource.data
+                    is Resource.Error -> {
+                        Log.e("HomeViewModel", "Evento no encontrado: ${resource.message}")
+                        _selectedEvent.value = null
+                    }
+                }
+            }
+        }
     }
+    fun clearSelectedEvent() {
+        _selectedEvent.value = null
+    }
+
+}

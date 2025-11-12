@@ -1,6 +1,6 @@
 package ar.edu.unlam.mobile.scaffolding.ui.components
 
-import androidx.compose.animation.core.Animatable
+/*import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,10 +14,11 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.launch
+import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
 
 @Composable
 fun AnimatedEventCard(
-    eventCard: Event,
+    eventCard: EventList,
     onClose: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
@@ -25,25 +26,22 @@ fun AnimatedEventCard(
     val density = LocalDensity.current
     val screenHeightPx = with(density) { screenHeightDp.toPx() }
 
-    //  sube hasta la mitad de la pantalla
     val finalPositionPx = screenHeightPx * 0.4f
-
     val offsetY = remember { Animatable(screenHeightPx) }
 
     LaunchedEffect(eventCard) {
         offsetY.animateTo(
             targetValue = finalPositionPx,
-            animationSpec = tween(durationMillis = 1000),
+            animationSpec = tween(durationMillis = 800)
         )
     }
 
     Box(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .offset { IntOffset(x = 0, y = offsetY.value.toInt()) }
-                .zIndex(10f)
-                .padding(horizontal = 16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .offset { IntOffset(0, offsetY.value.toInt()) }
+            .zIndex(10f)
+            .padding(horizontal = 16.dp)
     ) {
         EventHomeCard(
             event = eventCard,
@@ -52,11 +50,11 @@ fun AnimatedEventCard(
                 scope.launch {
                     offsetY.animateTo(
                         targetValue = screenHeightPx,
-                        animationSpec = tween(durationMillis = 500),
+                        animationSpec = tween(durationMillis = 500)
                     )
                     onClose()
                 }
-            },
+            }
         )
     }
-}
+}*/

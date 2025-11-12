@@ -4,161 +4,90 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ar.edu.unlam.mobile.scaffolding.R
+import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
 import ar.edu.unlam.mobile.scaffolding.ui.theme.PrimaryGreen
-import ar.edu.unlam.mobile.scaffolding.ui.theme.ScaffoldingV2Theme
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
-
-data class Event(
-    val id: String,
-    val name: String,
-    val dateTime: String,
-    val image1: String,
-    val image2: String,
-    val creatorId: Int,
-    val lat: Double,
-    val lng: Double,
-)
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun EventHomeCard(
-    event: Event,
+    event: EventList,
     distance: String,
     onViewEventClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Nombre del evento
+            // Título
             Text(
-                text = event.name,
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                text = event.title,
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
             )
 
-            // Fecha
-            Text(
-                text = "Fecha: ${event.dateTime}",
-                style = MaterialTheme.typography.bodyMedium,
-            )
+            // Fecha formateada
+            val formattedDate = remember(event.dateTime) {
+                val sdf = SimpleDateFormat("dd/MM/yyyy - HH:mm", Locale.getDefault())
+                sdf.format(Date(event.dateTime))
+            }
+            Text(text = "Fecha: $formattedDate", style = MaterialTheme.typography.bodyMedium)
 
-            // Estado del lugar
-            Text(
-                text = "Estado del lugar",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary,
-            )
+            // Descripción
+            if (!event.description.isNullOrEmpty()) {
+                Text(
+                    text = event.description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
 
-            // Fila de imágenes
-            EventImagesRow(image1 = event.image1, image2 = event.image2)
+            // Imagen
+            AsyncImage(
+                model = event.image ?: R.drawable.sin_imagen,
+                contentDescription = "Imagen del evento",
+                placeholder = rememberAsyncImagePainter(R.drawable.sin_imagen),
+                error = rememberAsyncImagePainter(R.drawable.sin_imagen),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp)
+                    .clip(RoundedCornerShape(12.dp)),
+                contentScale = ContentScale.Crop
+            )
 
             // Distancia
-            Text(
-                text = "Distancia: $distance",
-                style = MaterialTheme.typography.bodySmall,
-            )
+            Text(text = "Distancia: $distance", style = MaterialTheme.typography.bodySmall)
 
-            // Botón "Ver Evento"
+            // Botón
             Button(
                 onClick = onViewEventClick,
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
+                modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(8.dp)
             ) {
                 Text("Ver Evento", color = MaterialTheme.colorScheme.onPrimary)
             }
         }
     }
 }
-
-@Composable
-fun EventImagesRow(
-    image1: String,
-    image2: String,
-) {
-    Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .height(120.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        AsyncImage(
-            model = image1.ifBlank { R.drawable.sin_imagen },
-            contentDescription = "Imagen 1 del evento",
-            placeholder = rememberAsyncImagePainter(R.drawable.sin_imagen),
-            error = rememberAsyncImagePainter(R.drawable.sin_imagen),
-            modifier =
-                Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .clip(RoundedCornerShape(12.dp)),
-            contentScale = ContentScale.Crop,
-        )
-
-        AsyncImage(
-            model = image2.ifBlank { R.drawable.sin_imagen },
-            contentDescription = "Imagen 2 del evento",
-            placeholder = rememberAsyncImagePainter(R.drawable.sin_imagen),
-            error = rememberAsyncImagePainter(R.drawable.sin_imagen),
-            modifier =
-                Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .clip(RoundedCornerShape(12.dp)),
-            contentScale = ContentScale.Crop,
-        )
-    }
+fun getEventDateById(eventList: List<EventList>, eventId: String): Long? {
+    return eventList.find { it.id == eventId }?.dateTime
 }
-
-@Preview(showBackground = true)
-@Composable
-fun SingleEventPreviewPreview() {
-    ScaffoldingV2Theme {
-        SingleEventPreview()
-    }
-}
-
-// prueba simple de EventHomeCard
-@Composable
-fun SingleEventPreview() {
-    val sampleEvent =
-        Event(
-            id = "1",
-            name = "Concierto al Aire Libre",
-            dateTime = "01/01/25 - 01:15pm",
-            image1 = "", // vacío para probar "Sin imagen"
-            image2 = "https://picsum.photos/301/200",
-            creatorId = 123,
-            lat = -34.6037,
-            lng = -58.3816,
-        )
-
-    EventHomeCard(
-        event = sampleEvent,
-        distance = "200 mts",
-        onViewEventClick = { /* Acción al tocar el botón */ },
-    )
-}
-// necesita en rawable un archivo fail_even_picture.jpg
-// en caso de que no pueda cargar la imagen
