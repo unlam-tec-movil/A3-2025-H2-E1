@@ -326,9 +326,22 @@ class EventRepositoryImpl
                 emit(Resource.Success(eventList))
             }
 
-        override suspend fun getEventList(id: Int): Flow<Resource<EventList>> {
-            TODO("Not yet implemented")
-        }
+        override suspend fun getEventList(id: Int): Flow<Resource<EventList>> =
+            flow {
+                mockEvents.find { it.eventId == id.toString() }?.let { eventEntity ->
+                    val eventList =
+                        EventList(
+                            id = eventEntity.eventId,
+                            title = eventEntity.title,
+                            description = eventEntity.description,
+                            dateTime = eventEntity.dateTime,
+                            lat = eventEntity.lat,
+                            lng = eventEntity.lng,
+                            image = eventEntity.imageUrl,
+                        )
+                    emit(Resource.Success(eventList))
+                }
+            }
 
         override suspend fun getEvent(id: Int): Flow<Resource<Event>> {
             TODO("Not yet implemented")

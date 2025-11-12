@@ -44,11 +44,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
-import ar.edu.unlam.mobile.scaffolding.ui.components.AnimatedEventCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.CreateEventPopUp
-import ar.edu.unlam.mobile.scaffolding.ui.components.Event
+import ar.edu.unlam.mobile.scaffolding.ui.components.EventHomeCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventSearchBar
 import ar.edu.unlam.mobile.scaffolding.ui.components.FloatingButtons
 import ar.edu.unlam.mobile.scaffolding.ui.components.NearbyMap
@@ -63,9 +61,7 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val searchBarState by viewModel.searchUiState.collectAsStateWithLifecycle()
-
-    // cambiar por un EventList despues, y que sea un valor del uiState de paso
-    var eventoSeleccionado by remember { mutableStateOf<SuggestedEvent?>(null) }
+    val selectedEvent by viewModel.selectedEvent.collectAsState()
 
     var showCreateEventDialog by remember { mutableStateOf(false) }
     var isSessionActive by remember { mutableStateOf(false) }
@@ -75,6 +71,8 @@ fun HomeScreen(
         remember {
             context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
         }
+
+    // Actualiza la rotación del mapa según el sensor
     MapRotationSensor(
         enabled = uiState.mapProperties.rotationBySensor,
         sensorManager = sensorManager,
@@ -95,6 +93,7 @@ fun HomeScreen(
             }
 
             is MessageUIState.Success -> {
+                // --- MAPA ---
                 NearbyMap(
                     nearbyEvents = uiState.eventList,
                     modifier = Modifier.matchParentSize(),
@@ -106,47 +105,52 @@ fun HomeScreen(
                             )
                         }
                     },
-                    onEventoClick = { eventoSeleccionado = it },
+                    onEventoClick = { evento ->
+                        // Traemos el evento completo del repositorio
+                        viewModel.fetchEventById(evento.id.toInt())
+                    },
                 )
 
-                //  Contenido encima del mapa (barra de búsqueda y saludo)
-                // TODO llamar al "eventList" con la id del "suggestedEvent" del repositorio
-                // De momento solo muestra los datos de suggestedEvent
-                eventoSeleccionado?.let { evento ->
-                    val eventCard =
-                        Event(
-                            id = evento.id,
-                            name = evento.title,
-                            dateTime = "01/12/2025 - 20:00 hs",
-                            image1 = "https://picsum.photos/300/200",
-                            image2 = "https://picsum.photos/301/200",
-                            creatorId = 1,
-                            lat = evento.lat,
-                            lng = evento.lng,
+                // --- EVENTO SELECCIONADO ---
+                selectedEvent?.let { event ->
+                    Box(
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        EventHomeCard(
+                            event = event,
+                            distance = "350 mts",
+                            onViewEventClick = { viewModel.clearSelectedEvent() },
+                            modifier =
+                                Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .padding(top = 100.dp),
                         )
-
-                    AnimatedEventCard(eventCard = eventCard, onClose = { eventoSeleccionado = null })
+                    }
                 }
 
+                // --- BARRA DE BÚSQUEDA ---
                 Column(
                     modifier =
                         Modifier
                             .fillMaxWidth()
-                            .zIndex(zIndex = 20f),
+                            .zIndex(20f),
                 ) {
-                    // barra de búsqueda
                     EventSearchBar(
                         searchUiState = searchBarState,
                         onSearchQueryChange = viewModel::onSearchQueryChange,
                         onSearch = viewModel::onSearch,
                         onSuggestionSelected = { event ->
                             viewModel.onEventSelected(event)
-                            eventoSeleccionado = event
+                            viewModel.fetchEventById(event.id.toInt())
                         },
                         onActiveChange = viewModel::onActiveChange,
                     )
+
                     Row {
-                        // Cantidad de resultados de búsqueda
                         AnimatedVisibility(searchBarState.lastQuery.isNotEmpty()) {
                             Card(
                                 colors =
@@ -167,9 +171,10 @@ fun HomeScreen(
                                 )
                             }
                         }
+
                         Spacer(modifier = Modifier.weight(1f))
 
-                        // Botón para cambiar modo de rotación y brujula
+                        // Botón de rotación y brújula
                         FloatingActionButton(
                             onClick = {
                                 val props = uiState.mapProperties
@@ -205,6 +210,7 @@ fun HomeScreen(
                     }
                 }
 
+                // --- BOTONES FLOTANTES ---
                 Column(
                     modifier =
                         Modifier
@@ -215,11 +221,11 @@ fun HomeScreen(
                         isSessionActive = isSessionActive,
                         onClickCamera = { },
                         onClickAddEvent = { showCreateEventDialog = true },
-                        onClickStartSession = {
-                            isSessionActive = !isSessionActive
-                        },
+                        onClickStartSession = { isSessionActive = !isSessionActive },
                     )
                 }
+
+                // --- DIALOGO DE CREACIÓN DE EVENTO ---
                 if (showCreateEventDialog) {
                     CreateEventPopUp(
                         onDismiss = { showCreateEventDialog = false },
