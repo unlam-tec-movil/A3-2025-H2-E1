@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -48,6 +47,7 @@ fun UserProfileScreen(
     userId: Long,
     viewModel: UserProfileViewModel = hiltViewModel(),
     navController: NavController,
+    modifier: Modifier,
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -72,22 +72,22 @@ fun UserProfileScreen(
             )
         },
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        modifier = modifier,
     ) { paddingValues ->
         Box(
             modifier =
-                Modifier
-                    .fillMaxSize()
+                modifier
                     .padding(paddingValues),
         ) {
             when (uiState.profileUiState) {
                 MessageUIState.Loading -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Box(modifier = modifier, contentAlignment = Alignment.Center) {
                         CircularProgressIndicator()
                     }
                 }
 
                 is MessageUIState.Error -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Box(modifier = modifier, contentAlignment = Alignment.Center) {
                         Text(text = "Error: ${(uiState.profileUiState as MessageUIState.Error).message}")
                     }
                 }

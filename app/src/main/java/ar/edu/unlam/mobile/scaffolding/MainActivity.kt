@@ -1,9 +1,13 @@
 package ar.edu.unlam.mobile.scaffolding
 
+import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -24,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -50,7 +55,11 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // enableEdgeToEdge()
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.light(
+                Color.TRANSPARENT, Color.TRANSPARENT,
+            )
+        )
         setContent {
             ScaffoldingV2Theme {
                 // A surface container using the 'background' color from the theme
@@ -79,6 +88,7 @@ fun MainScreen() {
 
     val snackBarHostState = remember { SnackbarHostState() }
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             if (currentRoute == "home" || currentRoute == "eventList" || currentRoute == "user/{id}") {
                 BottomBar(
@@ -147,7 +157,10 @@ fun MainScreen() {
             // Por parámetro recibe la ruta que se utilizará para navegar a dicho destino.
             composable(HOME_SCREEN_ROUTE) {
                 // Home es el componente en sí que es el destino de navegación.
-                HomeScreen(modifier = Modifier.padding(paddingValue))
+                HomeScreen(
+                    modifier = Modifier.padding(paddingValue),
+                    navController = controller,
+                )
             }
 
             composable("eventList") {
@@ -176,6 +189,7 @@ fun MainScreen() {
                 val id = navBackStackEntry?.arguments?.getLong("id") ?: 1L
                 UserProfileScreen(
                     userId = id,
+                    modifier = Modifier.fillMaxSize(),
                     navController = controller,
                 )
             }

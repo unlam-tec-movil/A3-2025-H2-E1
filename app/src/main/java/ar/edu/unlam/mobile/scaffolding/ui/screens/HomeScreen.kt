@@ -1,5 +1,6 @@
 package ar.edu.unlam.mobile.scaffolding.ui.screens
 
+import android.app.Activity
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -8,9 +9,6 @@ import android.hardware.SensorManager
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -31,6 +29,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,10 +40,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.ui.components.AnimatedEventCard
@@ -60,6 +63,7 @@ const val HOME_SCREEN_ROUTE = "home"
 fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
+    navController: NavHostController,
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val searchBarState by viewModel.searchUiState.collectAsStateWithLifecycle()
@@ -71,18 +75,14 @@ fun HomeScreen(
     var isSessionActive by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
-    val sensorManager =
-        remember {
-            context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        }
+    val sensorManager = remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
+
     MapRotationSensor(
         enabled = uiState.mapProperties.rotationBySensor,
         sensorManager = sensorManager,
         currentOrientation = uiState.mapProperties.mapOrientation,
-        onOrientationChanged = { newAngle ->
-            viewModel.onMapPropertiesChanged(
-                uiState.mapProperties.copy(mapOrientation = newAngle),
-            )
+        onOrientationChanged = {
+            viewModel.onMapPropertiesChanged(uiState.mapProperties.copy(mapOrientation = it))
         },
     )
 
@@ -99,11 +99,9 @@ fun HomeScreen(
                     nearbyEvents = uiState.eventList,
                     modifier = Modifier.matchParentSize(),
                     mapProperties = uiState.mapProperties,
-                    onMapRotationChanged = { orientation ->
-                        if (!uiState.mapProperties.rotationBySensor) {
-                            viewModel.onMapPropertiesChanged(
-                                uiState.mapProperties.copy(mapOrientation = orientation),
-                            )
+                    rotationChanged = { orientation ->
+                        if (uiState.mapProperties.rotationByGesture) {
+                            viewModel.onMapPropertiesChanged(uiState.mapProperties.copy(mapOrientation = orientation))
                         }
                     },
                     onEventoClick = { eventoSeleccionado = it },
@@ -192,14 +190,10 @@ fun HomeScreen(
                                     .size(52.dp)
                                     .padding(12.dp),
                         ) {
-                            val animatedOrientation by animateFloatAsState(
-                                targetValue = uiState.mapProperties.mapOrientation,
-                                animationSpec = tween(300, easing = LinearOutSlowInEasing),
-                            )
                             Icon(
                                 imageVector = Icons.Default.Navigation,
                                 contentDescription = "Cambiar modo de rotación",
-                                modifier = Modifier.rotate(animatedOrientation),
+                                modifier = Modifier.rotate(uiState.mapProperties.mapOrientation),
                             )
                         }
                     }
@@ -252,13 +246,15 @@ fun MapRotationSensor(
     onOrientationChanged: (Float) -> Unit,
 ) {
     DisposableEffect(enabled) {
-        val rotationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        val rotationSensor =
+            sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+                ?: return@DisposableEffect onDispose {}
 
-        if (enabled && rotationSensor != null) {
+        if (enabled) {
             val listener =
                 object : SensorEventListener {
-                    private var lastSmoothed = currentOrientation
-                    private val alpha = 0.2f
+                    private var lastOrientation = currentOrientation
+                    private val alpha = 0.1f
 
                     override fun onSensorChanged(event: SensorEvent?) {
                         if (event?.sensor?.type == Sensor.TYPE_ROTATION_VECTOR) {
@@ -267,12 +263,16 @@ fun MapRotationSensor(
                             val orientation = FloatArray(3)
                             SensorManager.getOrientation(rotationMatrix, orientation)
 
-                            // Intento de suavizado de la rotación, en el emulador va bien, en celu maso
-                            val azimuth = Math.toDegrees(orientation[0].toDouble()).toFloat()
-                            val diff = ((azimuth - lastSmoothed + 540f) % 360f) - 180f
-                            lastSmoothed += alpha * diff
+                            // Convierte la orientación a grados
+                            var azimuth = Math.toDegrees(orientation[0].toDouble()).toFloat()
+                            // Esto cambia el eje de sentido horario a antihorario para que la brujula apunte
+                            // bien el este y el oeste, pero da problemas al poner la app en vertical.
+                            azimuth = (360 - azimuth) % 360
 
-                            onOrientationChanged(lastSmoothed)
+                            val diff = ((azimuth - lastOrientation + 540f) % 360f) - 180f
+                            lastOrientation += alpha * diff
+
+                            onOrientationChanged(lastOrientation)
                         }
                     }
 
@@ -283,7 +283,6 @@ fun MapRotationSensor(
                 }
 
             sensorManager.registerListener(listener, rotationSensor, SensorManager.SENSOR_DELAY_UI)
-
             onDispose { sensorManager.unregisterListener(listener) }
         } else {
             onDispose {}

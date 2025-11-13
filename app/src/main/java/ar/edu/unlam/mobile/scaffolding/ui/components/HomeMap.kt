@@ -40,7 +40,7 @@ fun NearbyMap(
     nearbyEvents: List<SuggestedEvent>,
     modifier: Modifier = Modifier,
     mapProperties: MapProperties,
-    onMapRotationChanged: (Float) -> Unit = {},
+    rotationChanged: (Float) -> Unit = {},
     onEventoClick: (SuggestedEvent) -> Unit = {}, //  callback al hacer clic en un evento
 ) {
     val context = LocalContext.current
@@ -93,16 +93,14 @@ fun NearbyMap(
                 controller.setZoom(15.0)
                 controller.setCenter(currentLocation.value)
 
-                // Esto se usa para rotar la brujula (por gestos o sensor) notificando al
-                // exterior el cambio de orientacion utilizando el override de ObservableMapView
-                onOrientationChange = { orientation ->
-                    onMapRotationChanged(orientation)
-                }
-
-                // Gestos de rotación
+                // Rotacion por gestos
                 val rotationGesture = RotationGestureOverlay(this)
-                rotationGesture.isEnabled = mapProperties.rotationByGesture
                 overlays.add(rotationGesture)
+
+                // Esto se usa para rotar la brujula (por gestos) enviando la orientacion actual del mapa
+                onOrientationChange = { orientation ->
+                    rotationChanged(orientation)
+                }
 
                 tag = mapOf("gesture" to rotationGesture)
             }
@@ -111,14 +109,13 @@ fun NearbyMap(
             val tagMap = mv.tag as? Map<*, *> ?: return@AndroidView
             val rotationGestureOverlay = tagMap["gesture"] as RotationGestureOverlay
 
-            // Habilitar/deshabilitar rotación por gestos
+            // Habilita la rotación por gestos
             rotationGestureOverlay.isEnabled = mapProperties.rotationByGesture
 
-            // Si se activa el sensor, el icono se invierte para que funcione como brujula
+            // La rotacion por sensor esta en la screen y cuando la recives la rotacion del celu
+            // la invierte para que el mapa apunte a la direccion de la brujula correctamente
             if (mapProperties.rotationBySensor) {
                 mv.mapOrientation = -mapProperties.mapOrientation
-            } else {
-                mv.mapOrientation = mapProperties.mapOrientation
             }
 
             mv.overlays.removeAll { it is Marker }
