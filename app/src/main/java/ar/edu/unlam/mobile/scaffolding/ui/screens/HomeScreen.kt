@@ -11,6 +11,11 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -31,6 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -62,6 +68,7 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
     val searchBarState by viewModel.searchUiState.collectAsStateWithLifecycle()
     val selectedEvent by viewModel.selectedEvent.collectAsState()
+    val userLocation by viewModel.userLocation.collectAsState()
 
     var showCreateEventDialog by remember { mutableStateOf(false) }
     var isSessionActive by remember { mutableStateOf(false) }
@@ -109,26 +116,66 @@ fun HomeScreen(
                         // Traemos el evento completo del repositorio
                         viewModel.fetchEventById(evento.id.toInt())
                     },
+                    // cuando el mapa obtiene la ubicación del usuario
+                    onUserLocationChanged = { location ->
+                        viewModel.setUserLocation(location)
+                    },
                 )
 
-                // --- EVENTO SELECCIONADO ---
+                // Estado local para animar la aparición del EventHomeCard
+                var showEventCard by remember { mutableStateOf(false) }
+
+                LaunchedEffect(selectedEvent) {
+                    showEventCard = selectedEvent != null
+                }
                 selectedEvent?.let { event ->
-                    Box(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .fillMaxSize(),
-                        contentAlignment = Alignment.Center,
+                    val distanceText =
+                        userLocation?.let { userLoc ->
+                            val eventLocation =
+                                android.location.Location("").apply {
+                                    latitude = event.lat
+                                    longitude = event.lng
+                                }
+                            val distanceMeters = userLoc.distanceTo(eventLocation)
+                            if (distanceMeters >= 1000) {
+                                "${"%.1f".format(distanceMeters / 1000)} km"
+                            } else {
+                                "${distanceMeters.toInt()} mts"
+                            }
+                        } ?: "Calculando..."
+
+                    // Contenedor que ocupa toda la pantalla y alinea el contenido al fondo
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Bottom,
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        EventHomeCard(
-                            event = event,
-                            distance = "350 mts",
-                            onViewEventClick = { viewModel.clearSelectedEvent() },
-                            modifier =
-                                Modifier
-                                    .padding(horizontal = 16.dp)
-                                    .padding(top = 100.dp),
-                        )
+                        AnimatedVisibility(
+                            visible = showEventCard,
+                            enter =
+                                expandVertically(
+                                    expandFrom = Alignment.Bottom,
+                                    animationSpec = tween(durationMillis = 300),
+                                ) + fadeIn(animationSpec = tween(durationMillis = 300)),
+                            exit =
+                                shrinkVertically(
+                                    shrinkTowards = Alignment.Bottom,
+                                    animationSpec = tween(durationMillis = 300),
+                                ) + fadeOut(animationSpec = tween(durationMillis = 300)),
+                        ) {
+                            EventHomeCard(
+                                event = event,
+                                distance = distanceText,
+                                onViewEventClick = {
+                                    showEventCard = false
+                                    viewModel.clearSelectedEvent()
+                                },
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 16.dp),
+                            )
+                        }
                     }
                 }
 
