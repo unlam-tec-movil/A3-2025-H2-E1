@@ -15,33 +15,12 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Navigation
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -56,6 +35,7 @@ import ar.edu.unlam.mobile.scaffolding.ui.components.EventHomeCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventSearchBar
 import ar.edu.unlam.mobile.scaffolding.ui.components.FloatingButtons
 import ar.edu.unlam.mobile.scaffolding.ui.components.NearbyMap
+import com.google.android.gms.location.*
 
 const val HOME_SCREEN_ROUTE = "home"
 
@@ -64,6 +44,7 @@ const val HOME_SCREEN_ROUTE = "home"
 fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
+    onNavigateToEvent: (Int) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val searchBarState by viewModel.searchUiState.collectAsStateWithLifecycle()
@@ -74,12 +55,65 @@ fun HomeScreen(
     var isSessionActive by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
-    val sensorManager =
+    val sensorManager = remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
+
+    // ---------------------------
+    // UBICACIÓN DESDE HOME SCREEN
+    // ---------------------------
+
+    val fusedLocationClient =
         remember {
-            context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+            LocationServices.getFusedLocationProviderClient(context)
         }
 
-    // Actualiza la rotación del mapa según el sensor
+    // Última ubicación conocida
+    LaunchedEffect(Unit) {
+        try {
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                location?.let { viewModel.setUserLocation(it) }
+            }
+        } catch (_: SecurityException) {
+        }
+    }
+
+    // Actualizaciones periódicas (cada 3s)
+    val locationRequest =
+        remember {
+            LocationRequest
+                .Builder(
+                    Priority.PRIORITY_HIGH_ACCURACY,
+                    3000,
+                ).build()
+        }
+
+    val locationCallback =
+        remember {
+            object : LocationCallback() {
+                override fun onLocationResult(result: LocationResult) {
+                    result.lastLocation?.let { viewModel.setUserLocation(it) }
+                }
+            }
+        }
+
+    DisposableEffect(Unit) {
+        try {
+            fusedLocationClient.requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                context.mainLooper,
+            )
+        } catch (_: SecurityException) {
+        }
+
+        onDispose {
+            fusedLocationClient.removeLocationUpdates(locationCallback)
+        }
+    }
+
+    // ---------------------------
+    // MAP ROTATION SENSOR
+    // ---------------------------
+
     MapRotationSensor(
         enabled = uiState.mapProperties.rotationBySensor,
         sensorManager = sensorManager,
@@ -90,6 +124,10 @@ fun HomeScreen(
             )
         },
     )
+
+    // ======================
+    // PANTALLA PRINCIPAL
+    // ======================
 
     Box(modifier = modifier.fillMaxSize()) {
         when (val helloState = uiState.helloMessageState) {
@@ -113,22 +151,19 @@ fun HomeScreen(
                         }
                     },
                     onEventoClick = { evento ->
-                        // Traemos el evento completo del repositorio
                         viewModel.fetchEventById(evento.id.toInt())
-                    },
-                    // cuando el mapa obtiene la ubicación del usuario
-                    onUserLocationChanged = { location ->
-                        viewModel.setUserLocation(location)
                     },
                 )
 
-                // Estado local para animar la aparición del EventHomeCard
+                // Estado para animar tarjeta del evento seleccionado
                 var showEventCard by remember { mutableStateOf(false) }
 
                 LaunchedEffect(selectedEvent) {
                     showEventCard = selectedEvent != null
                 }
+
                 selectedEvent?.let { event ->
+
                     val distanceText =
                         userLocation?.let { userLoc ->
                             val eventLocation =
@@ -144,7 +179,6 @@ fun HomeScreen(
                             }
                         } ?: "Calculando..."
 
-                    // Contenedor que ocupa toda la pantalla y alinea el contenido al fondo
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.Bottom,
@@ -168,6 +202,7 @@ fun HomeScreen(
                                 distance = distanceText,
                                 onViewEventClick = {
                                     showEventCard = false
+                                    onNavigateToEvent(event.id.toInt()) // <<--- NAVEGACIÓN
                                     viewModel.clearSelectedEvent()
                                 },
                                 modifier =
@@ -179,7 +214,7 @@ fun HomeScreen(
                     }
                 }
 
-                // --- BARRA DE BÚSQUEDA ---
+                // --- Búsqueda ---
                 Column(
                     modifier =
                         Modifier
@@ -221,7 +256,6 @@ fun HomeScreen(
 
                         Spacer(modifier = Modifier.weight(1f))
 
-                        // Botón de rotación y brújula
                         FloatingActionButton(
                             onClick = {
                                 val props = uiState.mapProperties
@@ -257,7 +291,7 @@ fun HomeScreen(
                     }
                 }
 
-                // --- BOTONES FLOTANTES ---
+                // --- Botones Flotantes ---
                 Column(
                     modifier =
                         Modifier
@@ -272,7 +306,7 @@ fun HomeScreen(
                     )
                 }
 
-                // --- DIALOGO DE CREACIÓN DE EVENTO ---
+                // --- Crear Evento ---
                 if (showCreateEventDialog) {
                     CreateEventPopUp(
                         onDismiss = { showCreateEventDialog = false },
@@ -320,7 +354,6 @@ fun MapRotationSensor(
                             val orientation = FloatArray(3)
                             SensorManager.getOrientation(rotationMatrix, orientation)
 
-                            // Intento de suavizado de la rotación, en el emulador va bien, en celu maso
                             val azimuth = Math.toDegrees(orientation[0].toDouble()).toFloat()
                             val diff = ((azimuth - lastSmoothed + 540f) % 360f) - 180f
                             lastSmoothed += alpha * diff
