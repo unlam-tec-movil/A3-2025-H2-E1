@@ -19,18 +19,21 @@ class UserRepositoryImpl
                     name = "Juan Rodriguez",
                     avatarUrl = "https://picsum.photos/id/1005/200",
                     description = "Desarrollador Android y entusiasta de Kotlin.",
+                    password = "123",
                 ),
                 UserEntity(
                     id = 2,
                     name = "Ana García",
                     avatarUrl = "https://picsum.photos/id/1011/200",
                     description = "Diseñadora UX/UI.",
+                    password = "123",
                 ),
                 UserEntity(
                     id = 3,
                     name = "Carlos Martinez",
                     avatarUrl = "https://picsum.photos/id/1012/200",
                     description = "Project Manager.",
+                    password = "123",
                 ),
             )
 
@@ -42,5 +45,13 @@ class UserRepositoryImpl
                 } else {
                     emit(Resource.Error(message = "Usuario con ID $userId no encontrado."))
                 }
+            }
+
+        fun getUserByNameAndPassword(
+            name: String,
+            password: String,
+        ): UserEntity? =
+            mockUsers.find {
+                it.name.equals(name, ignoreCase = true) && it.password == password
             }
     }

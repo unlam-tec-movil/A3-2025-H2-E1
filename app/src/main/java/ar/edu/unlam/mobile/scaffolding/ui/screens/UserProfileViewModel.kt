@@ -2,6 +2,7 @@ package ar.edu.unlam.mobile.scaffolding.ui.screens
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ar.edu.unlam.mobile.scaffolding.data.datasources.local.SessionManager
 import ar.edu.unlam.mobile.scaffolding.domain.user.usercase.GetUserUseCase
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.utils.Resource
@@ -24,6 +25,7 @@ class UserProfileViewModel
     @Inject
     constructor(
         private val getUser: GetUserUseCase,
+        private val sessionManager: SessionManager,
     ) : ViewModel() {
         private val _uiState = MutableStateFlow(UserProfileUIState())
         val uiState = _uiState.asStateFlow()
@@ -44,6 +46,7 @@ class UserProfileViewModel
                                 )
                             }
                         }
+
                         is Resource.Error -> {
                             _uiState.update {
                                 it.copy(profileUiState = MessageUIState.Error(result.message))
@@ -52,5 +55,9 @@ class UserProfileViewModel
                     }
                 }
             }
+        }
+
+        fun logout() {
+            sessionManager.logout()
         }
     }

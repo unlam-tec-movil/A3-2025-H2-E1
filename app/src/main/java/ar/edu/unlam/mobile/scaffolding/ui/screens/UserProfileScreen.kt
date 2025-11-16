@@ -137,6 +137,8 @@ fun UserProfileScreen(
 
                         Button(
                             onClick = {
+                                viewModel.logout()
+
                                 navController.navigate("login") {
                                     popUpTo(0)
                                 }
