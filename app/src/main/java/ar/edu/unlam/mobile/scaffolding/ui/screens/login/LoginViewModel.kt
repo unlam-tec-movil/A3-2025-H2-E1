@@ -27,20 +27,16 @@ class LoginViewModel
 
         fun onLoginClicked() {
             val current = _formState.value
-            val isValid = loginUseCase(current.email, current.password)
 
-            _formState.value =
-                if (isValid) {
+            val success = loginUseCase(current.email, current.password)
+
+            if (success) {
+                _formState.value = current.copy(isLoggedIn = true)
+            } else {
+                _formState.value =
                     current.copy(
-                        isLoggedIn = true,
-                        isLoading = false,
-                        errorMessage = null,
+                        errorMessage = "Credenciales inválidas",
                     )
-                } else {
-                    current.copy(
-                        errorMessage = "Valores invalidos",
-                        isLoading = false,
-                    )
-                }
+            }
         }
     }

@@ -47,12 +47,18 @@ android {
     }
 
     buildTypes {
-        release {
+        getByName("debug") {
+            buildConfigField("boolean", "AUTO_LOGIN", "true")
+            buildConfigField("String", "DEV_TOKEN", "\"dev_token_123\"")
+        }
+        getByName("release") {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            buildConfigField("boolean", "AUTO_LOGIN", "false")
+            buildConfigField("String", "DEV_TOKEN", "\"\"")
         }
     }
     compileOptions {
