@@ -156,14 +156,18 @@ fun MainScreen() {
         NavHost(navController = controller, startDestination = HOME_SCREEN_ROUTE) {
             // composable es el componente que se usa para definir un destino de navegación.
             // Por parámetro recibe la ruta que se utilizará para navegar a dicho destino.
+            // Home es el componente en sí que es el destino de navegación.
             composable(HOME_SCREEN_ROUTE) {
-                // Home es el componente en sí que es el destino de navegación.
-                HomeScreen(
+               HomeScreen(
                     modifier = Modifier.padding(paddingValue),
                     navController = controller,
+                    onNavigateToEvent = { eventId ->
+                        controller.navigate("eventDetails/$eventId")
+                    },
                 )
             }
 
+            // LISTA DE EVENTOS
             composable("eventList") {
                 EventListScreen(
                     modifier = Modifier.padding(paddingValue),
@@ -171,6 +175,7 @@ fun MainScreen() {
                 )
             }
 
+            // PERFIL DE USUARIO
             composable(
                 route = "user/{id}",
                 arguments = listOf(navArgument("id") { type = NavType.LongType }),
@@ -183,6 +188,7 @@ fun MainScreen() {
                 )
             }
 
+            // USER PROFILE
             composable(
                 route = "userProfile/{id}",
                 arguments = listOf(navArgument("id") { type = NavType.LongType }),
@@ -195,6 +201,7 @@ fun MainScreen() {
                 )
             }
 
+            // FORMULARIO
             composable("form") {
                 FormScreen(
                     modifier = Modifier.padding(paddingValue),
@@ -202,9 +209,10 @@ fun MainScreen() {
                 )
             }
 
+            // EVENT DETAILS **CORREGIDO A IntType**
             composable(
                 route = "eventDetails/{id}",
-                arguments = listOf(navArgument("id") { type = NavType.StringType }),
+                arguments = listOf(navArgument("id") { type = NavType.IntType }),
             ) { navBackStackEntry ->
                 val id = navBackStackEntry.arguments?.getInt("id") ?: 1
                 EventDetailsScreen(
@@ -214,17 +222,17 @@ fun MainScreen() {
                 )
             }
 
+            // LOGIN
             composable("login") {
-                LoginScreen(
-                    navController = controller,
-                )
+                LoginScreen(navController = controller)
             }
 
+            // REGISTER
             composable("register") {
-                RegisterScreen(
-                    navController = controller,
-                )
+                RegisterScreen(navController = controller)
             }
+
+            // CONFIRM PARTICIPATION
             composable(
                 route = "confirmParticipation/{eventId}/{eventName}/{eventDate}/{eventPlace}",
                 arguments =
@@ -245,7 +253,7 @@ fun MainScreen() {
                     eventPlace = eventPlace,
                     onBackClick = { controller.popBackStack() },
                     onAddToCalendarClick = { /* TODO */ },
-                    onParticipateClick = { /*todo*/ },
+                    onParticipateClick = { /* TODO */ },
                 )
             }
         }

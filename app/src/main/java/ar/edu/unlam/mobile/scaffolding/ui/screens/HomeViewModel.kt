@@ -1,5 +1,7 @@
 package ar.edu.unlam.mobile.scaffolding.ui.screens
 
+import android.health.connect.datatypes.ExerciseRoute
+import android.location.Location
 import android.net.Uri
 import android.os.Build
 import android.util.Log
@@ -45,6 +47,7 @@ data class HomeUIState(
     val eventList: List<SuggestedEvent> = emptyList(),
     val mapProperties: MapProperties = MapProperties(),
     val helloMessageState: MessageUIState,
+    val userLocation: ExerciseRoute.Location? = null,
 )
 
 data class SearchUIState(
@@ -89,6 +92,15 @@ class HomeViewModel
         private var navigationJob: Job? = null
         private val _selectedEvent = MutableStateFlow<EventList?>(null)
         val selectedEvent = _selectedEvent.asStateFlow()
+
+        // --- Ubicación del usuario ---
+        private val _userLocation = MutableStateFlow<Location?>(null)
+        val userLocation = _userLocation.asStateFlow()
+
+        fun setUserLocation(location: Location) {
+            _userLocation.value = location
+            Log.d("HomeViewModel", "Ubicación del usuario actualizada: ${location.latitude}, ${location.longitude}")
+        }
 
         init {
             _uiState.value = HomeUIState(helloMessageState = MessageUIState.Success("2b"))
@@ -320,5 +332,9 @@ class HomeViewModel
 
         fun clearSelectedEvent() {
             _selectedEvent.value = null
+        }
+
+        fun setUserLocation(location: ExerciseRoute.Location) {
+            _uiState.update { it.copy(userLocation = location) }
         }
     }
