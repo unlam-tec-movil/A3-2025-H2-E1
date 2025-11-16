@@ -42,6 +42,7 @@ fun NearbyMap(
     mapProperties: MapProperties,
     onMapRotationChanged: (Float) -> Unit = {},
     onEventoClick: (SuggestedEvent) -> Unit = {}, //  callback al hacer clic en un evento
+    onUserLocationChanged: (Location) -> Unit = {},
 ) {
     val context = LocalContext.current
     val permissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -73,6 +74,8 @@ fun NearbyMap(
         val location = getCurrentLocation(context)
         currentLocation.value = location?.let { GeoPoint(it.latitude, it.longitude) }
             ?: GeoPoint(-34.6037, -58.3816) // fallback: Obelisco
+        //  Avisar al ViewModel que tenemos la ubicación del usuario
+        location?.let { onUserLocationChanged(it) }
     }
 
     if (currentLocation.value == null) {

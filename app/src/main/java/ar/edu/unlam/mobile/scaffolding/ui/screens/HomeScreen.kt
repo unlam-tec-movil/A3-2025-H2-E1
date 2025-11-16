@@ -11,31 +11,16 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Navigation
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -50,6 +35,7 @@ import ar.edu.unlam.mobile.scaffolding.ui.components.EventHomeCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventSearchBar
 import ar.edu.unlam.mobile.scaffolding.ui.components.FloatingButtons
 import ar.edu.unlam.mobile.scaffolding.ui.components.NearbyMap
+import com.google.android.gms.location.*
 
 const val HOME_SCREEN_ROUTE = "home"
 
@@ -58,21 +44,76 @@ const val HOME_SCREEN_ROUTE = "home"
 fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
+    onNavigateToEvent: (Int) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val searchBarState by viewModel.searchUiState.collectAsStateWithLifecycle()
     val selectedEvent by viewModel.selectedEvent.collectAsState()
+    val userLocation by viewModel.userLocation.collectAsState()
 
     var showCreateEventDialog by remember { mutableStateOf(false) }
     var isSessionActive by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
-    val sensorManager =
+    val sensorManager = remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
+
+    // ---------------------------
+    // UBICACIÓN DESDE HOME SCREEN
+    // ---------------------------
+
+    val fusedLocationClient =
         remember {
-            context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+            LocationServices.getFusedLocationProviderClient(context)
         }
 
-    // Actualiza la rotación del mapa según el sensor
+    // Última ubicación conocida
+    LaunchedEffect(Unit) {
+        try {
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                location?.let { viewModel.setUserLocation(it) }
+            }
+        } catch (_: SecurityException) {
+        }
+    }
+
+    // Actualizaciones periódicas (cada 3s)
+    val locationRequest =
+        remember {
+            LocationRequest
+                .Builder(
+                    Priority.PRIORITY_HIGH_ACCURACY,
+                    3000,
+                ).build()
+        }
+
+    val locationCallback =
+        remember {
+            object : LocationCallback() {
+                override fun onLocationResult(result: LocationResult) {
+                    result.lastLocation?.let { viewModel.setUserLocation(it) }
+                }
+            }
+        }
+
+    DisposableEffect(Unit) {
+        try {
+            fusedLocationClient.requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                context.mainLooper,
+            )
+        } catch (_: SecurityException) {
+        }
+
+        onDispose {
+            fusedLocationClient.removeLocationUpdates(locationCallback)
+        }
+    }
+
+    // ---------------------------
+    // MAP ROTATION SENSOR
+    // ---------------------------
+
     MapRotationSensor(
         enabled = uiState.mapProperties.rotationBySensor,
         sensorManager = sensorManager,
@@ -83,6 +124,10 @@ fun HomeScreen(
             )
         },
     )
+
+    // ======================
+    // PANTALLA PRINCIPAL
+    // ======================
 
     Box(modifier = modifier.fillMaxSize()) {
         when (val helloState = uiState.helloMessageState) {
@@ -106,33 +151,70 @@ fun HomeScreen(
                         }
                     },
                     onEventoClick = { evento ->
-                        // Traemos el evento completo del repositorio
                         viewModel.fetchEventById(evento.id.toInt())
                     },
                 )
 
-                // --- EVENTO SELECCIONADO ---
+                // Estado para animar tarjeta del evento seleccionado
+                var showEventCard by remember { mutableStateOf(false) }
+
+                LaunchedEffect(selectedEvent) {
+                    showEventCard = selectedEvent != null
+                }
+
                 selectedEvent?.let { event ->
-                    Box(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .fillMaxSize(),
-                        contentAlignment = Alignment.Center,
+
+                    val distanceText =
+                        userLocation?.let { userLoc ->
+                            val eventLocation =
+                                android.location.Location("").apply {
+                                    latitude = event.lat
+                                    longitude = event.lng
+                                }
+                            val distanceMeters = userLoc.distanceTo(eventLocation)
+                            if (distanceMeters >= 1000) {
+                                "${"%.1f".format(distanceMeters / 1000)} km"
+                            } else {
+                                "${distanceMeters.toInt()} mts"
+                            }
+                        } ?: "Calculando..."
+
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Bottom,
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        EventHomeCard(
-                            event = event,
-                            distance = "350 mts",
-                            onViewEventClick = { viewModel.clearSelectedEvent() },
-                            modifier =
-                                Modifier
-                                    .padding(horizontal = 16.dp)
-                                    .padding(top = 100.dp),
-                        )
+                        AnimatedVisibility(
+                            visible = showEventCard,
+                            enter =
+                                expandVertically(
+                                    expandFrom = Alignment.Bottom,
+                                    animationSpec = tween(durationMillis = 300),
+                                ) + fadeIn(animationSpec = tween(durationMillis = 300)),
+                            exit =
+                                shrinkVertically(
+                                    shrinkTowards = Alignment.Bottom,
+                                    animationSpec = tween(durationMillis = 300),
+                                ) + fadeOut(animationSpec = tween(durationMillis = 300)),
+                        ) {
+                            EventHomeCard(
+                                event = event,
+                                distance = distanceText,
+                                onViewEventClick = {
+                                    showEventCard = false
+                                    onNavigateToEvent(event.id.toInt()) // <<--- NAVEGACIÓN
+                                    viewModel.clearSelectedEvent()
+                                },
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 16.dp),
+                            )
+                        }
                     }
                 }
 
-                // --- BARRA DE BÚSQUEDA ---
+                // --- Búsqueda ---
                 Column(
                     modifier =
                         Modifier
@@ -174,7 +256,6 @@ fun HomeScreen(
 
                         Spacer(modifier = Modifier.weight(1f))
 
-                        // Botón de rotación y brújula
                         FloatingActionButton(
                             onClick = {
                                 val props = uiState.mapProperties
@@ -210,7 +291,7 @@ fun HomeScreen(
                     }
                 }
 
-                // --- BOTONES FLOTANTES ---
+                // --- Botones Flotantes ---
                 Column(
                     modifier =
                         Modifier
@@ -225,7 +306,7 @@ fun HomeScreen(
                     )
                 }
 
-                // --- DIALOGO DE CREACIÓN DE EVENTO ---
+                // --- Crear Evento ---
                 if (showCreateEventDialog) {
                     CreateEventPopUp(
                         onDismiss = { showCreateEventDialog = false },
@@ -273,7 +354,6 @@ fun MapRotationSensor(
                             val orientation = FloatArray(3)
                             SensorManager.getOrientation(rotationMatrix, orientation)
 
-                            // Intento de suavizado de la rotación, en el emulador va bien, en celu maso
                             val azimuth = Math.toDegrees(orientation[0].toDouble()).toFloat()
                             val diff = ((azimuth - lastSmoothed + 540f) % 360f) - 180f
                             lastSmoothed += alpha * diff
