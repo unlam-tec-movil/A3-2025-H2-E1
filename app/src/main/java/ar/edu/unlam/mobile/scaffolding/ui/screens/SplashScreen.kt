@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import ar.edu.unlam.mobile.scaffolding.ui.components.SystemBarStyle
 
 @Composable
 fun SplashScreen(
@@ -20,6 +21,7 @@ fun SplashScreen(
     viewModel: SplashViewModel = hiltViewModel(),
 ) {
     val isLoggedIn by viewModel.isLoggedIn.collectAsState()
+    SystemBarStyle()
 
     LaunchedEffect(isLoggedIn) {
         if (isLoggedIn != null) {

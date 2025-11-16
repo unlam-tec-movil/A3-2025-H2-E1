@@ -3,6 +3,7 @@ package ar.edu.unlam.mobile.scaffolding.ui.screens
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,12 +25,10 @@ import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventParticipant
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventPicturesCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.PrimaryButton
+import ar.edu.unlam.mobile.scaffolding.ui.components.SystemBarStyle
 import ar.edu.unlam.mobile.scaffolding.ui.components.TimePlaceEventCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.TopBar
 import coil.compose.AsyncImage
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -38,20 +37,21 @@ fun EventDetailsScreen(
     eventId: Int,
     navController: NavController? = null,
 ) {
+    SystemBarStyle()
+
     Scaffold(
-        modifier =
-            modifier
-                .fillMaxSize()
-                .padding(start = 16.dp, end = 16.dp),
+        modifier = modifier.fillMaxSize(),
         topBar = {
             TopBar(
                 title = event.title,
                 onNavigateBack = { navController?.popBackStack() },
             )
         },
-    ) {
+    ) { paddingValues ->
         LazyColumn(
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(paddingValues),
         ) {
             if (event.image != null) {
                 item {

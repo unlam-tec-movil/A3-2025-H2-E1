@@ -171,12 +171,9 @@ fun MainScreen() {
             }
 
             composable(HOME_SCREEN_ROUTE) {
-               HomeScreen(
+                HomeScreen(
                     modifier = Modifier.padding(paddingValue),
                     navController = controller,
-                    onNavigateToEvent = { eventId ->
-                        controller.navigate("eventDetails/$eventId")
-                    },
                 )
             }
 

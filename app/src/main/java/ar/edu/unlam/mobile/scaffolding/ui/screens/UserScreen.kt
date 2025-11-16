@@ -56,6 +56,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventCard
+import ar.edu.unlam.mobile.scaffolding.ui.components.SystemBarStyle
 import coil.compose.AsyncImage
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -73,6 +74,7 @@ fun UserScreen(
     val uiState by viewModel.userUiState.collectAsState()
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(topAppBarState)
+    SystemBarStyle()
 
     var showMenu by remember { mutableStateOf(false) }
     var isDistanceFilter by remember { mutableStateOf(false) }

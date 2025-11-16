@@ -32,6 +32,7 @@ import androidx.navigation.NavController
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventFilterButton
+import ar.edu.unlam.mobile.scaffolding.ui.components.SystemBarStyle
 import ar.edu.unlam.mobile.scaffolding.ui.components.TopBar
 import ar.edu.unlam.mobile.scaffolding.ui.theme.ScaffoldingV2Theme
 import com.google.android.gms.maps.model.LatLng
@@ -44,6 +45,7 @@ fun EventListScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    SystemBarStyle()
 
     val launcher =
         rememberLauncherForActivityResult(
