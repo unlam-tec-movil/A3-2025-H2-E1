@@ -1,22 +1,25 @@
 package ar.edu.unlam.mobile.scaffolding.domain.user.usercase
 
+import ar.edu.unlam.mobile.scaffolding.data.datasources.local.SessionManager
+import ar.edu.unlam.mobile.scaffolding.data.repositories.UserRepositoryImpl
 import javax.inject.Inject
 
 class LoginUseCase
     @Inject
-    constructor() {
+    constructor(
+        private val userRepository: UserRepositoryImpl,
+        private val sessionManager: SessionManager,
+    ) {
         operator fun invoke(
-            email: String,
+            name: String,
             password: String,
         ): Boolean {
-            if (email.isBlank() || password.isBlank()) return false
-            if (!isValidEmail(email)) return false
-            if (password.length < 6) return false
-            return true
-        }
-
-        private fun isValidEmail(email: String): Boolean {
-            val emailRegex = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")
-            return emailRegex.matches(email)
+            val user = userRepository.getUserByNameAndPassword(name, password)
+            return if (user != null) {
+                sessionManager.saveLogin(name)
+                true
+            } else {
+                false
+            }
         }
     }
