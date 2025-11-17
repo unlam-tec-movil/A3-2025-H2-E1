@@ -28,8 +28,8 @@ import coil.compose.AsyncImage
 fun ParticipantInfoPopUp(
     user: User,
     onDismiss: () -> Unit,
-    // recibe el comentario
     onReportClick: (String) -> Unit,
+    enableReporting: Boolean = false, // ← nuevo parámetro
 ) {
     val showReportDialog = remember { mutableStateOf(false) }
     val reportComment = remember { mutableStateOf("") }
@@ -40,7 +40,6 @@ fun ParticipantInfoPopUp(
                 Modifier
                     .fillMaxSize()
                     .background(Color(0x88000000)),
-            // fondo semitransparente
             contentAlignment = Alignment.Center,
         ) {
             Card(
@@ -53,7 +52,7 @@ fun ParticipantInfoPopUp(
                 elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
             ) {
                 Box(modifier = Modifier.padding(20.dp)) {
-                    // Botón Cerrar X
+                    // Botón Cerrar
                     IconButton(
                         onClick = onDismiss,
                         modifier =
@@ -69,20 +68,22 @@ fun ParticipantInfoPopUp(
                         )
                     }
 
-                    // Botón Reportar
-                    IconButton(
-                        onClick = { showReportDialog.value = true },
-                        modifier =
-                            Modifier
-                                .align(Alignment.TopEnd)
-                                .size(36.dp)
-                                .background(Color.White.copy(alpha = 0.7f), shape = CircleShape),
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Warning,
-                            contentDescription = "Reportar usuario",
-                            tint = Color(0xFFD32F2F),
-                        )
+                    // Botón Reportar → solo si enableReporting = true
+                    if (enableReporting) {
+                        IconButton(
+                            onClick = { showReportDialog.value = true },
+                            modifier =
+                                Modifier
+                                    .align(Alignment.TopEnd)
+                                    .size(36.dp)
+                                    .background(Color.White.copy(alpha = 0.7f), shape = CircleShape),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Warning,
+                                contentDescription = "Reportar usuario",
+                                tint = Color(0xFFD32F2F),
+                            )
+                        }
                     }
 
                     // Contenido principal
@@ -141,7 +142,7 @@ fun ParticipantInfoPopUp(
             }
 
             // Popup de reporte
-            if (showReportDialog.value) {
+            if (showReportDialog.value && enableReporting) {
                 Dialog(onDismissRequest = { showReportDialog.value = false }) {
                     Card(
                         modifier =
@@ -154,13 +155,16 @@ fun ParticipantInfoPopUp(
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text("Reportar a ${user.name}", fontWeight = FontWeight.Bold)
                             Spacer(modifier = Modifier.height(8.dp))
+
                             OutlinedTextField(
                                 value = reportComment.value,
                                 onValueChange = { reportComment.value = it },
                                 label = { Text("Comentario") },
                                 modifier = Modifier.fillMaxWidth(),
                             )
+
                             Spacer(modifier = Modifier.height(16.dp))
+
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 modifier = Modifier.align(Alignment.End),
@@ -189,7 +193,6 @@ fun ParticipantInfoPopUp(
 @Preview(showBackground = true)
 @Composable
 fun ParticipantInfoPopUpPreview() {
-    // Estado temporal para simular el cierre del diálogo
     val showDialog = remember { mutableStateOf(true) }
 
     val sampleUser =
@@ -197,14 +200,15 @@ fun ParticipantInfoPopUpPreview() {
             id = 1,
             name = "Nombre usuario",
             avatarUrl = null,
-            description = "Este es un ejemplo de descripción de usuario para ver cómo se ve el PopUp en Compose.",
+            description = "Ejemplo de descripción",
         )
 
     if (showDialog.value) {
         ParticipantInfoPopUp(
             user = sampleUser,
             onDismiss = { showDialog.value = false },
-            onReportClick = { /* Acción de reportar */ },
+            onReportClick = { },
+            enableReporting = true, // probar visible/invisible
         )
     }
 }

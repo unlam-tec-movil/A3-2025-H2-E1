@@ -36,6 +36,7 @@ import coil.compose.AsyncImage
 fun EventDetailsScreen(
     modifier: Modifier = Modifier,
     eventId: Int,
+    enableReporting: Boolean = false,
     navController: NavController? = null,
 ) {
     val showPopup = remember { mutableStateOf(false) }
@@ -79,6 +80,7 @@ fun EventDetailsScreen(
                         onReportClick = {
                             showPopup.value = false
                         },
+                        enableReporting = enableReporting,
                     )
                 }
             }
