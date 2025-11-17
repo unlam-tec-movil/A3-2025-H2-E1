@@ -12,6 +12,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -23,13 +25,11 @@ import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
 import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventParticipant
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventPicturesCard
+import ar.edu.unlam.mobile.scaffolding.ui.components.ParticipantInfoPopUp
 import ar.edu.unlam.mobile.scaffolding.ui.components.PrimaryButton
 import ar.edu.unlam.mobile.scaffolding.ui.components.TimePlaceEventCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.TopBar
 import coil.compose.AsyncImage
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -38,6 +38,9 @@ fun EventDetailsScreen(
     eventId: Int,
     navController: NavController? = null,
 ) {
+    val showPopup = remember { mutableStateOf(false) }
+    val selectedUser = remember { mutableStateOf<User?>(null) }
+
     Scaffold(
         modifier =
             modifier
@@ -67,6 +70,19 @@ fun EventDetailsScreen(
                 }
             }
 
+            // ✔ Popup dentro de item{} para evitar el error
+            item {
+                if (showPopup.value && selectedUser.value != null) {
+                    ParticipantInfoPopUp(
+                        user = selectedUser.value!!,
+                        onDismiss = { showPopup.value = false },
+                        onReportClick = {
+                            showPopup.value = false
+                        },
+                    )
+                }
+            }
+
             item {
                 TimePlaceEventCard(
                     event = event,
@@ -84,6 +100,10 @@ fun EventDetailsScreen(
                 EventParticipant(
                     user = event.creator,
                     members = event.members,
+                    onAvatarClick = { userClicked ->
+                        selectedUser.value = userClicked
+                        showPopup.value = true
+                    },
                 )
             }
 
@@ -112,7 +132,6 @@ fun EventDetailsScreen(
                 "Participar",
                 width = 200.dp,
                 onClick = {
-                    //  fecha
                     val eventDateFormatted =
                         java.text
                             .SimpleDateFormat(
@@ -120,10 +139,8 @@ fun EventDetailsScreen(
                                 java.util.Locale("es", "AR"),
                             ).format(java.util.Date(event.dateTime))
 
-                    // texto  con la ubicación (lat/lng)
                     val eventPlace = "Ubicación: ${event.lat}, ${event.lng}"
 
-                    // para que la ruta no falle con espacios o acentos
                     val encodedName = java.net.URLEncoder.encode(event.title, "UTF-8")
                     val encodedDate = java.net.URLEncoder.encode(eventDateFormatted, "UTF-8")
                     val encodedPlace = java.net.URLEncoder.encode(eventPlace, "UTF-8")
@@ -153,7 +170,7 @@ private val members =
                 id = it.toLong(),
                 name = "Usuario $it",
                 avatarUrl = "https://media.vanityfair.com/photos/597f75b706f77f18ffaad3bc/master/w_1440,h_960,c_limit/avatar-2.jpg",
-                description = "",
+                description = "Descripcion de prueba",
             )
         }
 
