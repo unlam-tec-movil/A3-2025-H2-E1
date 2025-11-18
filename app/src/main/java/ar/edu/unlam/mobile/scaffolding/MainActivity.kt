@@ -210,15 +210,29 @@ fun MainScreen() {
             }
 
             // EVENT DETAILS **CORREGIDO A IntType**
+            // EVENT DETAILS con parámetro opcional enableReporting
+            // forma de llamar a eventDetails habilitando reporting:
+            // controller.navigate("eventDetails/${event.id}?enableReport=true")
             composable(
-                route = "eventDetails/{id}",
-                arguments = listOf(navArgument("id") { type = NavType.IntType }),
+                route = "eventDetails/{id}?enableReporting={enableReporting}",
+                arguments =
+                    listOf(
+                        navArgument("id") { type = NavType.IntType },
+                        navArgument("enableReporting") {
+                            type = NavType.BoolType
+                            defaultValue = false
+                        },
+                    ),
             ) { navBackStackEntry ->
+
                 val id = navBackStackEntry.arguments?.getInt("id") ?: 1
+                val enableReporting = navBackStackEntry.arguments?.getBoolean("enableReporting") ?: false
+
                 EventDetailsScreen(
                     modifier = Modifier.padding(paddingValue),
                     eventId = id,
                     navController = controller,
+                    enableReporting = enableReporting,
                 )
             }
 
