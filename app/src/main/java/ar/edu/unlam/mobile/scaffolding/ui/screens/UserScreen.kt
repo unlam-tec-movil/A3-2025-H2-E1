@@ -9,11 +9,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
@@ -26,6 +28,8 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.WrongLocation
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -51,7 +55,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
@@ -82,6 +88,7 @@ fun UserScreen(
 
     val context = LocalContext.current
     val permissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
+    var showingPast by remember { mutableStateOf(false) }
 
     LaunchedEffect(key1 = userId) {
         viewModel.getUser(userId)
@@ -183,7 +190,36 @@ fun UserScreen(
 
                     // Agregue esta topBar hasta que este el componente C15: DropDownMenu
                     TopAppBar(
-                        title = { Text(text = "Eventos participando") },
+                        title = {
+                            Button(
+                                onClick = { viewModel.togglePastEvents() },
+                                colors =
+                                    ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.secondary,
+                                    ),
+                                shape = MaterialTheme.shapes.medium,
+                                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp),
+                                modifier =
+                                    Modifier
+                                        .padding(vertical = 6.dp)
+                                        .height(48.dp),
+                            ) {
+                                Text(
+                                    text =
+                                        if (uiState.showPastEvents) {
+                                            "Eventos que participé"
+                                        } else {
+                                            "Eventos participando"
+                                        },
+                                    style =
+                                        MaterialTheme.typography.titleMedium.copy(
+                                            color = MaterialTheme.colorScheme.onSecondary,
+                                            fontSize = 18.sp,
+                                            fontWeight = FontWeight.Bold,
+                                        ),
+                                )
+                            }
+                        },
                         actions = {
                             Box {
                                 IconButton(onClick = { showMenu = true }) {
@@ -246,9 +282,12 @@ fun UserScreen(
                         },
                         modifier = Modifier.consumeWindowInsets(WindowInsets.systemBars),
                     )
+
+                    val eventsToShow = if (uiState.showPastEvents) uiState.pastEvents else uiState.joinedEvents
+
                     LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        if (uiState.joinedEvents.isNotEmpty()) {
-                            items(items = uiState.joinedEvents, key = { it.id }) { event ->
+                        if (eventsToShow.isNotEmpty()) {
+                            items(items = eventsToShow, key = { it.id }) { event ->
                                 EventCard(
                                     imageUrl = event.image,
                                     title = event.title,
@@ -278,15 +317,22 @@ fun UserScreen(
                                                     .align(Alignment.CenterHorizontally),
                                         )
                                         Text(
-                                            text = "No te encuentras en ningun evento CleanUp",
+                                            text =
+                                                if (uiState.showPastEvents) {
+                                                    "No participaste en eventos anteriores"
+                                                } else {
+                                                    "No te encuentras en ningun evento CleanUp"
+                                                },
                                             color = Color.White,
                                             modifier = Modifier.padding(4.dp),
                                         )
-                                        Text(
-                                            text = "Revisa eventos cercano para unirte a la ayuda ;)",
-                                            color = Color.White,
-                                            modifier = Modifier.padding(4.dp),
-                                        )
+                                        if (!uiState.showPastEvents) {
+                                            Text(
+                                                text = "Revisa eventos cercanos para unirte a la ayuda ;)",
+                                                color = Color.White,
+                                                modifier = Modifier.padding(4.dp),
+                                            )
+                                        }
                                     }
                                 }
                             }

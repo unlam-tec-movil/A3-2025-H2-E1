@@ -226,6 +226,92 @@ class EventRepositoryImpl
                     creator = mockUsers[3],
                     saved = listOf(2L),
                 ),
+                // --- Eventos PASADOS (realizados) ---
+                EventEntity(
+                    eventId = "10",
+                    title = "Limpieza en el Parque Centenario",
+                    description = "Jornada de limpieza general realizada en el Parque Centenario.",
+                    dateTime = System.currentTimeMillis() - 86400000,
+                    lat = -34.6050,
+                    lng = -58.4410,
+                    imageUrl =
+                        "https://i0.wp.com/www.buenosairesfreewalks.com/spanish/wp-content" +
+                            "/uploads/2021/01/parque-centenario2.jpg?resize=300%2C200&ssl=1",
+                    beforeImageUrl =
+                        listOf(
+                            "https://cdn.pixabay.com/photo/2016/10/01/19/09/park-1701827_1280.jpg",
+                        ),
+                    afterImageUrl =
+                        listOf(
+                            "https://cdn.pixabay.com/photo/2017/05/31/20/30/lawn-2369667_1280.jpg",
+                        ),
+                    members = listOf(mockUsers[0], mockUsers[1]),
+                    creator = mockUsers[3],
+                    saved = listOf(2L),
+                ),
+                EventEntity(
+                    eventId = "11",
+                    title = "Clasificación de residuos en Puerto Madero",
+                    description = "Actividad de concientización y reciclaje completada en Puerto Madero.",
+                    dateTime = System.currentTimeMillis() - 86400000 * 3,
+                    lat = -34.6083,
+                    lng = -58.3625,
+                    imageUrl =
+                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9Gc" +
+                            "TrLLOziN2sFo9UVvfdrK3U41-Nldga0DU0wg&s",
+                    beforeImageUrl =
+                        listOf(
+                            "https://cdn.pixabay.com/photo/2016/11/18/14/27/garbage-1835671_1280.jpg",
+                        ),
+                    afterImageUrl =
+                        listOf(
+                            "https://cdn.pixabay.com/photo/2015/09/02/12/25/recycle-918659_1280.jpg",
+                        ),
+                    members = listOf(mockUsers[2], mockUsers[4]),
+                    creator = mockUsers[1],
+                    saved = listOf(1L),
+                ),
+                EventEntity(
+                    eventId = "12",
+                    title = "Reforestación en Costanera Sur",
+                    description = "Plantación de árboles nativos, evento finalizado hace una semana.",
+                    dateTime = System.currentTimeMillis() - 86400000 * 7, // Hace 1 semana
+                    lat = -34.6167,
+                    lng = -58.3622,
+                    imageUrl =
+                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcToczqMDu10uq_" +
+                            "Crq-cCdwhoX8m4tLG0nceag&s",
+                    beforeImageUrl = listOf(),
+                    afterImageUrl =
+                        listOf(
+                            "https://cdn.pixabay.com/photo/2018/04/10/18/07/tree-3300214_1280.jpg",
+                        ),
+                    members = mockUsers.take(4),
+                    creator = mockUsers[0],
+                    saved = listOf(3L),
+                ),
+                EventEntity(
+                    eventId = "13",
+                    title = "Limpieza del Jardín Botánico",
+                    description = "Evento finalizado de mantenimiento de senderos y retiro de basura.",
+                    dateTime = System.currentTimeMillis() - 86400000 * 30,
+                    lat = -34.5882,
+                    lng = -58.4210,
+                    imageUrl =
+                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSrKY2d8aVTga5e" +
+                            "G61roNLm6kd7Zv8yfNutkQ&s",
+                    beforeImageUrl =
+                        listOf(
+                            "https://cdn.pixabay.com/photo/2016/10/18/21/22/park-1751540_1280.jpg",
+                        ),
+                    afterImageUrl =
+                        listOf(
+                            "https://cdn.pixabay.com/photo/2018/06/01/21/46/park-3447545_1280.jpg",
+                        ),
+                    members = listOf(mockUsers[5], mockUsers[7], mockUsers[8]),
+                    creator = mockUsers[4],
+                    saved = listOf(2L),
+                ),
             )
         private val _eventsFlow = MutableStateFlow(mockEvents.toList())
         val eventsFlow: StateFlow<List<EventEntity>> get() = _eventsFlow
