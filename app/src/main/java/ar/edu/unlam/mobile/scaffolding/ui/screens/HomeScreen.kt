@@ -8,14 +8,20 @@ import android.hardware.SensorManager
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Navigation
@@ -29,12 +35,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.ui.components.CreateEventPopUp
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventHomeCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventSearchBar
 import ar.edu.unlam.mobile.scaffolding.ui.components.FloatingButtons
 import ar.edu.unlam.mobile.scaffolding.ui.components.NearbyMap
+import ar.edu.unlam.mobile.scaffolding.ui.components.SystemBarStyle
 import com.google.android.gms.location.*
 
 const val HOME_SCREEN_ROUTE = "home"
@@ -44,7 +52,7 @@ const val HOME_SCREEN_ROUTE = "home"
 fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
-    onNavigateToEvent: (Int) -> Unit,
+    navController: NavHostController,
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val searchBarState by viewModel.searchUiState.collectAsStateWithLifecycle()
@@ -53,6 +61,7 @@ fun HomeScreen(
 
     var showCreateEventDialog by remember { mutableStateOf(false) }
     var isSessionActive by remember { mutableStateOf(false) }
+    SystemBarStyle(searchBarState.isExpanded)
 
     val context = LocalContext.current
     val sensorManager = remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
@@ -118,10 +127,8 @@ fun HomeScreen(
         enabled = uiState.mapProperties.rotationBySensor,
         sensorManager = sensorManager,
         currentOrientation = uiState.mapProperties.mapOrientation,
-        onOrientationChanged = { newAngle ->
-            viewModel.onMapPropertiesChanged(
-                uiState.mapProperties.copy(mapOrientation = newAngle),
-            )
+        onOrientationChanged = {
+            viewModel.onMapPropertiesChanged(uiState.mapProperties.copy(mapOrientation = it))
         },
     )
 
@@ -143,11 +150,9 @@ fun HomeScreen(
                     nearbyEvents = uiState.eventList,
                     modifier = Modifier.matchParentSize(),
                     mapProperties = uiState.mapProperties,
-                    onMapRotationChanged = { orientation ->
-                        if (!uiState.mapProperties.rotationBySensor) {
-                            viewModel.onMapPropertiesChanged(
-                                uiState.mapProperties.copy(mapOrientation = orientation),
-                            )
+                    rotationChanged = { orientation ->
+                        if (uiState.mapProperties.rotationByGesture) {
+                            viewModel.onMapPropertiesChanged(uiState.mapProperties.copy(mapOrientation = orientation))
                         }
                     },
                     onEventoClick = { evento ->
@@ -202,7 +207,7 @@ fun HomeScreen(
                                 distance = distanceText,
                                 onViewEventClick = {
                                     showEventCard = false
-                                    onNavigateToEvent(event.id.toInt()) // <<--- NAVEGACIÓN
+                                    navController.navigate("eventDetails/${event.id}")
                                     viewModel.clearSelectedEvent()
                                 },
                                 modifier =
@@ -219,7 +224,7 @@ fun HomeScreen(
                     modifier =
                         Modifier
                             .fillMaxWidth()
-                            .zIndex(20f),
+                            .zIndex(zIndex = 20f),
                 ) {
                     EventSearchBar(
                         searchUiState = searchBarState,
@@ -278,14 +283,10 @@ fun HomeScreen(
                                     .size(52.dp)
                                     .padding(12.dp),
                         ) {
-                            val animatedOrientation by animateFloatAsState(
-                                targetValue = uiState.mapProperties.mapOrientation,
-                                animationSpec = tween(300, easing = LinearOutSlowInEasing),
-                            )
                             Icon(
                                 imageVector = Icons.Default.Navigation,
                                 contentDescription = "Cambiar modo de rotación",
-                                modifier = Modifier.rotate(animatedOrientation),
+                                modifier = Modifier.rotate(uiState.mapProperties.mapOrientation),
                             )
                         }
                     }
@@ -339,13 +340,15 @@ fun MapRotationSensor(
     onOrientationChanged: (Float) -> Unit,
 ) {
     DisposableEffect(enabled) {
-        val rotationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        val rotationSensor =
+            sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+                ?: return@DisposableEffect onDispose {}
 
-        if (enabled && rotationSensor != null) {
+        if (enabled) {
             val listener =
                 object : SensorEventListener {
-                    private var lastSmoothed = currentOrientation
-                    private val alpha = 0.2f
+                    private var lastOrientation = currentOrientation
+                    private val alpha = 0.1f
 
                     override fun onSensorChanged(event: SensorEvent?) {
                         if (event?.sensor?.type == Sensor.TYPE_ROTATION_VECTOR) {
@@ -354,11 +357,16 @@ fun MapRotationSensor(
                             val orientation = FloatArray(3)
                             SensorManager.getOrientation(rotationMatrix, orientation)
 
-                            val azimuth = Math.toDegrees(orientation[0].toDouble()).toFloat()
-                            val diff = ((azimuth - lastSmoothed + 540f) % 360f) - 180f
-                            lastSmoothed += alpha * diff
+                            // Convierte la orientación a grados
+                            var azimuth = Math.toDegrees(orientation[0].toDouble()).toFloat()
+                            // Esto cambia el eje de sentido horario a antihorario para que la brujula apunte
+                            // bien el este y el oeste, pero da problemas al poner la app en vertical.
+                            azimuth = (360 - azimuth) % 360
 
-                            onOrientationChanged(lastSmoothed)
+                            val diff = ((azimuth - lastOrientation + 540f) % 360f) - 180f
+                            lastOrientation += alpha * diff
+
+                            onOrientationChanged(lastOrientation)
                         }
                     }
 
@@ -369,7 +377,6 @@ fun MapRotationSensor(
                 }
 
             sensorManager.registerListener(listener, rotationSensor, SensorManager.SENSOR_DELAY_UI)
-
             onDispose { sensorManager.unregisterListener(listener) }
         } else {
             onDispose {}

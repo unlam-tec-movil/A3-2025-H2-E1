@@ -3,6 +3,7 @@ package ar.edu.unlam.mobile.scaffolding.ui.screens
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,6 +28,7 @@ import ar.edu.unlam.mobile.scaffolding.ui.components.EventParticipant
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventPicturesCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.ParticipantInfoPopUp
 import ar.edu.unlam.mobile.scaffolding.ui.components.PrimaryButton
+import ar.edu.unlam.mobile.scaffolding.ui.components.SystemBarStyle
 import ar.edu.unlam.mobile.scaffolding.ui.components.TimePlaceEventCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.TopBar
 import coil.compose.AsyncImage
@@ -41,21 +43,21 @@ fun EventDetailsScreen(
 ) {
     val showPopup = remember { mutableStateOf(false) }
     val selectedUser = remember { mutableStateOf<User?>(null) }
+    SystemBarStyle()
 
     Scaffold(
-        modifier =
-            modifier
-                .fillMaxSize()
-                .padding(start = 16.dp, end = 16.dp),
+        modifier = modifier.fillMaxSize(),
         topBar = {
             TopBar(
                 title = event.title,
                 onNavigateBack = { navController?.popBackStack() },
             )
         },
-    ) {
+    ) { paddingValues ->
         LazyColumn(
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(paddingValues),
         ) {
             if (event.image != null) {
                 item {
@@ -134,6 +136,7 @@ fun EventDetailsScreen(
                 "Participar",
                 width = 200.dp,
                 onClick = {
+                    //  fecha
                     val eventDateFormatted =
                         java.text
                             .SimpleDateFormat(
@@ -141,8 +144,10 @@ fun EventDetailsScreen(
                                 java.util.Locale("es", "AR"),
                             ).format(java.util.Date(event.dateTime))
 
+                    // texto  con la ubicación (lat/lng)
                     val eventPlace = "Ubicación: ${event.lat}, ${event.lng}"
 
+                    // para que la ruta no falle con espacios o acentos
                     val encodedName = java.net.URLEncoder.encode(event.title, "UTF-8")
                     val encodedDate = java.net.URLEncoder.encode(eventDateFormatted, "UTF-8")
                     val encodedPlace = java.net.URLEncoder.encode(eventPlace, "UTF-8")

@@ -3,6 +3,7 @@ package ar.edu.unlam.mobile.scaffolding.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.CheckCircle
@@ -29,20 +30,15 @@ fun ConfirmParticipationScreen(
     onParticipateClick: () -> Unit = {},
 ) {
     Scaffold(
+        contentWindowInsets = WindowInsets.statusBars,
         topBar = {
             TopAppBar(
                 title = { Text("Confirmar participación") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 },
-                colors =
-                    TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.White,
-                        titleContentColor = Color.Black,
-                        navigationIconContentColor = Color.Black,
-                    ),
             )
         },
     ) { innerPadding ->

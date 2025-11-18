@@ -38,15 +38,11 @@ fun ParticipantInfoPopUp(
         Box(
             modifier =
                 Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                     .background(Color(0x88000000)),
             contentAlignment = Alignment.Center,
         ) {
             Card(
-                modifier =
-                    Modifier
-                        .fillMaxWidth(0.85f)
-                        .wrapContentHeight(),
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),

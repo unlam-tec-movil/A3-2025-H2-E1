@@ -1,9 +1,13 @@
 package ar.edu.unlam.mobile.scaffolding
 
+import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -56,7 +60,13 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // enableEdgeToEdge()
+        enableEdgeToEdge(
+            statusBarStyle =
+                SystemBarStyle.light(
+                    Color.TRANSPARENT,
+                    Color.TRANSPARENT,
+                ),
+        )
         setContent {
             ScaffoldingV2Theme {
                 // A surface container using the 'background' color from the theme
@@ -88,6 +98,7 @@ fun MainScreen() {
 
     val snackBarHostState = remember { SnackbarHostState() }
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             if (currentRoute == "home" || currentRoute == "eventList" || currentRoute == "user/{id}") {
                 BottomBar(
@@ -162,9 +173,7 @@ fun MainScreen() {
             composable(HOME_SCREEN_ROUTE) {
                 HomeScreen(
                     modifier = Modifier.padding(paddingValue),
-                    onNavigateToEvent = { eventId ->
-                        controller.navigate("eventDetails/$eventId")
-                    },
+                    navController = controller,
                 )
             }
 
@@ -197,6 +206,7 @@ fun MainScreen() {
                 val id = navBackStackEntry?.arguments?.getLong("id") ?: 1L
                 UserProfileScreen(
                     userId = id,
+                    modifier = Modifier.fillMaxSize(),
                     navController = controller,
                 )
             }
