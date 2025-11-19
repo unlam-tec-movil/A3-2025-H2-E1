@@ -16,16 +16,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -37,7 +33,6 @@ import ar.edu.unlam.mobile.scaffolding.ui.components.PrimaryButton
 import ar.edu.unlam.mobile.scaffolding.ui.components.SystemBarStyle
 import ar.edu.unlam.mobile.scaffolding.ui.components.TimePlaceEventCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.TopBar
-import ar.edu.unlam.mobile.scaffolding.utils.Resource
 import coil.compose.AsyncImage
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
