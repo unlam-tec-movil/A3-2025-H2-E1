@@ -3,10 +3,9 @@ package ar.edu.unlam.mobile.scaffolding.data.repositories
 import ar.edu.unlam.mobile.scaffolding.data.mapper.toEntity
 import ar.edu.unlam.mobile.scaffolding.data.mapper.toEvent
 import ar.edu.unlam.mobile.scaffolding.data.mapper.toEventList
+import ar.edu.unlam.mobile.scaffolding.data.mapper.toEventListEntity
 import ar.edu.unlam.mobile.scaffolding.data.mapper.toSuggestedEvent
-import ar.edu.unlam.mobile.scaffolding.data.mapper.toUser
 import ar.edu.unlam.mobile.scaffolding.data.model.EventEntity
-import ar.edu.unlam.mobile.scaffolding.data.model.EventListEntity
 import ar.edu.unlam.mobile.scaffolding.data.model.SuggestedEventEntity
 import ar.edu.unlam.mobile.scaffolding.data.model.UserEntity
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
@@ -358,17 +357,7 @@ class EventRepositoryImpl
         ): Flow<Resource<List<EventList>>> =
             flow {
                 val eventListEntity =
-                    mockEvents.map { values ->
-                        EventListEntity(
-                            id = values.eventId,
-                            title = values.title,
-                            description = values.description,
-                            dateTime = values.dateTime,
-                            lat = values.lat,
-                            lng = values.lng,
-                            imageUrl = values.imageUrl,
-                        )
-                    }
+                    mockEvents.map { it.toEventListEntity() }
                 // Esto podria mejorarse con un when() para poner mas tipos de ordenados.
                 val sortedEvents =
                     if (sort == "date") {
@@ -396,17 +385,7 @@ class EventRepositoryImpl
                     mockEvents
                         .filter { eventEntity ->
                             eventEntity.members.any { member -> member.id == userId }
-                        }.map { eventListEntity ->
-                            EventListEntity(
-                                id = eventListEntity.eventId,
-                                title = eventListEntity.title,
-                                description = eventListEntity.description,
-                                dateTime = eventListEntity.dateTime,
-                                lat = eventListEntity.lat,
-                                lng = eventListEntity.lng,
-                                imageUrl = eventListEntity.imageUrl,
-                            )
-                        }
+                        }.map { it.toEventListEntity() }
 
                 val sortedEvents =
                     if (sort == "date") {
@@ -426,16 +405,7 @@ class EventRepositoryImpl
         override suspend fun getEventList(id: String): Flow<Resource<EventList>> =
             flow {
                 mockEvents.find { it.eventId == id }?.let { eventEntity ->
-                    val eventList =
-                        EventList(
-                            id = eventEntity.eventId,
-                            title = eventEntity.title,
-                            description = eventEntity.description,
-                            dateTime = eventEntity.dateTime,
-                            lat = eventEntity.lat,
-                            lng = eventEntity.lng,
-                            image = eventEntity.imageUrl,
-                        )
+                    val eventList = eventEntity.toEventList()
                     emit(Resource.Success(eventList))
                 }
             }

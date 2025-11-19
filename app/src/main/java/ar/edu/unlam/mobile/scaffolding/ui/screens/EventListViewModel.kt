@@ -10,8 +10,8 @@ import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
 import ar.edu.unlam.mobile.scaffolding.domain.event.repositories.EventRepository
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.utils.Resource
-import dagger.hilt.android.lifecycle.HiltViewModel
 import com.google.android.gms.maps.model.LatLng
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -118,7 +118,7 @@ class EventListViewModel
                                 }
                                 is Resource.Error -> {
                                     _uiState.update { state ->
-                                        state.copy(currentState = MessageUIState.Error(resource.message ?: "Error inesperado"))
+                                        state.copy(currentState = MessageUIState.Error(resource.message))
                                     }
                                 }
                             }

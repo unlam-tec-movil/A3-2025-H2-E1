@@ -5,9 +5,7 @@ import android.content.Context
 import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
@@ -117,7 +115,7 @@ class HomeViewModel
                 )
             }
         }
-        
+
         // Entre un cambio y otro esto al final no lo use, pero lo dejo por si alguien si lo usa, sino se borra
         @SuppressLint("MissingPermission")
         fun getCurrentLocation(context: Context) {
@@ -333,7 +331,6 @@ class HomeViewModel
             Log.d("HomeViewModel", "onEventSelected: ${event.id}, ${event.lat}, ${event.lng}")
         }
 
-        @RequiresApi(Build.VERSION_CODES.O)
         fun createEvent(
             title: String,
             location: String,
