@@ -19,11 +19,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import ar.edu.unlam.mobile.scaffolding.utils.getAddressFromCoordinates
 import coil.compose.AsyncImage
 import com.google.android.gms.maps.model.LatLng
@@ -76,8 +74,7 @@ fun EventCard(
 
             Text(
                 text = title,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
+                style = MaterialTheme.typography.titleLarge,
             )
 
             Spacer(modifier = Modifier.height(6.dp))
@@ -86,21 +83,21 @@ fun EventCard(
             val dateFormat = SimpleDateFormat("dd 'de' MMMM 'de' yyyy", Locale.getDefault())
             val dateString = dateFormat.format(date)
             Text(
-                text = "Fecha: $dateString",
+                text = "$dateString",
                 textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyLarge,
             )
 
             val timeFormat = SimpleDateFormat("HH:mm 'hs'", Locale.getDefault())
             val timeString = timeFormat.format(date)
             Text(
-                text = "Horario: $timeString",
+                text = "$timeString",
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyMedium,
             )
             // ubicacion
             Text(
-                text = "Ubicación: $address",
+                text = address,
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyMedium,
             )
@@ -120,14 +117,14 @@ fun EventCard(
 
                 Text(
                     text = "Distancia: $distanceString Km",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.labelLarge,
                 )
             } else {
                 val dateInstance = Date(date)
                 val remaining = relativeTimeCustom(dateInstance)
                 Text(
                     text = remaining,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.labelLarge,
                 )
             }
         }

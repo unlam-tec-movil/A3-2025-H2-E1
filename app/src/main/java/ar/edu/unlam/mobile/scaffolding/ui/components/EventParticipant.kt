@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -27,7 +28,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -46,7 +46,7 @@ fun EventParticipant(
     Column(verticalArrangement = Arrangement.spacedBy(itemSpacing)) {
         Text(
             text = "Organizador",
-            fontWeight = FontWeight.Medium,
+            style = MaterialTheme.typography.titleMedium,
         )
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -63,13 +63,15 @@ fun EventParticipant(
                 model = user.avatarUrl,
                 contentDescription = "Avatar Organizador",
             )
-            Text(text = user.name)
+            Text(
+                text = user.name,
+                style = MaterialTheme.typography.labelLarge,
+            )
         }
 
         Text(
             text = "Participantes",
-            fontWeight = FontWeight.Medium,
-            textDecoration = TextDecoration.Underline,
+            style = MaterialTheme.typography.titleMedium,
         )
 
         if (members != null && members.isNotEmpty()) {

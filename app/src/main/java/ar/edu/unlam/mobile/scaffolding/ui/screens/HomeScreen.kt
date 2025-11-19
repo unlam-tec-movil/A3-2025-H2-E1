@@ -133,7 +133,7 @@ fun HomeScreen(
                         isSessionActive = isSessionActive,
                         onClickCamera = { },
                         onClickAddEvent = { showCreateEventDialog = true },
-                        onClickStartSession = {
+                        onClickCenterMap = {
                             isSessionActive = !isSessionActive
                         },
                     )

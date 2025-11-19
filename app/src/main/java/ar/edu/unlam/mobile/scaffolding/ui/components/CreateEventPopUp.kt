@@ -150,6 +150,7 @@ fun CreateEventPopUp(
         Surface(
             shape = RoundedCornerShape(16.dp),
             tonalElevation = 4.dp,
+            color = MaterialTheme.colorScheme.background,
         ) {
             Column(
                 modifier =

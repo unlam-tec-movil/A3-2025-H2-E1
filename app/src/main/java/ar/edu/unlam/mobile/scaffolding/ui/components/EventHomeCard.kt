@@ -12,7 +12,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ar.edu.unlam.mobile.scaffolding.R
-import ar.edu.unlam.mobile.scaffolding.ui.theme.PrimaryGreen
 import ar.edu.unlam.mobile.scaffolding.ui.theme.ScaffoldingV2Theme
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
@@ -82,7 +81,7 @@ fun EventHomeCard(
                     Modifier
                         .fillMaxWidth()
                         .padding(top = 8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
+                colors = ButtonDefaults.buttonColors(),
                 shape = RoundedCornerShape(8.dp),
             ) {
                 Text("Ver Evento", color = MaterialTheme.colorScheme.onPrimary)

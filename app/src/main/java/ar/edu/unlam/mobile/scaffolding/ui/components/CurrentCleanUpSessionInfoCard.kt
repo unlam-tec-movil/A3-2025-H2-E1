@@ -18,7 +18,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import ar.edu.unlam.mobile.scaffolding.ui.theme.GreenDark
 
 @Composable
 fun CurrentCleanUpSessionInfoCard(
@@ -36,7 +35,7 @@ fun CurrentCleanUpSessionInfoCard(
                 containerColor = Color.White.copy(alpha = 0.75f),
             ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        border = BorderStroke(1.dp, GreenDark),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
     ) {
         Row(
             modifier =
