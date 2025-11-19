@@ -77,10 +77,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.FileProvider
+import ar.edu.unlam.mobile.scaffolding.utils.getAddressFromCoordinates
 import coil.compose.AsyncImage
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import org.osmdroid.util.GeoPoint
 import java.io.File
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -94,11 +96,13 @@ import java.util.Locale
 @Composable
 fun CreateEventPopUp(
     onDismiss: () -> Unit,
-    onConfirm: (String, String, LocalDateTime, List<Uri>) -> Unit,
+    userLocation: GeoPoint? = null,
+    onConfirm: (String, GeoPoint, LocalDateTime, List<Uri>) -> Unit,
 ) {
     // Estados del evento
     var name by remember { mutableStateOf("") }
-    var location by remember { mutableStateOf("") }
+    var locationPoint by remember { mutableStateOf(userLocation) }
+    var locationString by remember { mutableStateOf("") }
     var date by remember { mutableStateOf(LocalDate.now()) }
     var hour by remember { mutableIntStateOf(0) }
     var minute by remember { mutableIntStateOf(0) }
@@ -121,6 +125,11 @@ fun CreateEventPopUp(
     val cameraImageUri = remember { mutableStateOf<Uri?>(null) }
 
     // Launchers
+    if (locationPoint != null) {
+        LaunchedEffect(Unit) {
+            locationString = getAddressFromCoordinates(context, locationPoint!!.latitude, locationPoint!!.longitude)
+        }
+    }
     val imagePickerLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
             selectedImagesUri = selectedImagesUri + uris
@@ -245,8 +254,8 @@ fun CreateEventPopUp(
 
                 // Ubicación del evento
                 OutlinedTextField(
-                    value = location,
-                    onValueChange = { location = it },
+                    value = locationString,
+                    onValueChange = { locationString = it },
                     label = { Text("Ubicación del evento") },
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -383,9 +392,10 @@ fun CreateEventPopUp(
                         )
                     }
                     Button(
+                        enabled = name.isNotEmpty() && locationPoint != null,
                         onClick = {
                             val dateTime = date.atTime(hour, minute)
-                            onConfirm(name, location, dateTime, selectedImagesUri)
+                            onConfirm(name, locationPoint!!, dateTime, selectedImagesUri)
                             onDismiss()
                         },
                         colors =
@@ -411,7 +421,10 @@ fun CreateEventPopUp(
                 dragHandle = { BottomSheetDefaults.DragHandle() },
             ) {
                 Column(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
                 ) {
                     ListItem(
                         headlineContent = { Text("Tomar Foto") },
