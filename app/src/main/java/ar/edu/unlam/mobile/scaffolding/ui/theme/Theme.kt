@@ -8,33 +8,57 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorScheme =
+val DarkColorScheme =
     darkColorScheme(
-        primary = PrimaryBlue,
-        onPrimary = White,
-        secondary = GreenDark,
-        secondaryContainer = Green,
-        tertiary = Pink80,
+        primary = Color(0xFF8FCF84),
+        onPrimary = Color(0xFF0D3709),
+        primaryContainer = Color(0xFF456B3B),
+        onPrimaryContainer = Color(0xFFC9F0BE),
+        secondary = Color(0xFFD7DB8E),
+        onSecondary = Color(0xFF34360A),
+        secondaryContainer = Color(0xFF4D4F24),
+        onSecondaryContainer = Color(0xFFEFEFB6),
+        tertiary = Color(0xFF5BB28A),
+        onTertiary = Color(0xFF003823),
+        tertiaryContainer = Color(0xFF1B5039),
+        onTertiaryContainer = Color(0xFF9EEBC2),
+        error = Color(0xFFCF6679),
+        onError = Color.Black,
+        errorContainer = Color(0xFF8C1D18),
+        onErrorContainer = Color(0xFFF9DEDC),
+        background = Color(0xFF121312),
+        onBackground = Color(0xFFE1E3E0),
+        surface = Color(0xFF1B1C1A),
+        onSurface = Color(0xFFE1E3E0),
+        surfaceVariant = Color(0xFF2D322B),
+        onSurfaceVariant = Color(0xFFC3C8BE),
+        outline = Color(0xFF484E45),
+        outlineVariant = Color(0xFF2E332C),
+        inverseSurface = Color(0xFFE1E3E0),
+        inverseOnSurface = Color(0xFF121312),
+        inversePrimary = Color(0xFF3A6931),
+        surfaceTint = Color(0xFF8FCF84),
     )
 
 private val LightColorScheme =
     lightColorScheme(
-        primary = PrimaryBlue,
-        onPrimary = White,
-        secondary = Green,
-        secondaryContainer = GreenDark,
-        tertiary = TertiaryBlueLight,
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-     */
+        primary = Green,
+        onPrimary = Color.White,
+        primaryContainer = LightGreen,
+        onPrimaryContainer = DarkGreen,
+        secondary = Olive,
+        onSecondary = DarkGreen,
+        secondaryContainer = LightOlive,
+        onSecondaryContainer = Color.Black,
+        tertiary = DarkGreen,
+        onTertiary = Color.White,
+        background = Color.White,
+        onBackground = DarkGreen,
+        surface = LightOlive,
+        onSurface = DarkGreen,
     )
 
 @Composable

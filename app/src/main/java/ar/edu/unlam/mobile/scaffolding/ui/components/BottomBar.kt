@@ -91,13 +91,13 @@ fun BottomBarTest() {
                 NavigationItem(
                     navRoute = "eventList",
                     icon = Icons.Default.CalendarMonth,
-                    label = "Calendario",
+                    label = "Eventos",
                 ),
                 NavigationItem(
                     navRoute = "user/{id}",
                     navRouteWithArgs = "user/1",
                     icon = Icons.Default.AccountCircle,
-                    label = "User",
+                    label = "Perfil",
                 ),
             ),
             NavHostController(LocalContext.current),

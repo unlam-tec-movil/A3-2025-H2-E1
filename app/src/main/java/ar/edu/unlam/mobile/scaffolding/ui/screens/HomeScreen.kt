@@ -318,7 +318,9 @@ fun HomeScreen(
                         isSessionActive = isSessionActive,
                         onClickCamera = { },
                         onClickAddEvent = { showCreateEventDialog = true },
-                        onClickStartSession = { isSessionActive = !isSessionActive },
+                        onClickCenterMap = {
+                            isSessionActive = !isSessionActive
+                        },
                     )
                 }
 
