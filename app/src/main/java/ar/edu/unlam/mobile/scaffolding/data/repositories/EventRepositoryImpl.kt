@@ -1,6 +1,7 @@
 package ar.edu.unlam.mobile.scaffolding.data.repositories
 
 import ar.edu.unlam.mobile.scaffolding.data.mapper.toEntity
+import ar.edu.unlam.mobile.scaffolding.data.mapper.toEvent
 import ar.edu.unlam.mobile.scaffolding.data.mapper.toEventList
 import ar.edu.unlam.mobile.scaffolding.data.mapper.toSuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.data.mapper.toUser
@@ -439,26 +440,22 @@ class EventRepositoryImpl
                 }
             }
 
-        override suspend fun getEvent(id: String): Flow<Resource<Event>> =
+        override suspend fun getEvent(
+            id: String,
+            userId: Long,
+        ): Flow<Resource<Event>> =
             flow {
-                mockEvents.find { it.eventId == id }?.let { eventEntity ->
-                    val event =
-                        Event(
-                            id = eventEntity.eventId,
-                            title = eventEntity.title,
-                            description = eventEntity.description,
-                            dateTime = eventEntity.dateTime,
-                            lat = eventEntity.lat,
-                            lng = eventEntity.lng,
-                            image = eventEntity.imageUrl,
-                            beforeImage = eventEntity.beforeImageUrl,
-                            afterImage = eventEntity.afterImageUrl,
-                            members = eventEntity.members.map { it.toUser() },
-                            creator = eventEntity.creator.toUser(),
-                            saved = false,
-                            participating = false,
-                        )
-                    emit(Resource.Success(event))
+                val eventEntity = mockEvents.find { it.eventId == id }
+
+                if (eventEntity != null) {
+                    emit(Resource.Success(eventEntity.toEvent(userId)))
+                } else {
+                    emit(
+                        Resource.Error<Event>(
+                            data = null,
+                            message = "Evento no encontrado",
+                        ),
+                    )
                 }
             }
 

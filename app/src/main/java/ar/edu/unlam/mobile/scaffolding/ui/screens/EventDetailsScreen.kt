@@ -16,6 +16,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -34,6 +37,7 @@ import ar.edu.unlam.mobile.scaffolding.ui.components.PrimaryButton
 import ar.edu.unlam.mobile.scaffolding.ui.components.SystemBarStyle
 import ar.edu.unlam.mobile.scaffolding.ui.components.TimePlaceEventCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.TopBar
+import ar.edu.unlam.mobile.scaffolding.utils.Resource
 import coil.compose.AsyncImage
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -61,7 +65,6 @@ fun EventDetailsScreen(
     SystemBarStyle()
 
     Scaffold(
-        modifier = modifier.fillMaxSize(),
         topBar = {
             TopBar(
                 title = event.title,
@@ -110,7 +113,6 @@ fun EventDetailsScreen(
 
             Text(
                 text = event.description,
-                fontSize = TextUnit.Unspecified,
             )
 
             EventParticipant(
@@ -138,36 +140,34 @@ fun EventDetailsScreen(
                     .padding(16.dp),
         ) {
             Spacer(modifier = Modifier.weight(1f))
+            if (!enableReporting) {
+                PrimaryButton(
+                    "Participar",
+                    width = 200.dp,
+                    modifier =
+                        Modifier
+                            .navigationBarsPadding()
+                            .padding(bottom = 16.dp),
+                    onClick = {
+                        val eventDateFormatted =
+                            java.text
+                                .SimpleDateFormat(
+                                    "EEEE d 'de' MMMM, HH:mm 'hs'",
+                                    java.util.Locale("es", "AR"),
+                                ).format(java.util.Date(event.dateTime))
 
-            PrimaryButton(
-                "Participar",
-                width = 200.dp,
-                modifier =
-                    Modifier
-                        .navigationBarsPadding()
-                        .padding(bottom = 16.dp),
-                onClick = {
-                    //  fecha
-                    val eventDateFormatted =
-                        java.text
-                            .SimpleDateFormat(
-                                "EEEE d 'de' MMMM, HH:mm 'hs'",
-                                java.util.Locale("es", "AR"),
-                            ).format(java.util.Date(event.dateTime))
+                        val eventPlace = "Ubicación: ${event.lat}, ${event.lng}"
 
-                    // texto  con la ubicación (lat/lng)
-                    val eventPlace = "Ubicación: ${event.lat}, ${event.lng}"
+                        val encodedName = java.net.URLEncoder.encode(event.title, "UTF-8")
+                        val encodedDate = java.net.URLEncoder.encode(eventDateFormatted, "UTF-8")
+                        val encodedPlace = java.net.URLEncoder.encode(eventPlace, "UTF-8")
 
-                    // para que la ruta no falle con espacios o acentos
-                    val encodedName = java.net.URLEncoder.encode(event.title, "UTF-8")
-                    val encodedDate = java.net.URLEncoder.encode(eventDateFormatted, "UTF-8")
-                    val encodedPlace = java.net.URLEncoder.encode(eventPlace, "UTF-8")
-
-                    navController?.navigate(
-                        "confirmParticipation/${event.id}/$encodedName/$encodedDate/$encodedPlace",
-                    )
-                },
-            )
+                        navController?.navigate(
+                            "confirmParticipation/${event.id}/$encodedName/$encodedDate/$encodedPlace",
+                        )
+                    },
+                )
+            }
         }
     }
 }

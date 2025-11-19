@@ -43,7 +43,7 @@ class EventDetailsViewModel
             viewModelScope.launch {
                 _uiState.update { it.copy(isLoading = true, error = null) }
 
-                eventRepository.getEvent(eventId).collect { result ->
+                eventRepository.getEvent(eventId, 1L).collect { result ->
                     when (result) {
                         is Resource.Success -> {
                             _uiState.update { currentState ->

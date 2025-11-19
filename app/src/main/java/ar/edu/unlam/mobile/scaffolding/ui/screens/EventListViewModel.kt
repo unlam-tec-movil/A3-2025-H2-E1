@@ -1,25 +1,19 @@
 package ar.edu.unlam.mobile.scaffolding.ui.screens
 
-import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.location.Location
-import androidx.annotation.RequiresPermission
+import android.location.LocationManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
 import ar.edu.unlam.mobile.scaffolding.domain.event.repositories.EventRepository
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.utils.Resource
-import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -34,49 +28,51 @@ data class EventListUiState(
 class EventListViewModel
     @Inject
     constructor(
-        private val eventRepository: EventRepository,
+        private val repository: EventRepository,
     ) : ViewModel() {
         private val _uiState = MutableStateFlow(EventListUiState())
-
         val uiState = _uiState.asStateFlow()
 
-        var userLocation: Location? = null
+        var userLocation: LatLng? = null
 
         init {
             getEvents()
         }
 
         fun updateFilter(isDistance: Boolean) {
-            _uiState.update { currentState ->
-                currentState.copy(
-                    isDistance = isDistance,
-                )
-            }
+            _uiState.update { it.copy(isDistance = isDistance) }
             viewModelScope.launch {
-                if (isDistance) {
-                    sortEventsByDistance()
-                } else {
-                    sortEventsByDate()
-                }
+                getEvents()
             }
         }
 
+        @SuppressLint("MissingPermission")
+        fun getUserLocation(context: Context) {
+            val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            val location =
+                locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                    ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+
+            userLocation = location?.let { LatLng(it.latitude, it.longitude) } ?: LatLng(-34.6037, -58.3816)
+
+            if (_uiState.value.isDistance) sortEventsByDistance()
+        }
+
         private fun sortEventsByDistance() {
-            _uiState.update { events ->
-                events.copy(
+            val location = userLocation ?: return
+            _uiState.update { state ->
+                state.copy(
                     events =
-                        events.events.sortedBy { event ->
+                        state.events.sortedBy { event ->
                             val result = FloatArray(1)
-                            userLocation?.let {
-                                Location.distanceBetween(
-                                    userLocation!!.latitude,
-                                    userLocation!!.longitude,
-                                    event.lat,
-                                    event.lng,
-                                    result,
-                                )
-                                result[0]
-                            }
+                            Location.distanceBetween(
+                                location.latitude,
+                                location.longitude,
+                                event.lat,
+                                event.lng,
+                                result,
+                            )
+                            result[0]
                         },
                 )
             }
@@ -89,53 +85,49 @@ class EventListViewModel
                     events =
                         state.events.sortedBy { event ->
                             val remaining = event.dateTime - now
-                            if (remaining > 0L) remaining else Long.MAX_VALUE
+                            if (remaining > 0) remaining else Long.MAX_VALUE
                         },
                 )
             }
         }
 
-        @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
-        fun getUserLocation(context: Context) {
-            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-            fusedLocationClient.lastLocation
-                .addOnSuccessListener { location ->
-                    if (location != null) {
-                        userLocation = location
-                    }
-                }
-        }
-
-        private fun getEvents() {
+        fun getEvents() {
             viewModelScope.launch {
-                eventRepository
-                    .getEventsList(
-                        order = "asc",
-                        sort = if (_uiState.value.isDistance) "distance" else "date",
-                        size = 20,
-                    ).collect { result ->
-                        when (result) {
-                            is Resource.Success -> {
-                                _uiState.update { currentState ->
-                                    currentState.copy(
-                                        events = result.data,
-                                        currentState = MessageUIState.Success("Success"),
-                                    )
-                                }
-                            }
+                _uiState.update { it.copy(currentState = MessageUIState.Loading) }
 
-                            is Resource.Error -> {
-                                _uiState.update { currentState ->
-                                    currentState.copy(
-                                        currentState =
-                                            MessageUIState.Error(
-                                                result.message,
-                                            ),
-                                    )
+                try {
+                    repository
+                        .getEventsList(
+                            sort = if (_uiState.value.isDistance) "distance" else "date",
+                            order = "asc",
+                            size = null,
+                        ).collect { resource ->
+                            when (resource) {
+                                is Resource.Success -> {
+                                    _uiState.update { state ->
+                                        state.copy(
+                                            events = resource.data,
+                                            currentState = MessageUIState.Success("Success"),
+                                        )
+                                    }
+                                    if (_uiState.value.isDistance) {
+                                        sortEventsByDistance()
+                                    } else {
+                                        sortEventsByDate()
+                                    }
+                                }
+                                is Resource.Error -> {
+                                    _uiState.update { state ->
+                                        state.copy(currentState = MessageUIState.Error(resource.message ?: "Error inesperado"))
+                                    }
                                 }
                             }
                         }
+                } catch (e: Exception) {
+                    _uiState.update { state ->
+                        state.copy(currentState = MessageUIState.Error(e.message ?: "Error inesperado"))
                     }
+                }
             }
         }
     }
