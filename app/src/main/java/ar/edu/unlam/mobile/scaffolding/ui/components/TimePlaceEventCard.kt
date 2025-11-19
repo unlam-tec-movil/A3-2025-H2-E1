@@ -31,7 +31,7 @@ import java.util.Locale
 fun TimePlaceEventCard(
     modifier: Modifier = Modifier,
     event: Event,
-    onLocationClick: (latitude: Double, longitude: Double) -> Unit
+    onLocationClick: (latitude: Double, longitude: Double) -> Unit,
 ) {
     val dateFormat = SimpleDateFormat("dd 'de' MMMM 'de' yyyy", Locale.getDefault())
     val dateString = dateFormat.format(event.dateTime)
