@@ -1,12 +1,11 @@
 package ar.edu.unlam.mobile.scaffolding.ui.screens
 
+import android.Manifest
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
@@ -24,6 +23,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -43,11 +43,15 @@ import ar.edu.unlam.mobile.scaffolding.ui.components.EventSearchBar
 import ar.edu.unlam.mobile.scaffolding.ui.components.FloatingButtons
 import ar.edu.unlam.mobile.scaffolding.ui.components.NearbyMap
 import ar.edu.unlam.mobile.scaffolding.ui.components.SystemBarStyle
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.location.*
+import com.google.android.gms.maps.model.LatLng
 
 const val HOME_SCREEN_ROUTE = "home"
 
-@RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
@@ -57,7 +61,6 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
     val searchBarState by viewModel.searchUiState.collectAsStateWithLifecycle()
     val selectedEvent by viewModel.selectedEvent.collectAsState()
-    val userLocation by viewModel.userLocation.collectAsState()
 
     var showCreateEventDialog by remember { mutableStateOf(false) }
     var isSessionActive by remember { mutableStateOf(false) }
@@ -65,64 +68,66 @@ fun HomeScreen(
 
     val context = LocalContext.current
     val sensorManager = remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
+    val permissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
+    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
 
-    // ---------------------------
     // UBICACIÓN DESDE HOME SCREEN
-    // ---------------------------
-
-    val fusedLocationClient =
-        remember {
-            LocationServices.getFusedLocationProviderClient(context)
-        }
-
-    // Última ubicación conocida
-    LaunchedEffect(Unit) {
-        try {
-            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                location?.let { viewModel.setUserLocation(it) }
-            }
-        } catch (_: SecurityException) {
+    // Se pide el permiso de ubicación al entrar a la screen
+    LaunchedEffect(permissionState.status) {
+        if (!permissionState.status.isGranted) {
+            permissionState.launchPermissionRequest()
         }
     }
 
-    // Actualizaciones periódicas (cada 3s)
-    val locationRequest =
-        remember {
-            LocationRequest
-                .Builder(
-                    Priority.PRIORITY_HIGH_ACCURACY,
-                    3000,
-                ).build()
+    // Con esto se obtiene la ubicación inicial
+    LaunchedEffect(key1 = permissionState.status.isGranted) {
+        if (permissionState.status.isGranted) {
+            try {
+                fusedLocationClient.lastLocation
+                    .addOnSuccessListener { it?.let(viewModel::setUserLocation) }
+            } catch (_: SecurityException) {
+            }
         }
+    }
 
-    val locationCallback =
-        remember {
-            object : LocationCallback() {
-                override fun onLocationResult(result: LocationResult) {
-                    result.lastLocation?.let { viewModel.setUserLocation(it) }
+    // Esto lo que hace es obtener la ubicacion a tiempo real, esta pensado para el mapa
+    DisposableEffect(key1 = permissionState.status.isGranted) {
+        if (!permissionState.status.isGranted) {
+            onDispose { }
+        } else {
+            val locationCallback =
+                object : LocationCallback() {
+                    override fun onLocationResult(result: LocationResult) {
+                        result.lastLocation?.let { viewModel.setUserLocation(it) }
+                    }
+                }
+
+            val locationRequest =
+                LocationRequest
+                    .Builder(
+                        Priority.PRIORITY_HIGH_ACCURACY,
+                        3000L,
+                    ).build()
+
+            try {
+                fusedLocationClient.requestLocationUpdates(
+                    locationRequest,
+                    locationCallback,
+                    context.mainLooper,
+                )
+            } catch (_: SecurityException) {
+            }
+
+            onDispose {
+                try {
+                    fusedLocationClient.removeLocationUpdates(locationCallback)
+                } catch (_: Exception) {
                 }
             }
         }
-
-    DisposableEffect(Unit) {
-        try {
-            fusedLocationClient.requestLocationUpdates(
-                locationRequest,
-                locationCallback,
-                context.mainLooper,
-            )
-        } catch (_: SecurityException) {
-        }
-
-        onDispose {
-            fusedLocationClient.removeLocationUpdates(locationCallback)
-        }
     }
 
-    // ---------------------------
     // MAP ROTATION SENSOR
-    // ---------------------------
-
     MapRotationSensor(
         enabled = uiState.mapProperties.rotationBySensor,
         sensorManager = sensorManager,
@@ -132,10 +137,7 @@ fun HomeScreen(
         },
     )
 
-    // ======================
     // PANTALLA PRINCIPAL
-    // ======================
-
     Box(modifier = modifier.fillMaxSize()) {
         when (val helloState = uiState.helloMessageState) {
             MessageUIState.Loading -> {
@@ -149,15 +151,13 @@ fun HomeScreen(
                 NearbyMap(
                     nearbyEvents = uiState.eventList,
                     modifier = Modifier.matchParentSize(),
-                    mapProperties = uiState.mapProperties,
-                    rotationChanged = { orientation ->
-                        if (uiState.mapProperties.rotationByGesture) {
-                            viewModel.onMapPropertiesChanged(uiState.mapProperties.copy(mapOrientation = orientation))
-                        }
-                    },
                     onEventoClick = { evento ->
                         viewModel.fetchEventById(evento.id.toInt())
                     },
+                    mapProperties = uiState.mapProperties,
+                    rotationChanged = viewModel::mapRotation,
+                    onMapStateChanged = viewModel::onMapStateChanged,
+                    userLocation = uiState.userLocation,
                 )
 
                 // Estado para animar tarjeta del evento seleccionado
@@ -168,24 +168,11 @@ fun HomeScreen(
                 }
 
                 selectedEvent?.let { event ->
-
-                    val distanceText =
-                        userLocation?.let { userLoc ->
-                            val eventLocation =
-                                android.location.Location("").apply {
-                                    latitude = event.lat
-                                    longitude = event.lng
-                                }
-                            val distanceMeters = userLoc.distanceTo(eventLocation)
-                            if (distanceMeters >= 1000) {
-                                "${"%.1f".format(distanceMeters / 1000)} km"
-                            } else {
-                                "${distanceMeters.toInt()} mts"
-                            }
-                        } ?: "Calculando..."
-
                     Column(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .zIndex(15f),
                         verticalArrangement = Arrangement.Bottom,
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
@@ -204,7 +191,11 @@ fun HomeScreen(
                         ) {
                             EventHomeCard(
                                 event = event,
-                                distance = distanceText,
+                                distance =
+                                    LatLng(
+                                        uiState.userLocation?.latitude ?: 0.0,
+                                        uiState.userLocation?.longitude ?: 0.0,
+                                    ),
                                 onViewEventClick = {
                                     showEventCard = false
                                     navController.navigate("eventDetails/${event.id}")
@@ -261,33 +252,55 @@ fun HomeScreen(
 
                         Spacer(modifier = Modifier.weight(1f))
 
-                        FloatingActionButton(
-                            onClick = {
-                                val props = uiState.mapProperties
-                                viewModel.onMapPropertiesChanged(
-                                    props.copy(
-                                        rotationBySensor = !props.rotationBySensor,
-                                        rotationByGesture = !props.rotationByGesture,
-                                    ),
-                                )
-                            },
-                            containerColor =
-                                if (uiState.mapProperties.rotationBySensor) {
-                                    MaterialTheme.colorScheme.secondary
-                                } else {
-                                    MaterialTheme.colorScheme.surfaceContainer
+                        Column {
+                            FloatingActionButton(
+                                onClick = {
+                                    val props = uiState.mapProperties
+                                    viewModel.onMapPropertiesChanged(
+                                        props.copy(
+                                            rotationBySensor = !props.rotationBySensor,
+                                            rotationByGesture = !props.rotationByGesture,
+                                        ),
+                                    )
                                 },
-                            shape = CircleShape,
-                            modifier =
-                                Modifier
-                                    .size(52.dp)
-                                    .padding(12.dp),
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Navigation,
-                                contentDescription = "Cambiar modo de rotación",
-                                modifier = Modifier.rotate(uiState.mapProperties.mapOrientation),
-                            )
+                                containerColor =
+                                    if (uiState.mapProperties.rotationBySensor) {
+                                        MaterialTheme.colorScheme.secondary
+                                    } else {
+                                        MaterialTheme.colorScheme.surfaceContainer
+                                    },
+                                shape = CircleShape,
+                                modifier =
+                                    Modifier
+                                        .size(52.dp)
+                                        .padding(12.dp),
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Navigation,
+                                    contentDescription = "Cambiar modo de rotación",
+                                    modifier = Modifier.rotate(uiState.mapProperties.mapOrientation),
+                                )
+                            }
+                            FloatingActionButton(
+                                onClick = {
+                                    if (permissionState.status.isGranted) {
+                                        viewModel.onCenterRequest()
+                                    } else {
+                                        permissionState.launchPermissionRequest()
+                                    }
+                                },
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                shape = CircleShape,
+                                modifier =
+                                    Modifier
+                                        .size(52.dp)
+                                        .padding(12.dp),
+                            ) {
+                                Icon(
+                                    Icons.Default.MyLocation,
+                                    contentDescription = "Centrar en mi posición",
+                                )
+                            }
                         }
                     }
                 }
