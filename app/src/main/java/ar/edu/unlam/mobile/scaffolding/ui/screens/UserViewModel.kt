@@ -25,6 +25,8 @@ data class UserUIState(
     val description: String? = "",
     val currentLocation: LatLng? = null,
     val joinedEvents: List<EventList> = emptyList(),
+    val pastEvents: List<EventList> = emptyList(),
+    val showPastEvents: Boolean = false,
     val userUiState: MessageUIState = MessageUIState.Loading,
 )
 
@@ -118,9 +120,16 @@ class UserViewModel
                                     events = events.reversed()
                                 }
                             }
+
+                            // --- FILTRADO FUTUROS / PASADOS (USANDO dateTime) ---
+                            val now = System.currentTimeMillis()
+                            val upcoming = events.filter { it.dateTime >= now }
+                            val past = events.filter { it.dateTime < now }
+
                             _userUiState.update {
                                 it.copy(
-                                    joinedEvents = events,
+                                    joinedEvents = upcoming, // por defecto mostramos futuros
+                                    pastEvents = past,
                                     userUiState = MessageUIState.Success(message = "Success"),
                                 )
                             }
@@ -133,6 +142,12 @@ class UserViewModel
                         }
                     }
                 }
+            }
+        }
+
+        fun togglePastEvents() {
+            _userUiState.update {
+                it.copy(showPastEvents = !it.showPastEvents)
             }
         }
     }

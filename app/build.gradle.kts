@@ -47,12 +47,18 @@ android {
     }
 
     buildTypes {
-        release {
+        getByName("debug") {
+            buildConfigField("boolean", "AUTO_LOGIN", "true")
+            buildConfigField("String", "DEV_TOKEN", "\"dev_token_123\"")
+        }
+        getByName("release") {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            buildConfigField("boolean", "AUTO_LOGIN", "false")
+            buildConfigField("String", "DEV_TOKEN", "\"\"")
         }
     }
     compileOptions {
@@ -67,6 +73,9 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+    }
+    lint {
+        disable += "PermissionLaunchedDuringComposition"
     }
 }
 
@@ -85,6 +94,8 @@ dependencies {
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
     implementation(libs.androidx.compose.animation)
+    implementation(libs.androidx.compose.runtime)
+    implementation(libs.androidx.compose.foundation.layout)
 
     // Testing
     testImplementation(libs.junit)

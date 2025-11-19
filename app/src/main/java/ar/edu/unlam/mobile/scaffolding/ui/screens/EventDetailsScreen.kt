@@ -3,8 +3,8 @@ package ar.edu.unlam.mobile.scaffolding.ui.screens
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -12,46 +12,78 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
 import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventParticipant
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventPicturesCard
+import ar.edu.unlam.mobile.scaffolding.ui.components.ParticipantInfoPopUp
 import ar.edu.unlam.mobile.scaffolding.ui.components.PrimaryButton
+import ar.edu.unlam.mobile.scaffolding.ui.components.SystemBarStyle
 import ar.edu.unlam.mobile.scaffolding.ui.components.TimePlaceEventCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.TopBar
+import ar.edu.unlam.mobile.scaffolding.utils.Resource
 import coil.compose.AsyncImage
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun EventDetailsScreen(
     modifier: Modifier = Modifier,
     eventId: Int,
+    enableReporting: Boolean = false,
+    navController: NavController? = null,
+    viewModel: EventDetailsViewModel = hiltViewModel(),
+) {
+    val eventState by viewModel.eventState.collectAsState()
+
+    // Cargar evento cuando la pantalla se muestra
+    LaunchedEffect(eventId) {
+        viewModel.getEventById(eventId, 1L)
+    }
+
+    when (eventState) {
+        is Resource.Success -> {
+            val event = (eventState as Resource.Success).data
+            EventDetailsContent(event, enableReporting, navController)
+        }
+        is Resource.Error -> {
+            Text("Error: ${(eventState as Resource.Error).message}")
+        }
+    }
+}
+
+@Composable
+fun EventDetailsContent(
+    event: Event,
+    enableReporting: Boolean,
     navController: NavController? = null,
 ) {
+    val showPopup = remember { mutableStateOf(false) }
+    val selectedUser = remember { mutableStateOf<User?>(null) }
+    SystemBarStyle()
+
     Scaffold(
-        modifier =
-            modifier
-                .fillMaxSize()
-                .padding(start = 16.dp, end = 16.dp),
         topBar = {
             TopBar(
                 title = event.title,
                 onNavigateBack = { navController?.popBackStack() },
             )
         },
-    ) {
+    ) { paddingValues ->
         LazyColumn(
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(paddingValues),
         ) {
             if (event.image != null) {
                 item {
@@ -59,7 +91,7 @@ fun EventDetailsScreen(
                         model = event.image,
                         contentDescription = "Imagen del evento",
                         modifier =
-                            modifier
+                            Modifier
                                 .height(180.dp)
                                 .fillMaxWidth(),
                         contentScale = ContentScale.Crop,
@@ -67,36 +99,34 @@ fun EventDetailsScreen(
                 }
             }
 
+            // Popup
             item {
-                TimePlaceEventCard(
-                    event = event,
-                )
+                if (showPopup.value && selectedUser.value != null) {
+                    ParticipantInfoPopUp(
+                        user = selectedUser.value!!,
+                        onDismiss = { showPopup.value = false },
+                        onReportClick = { showPopup.value = false },
+                        enableReporting = enableReporting,
+                    )
+                }
             }
 
-            item {
-                Text(
-                    text = event.description,
-                    fontSize = TextUnit.Unspecified,
-                )
-            }
+            item { TimePlaceEventCard(event = event) }
+            item { Text(text = event.description) }
 
             item {
                 EventParticipant(
                     user = event.creator,
                     members = event.members,
+                    onAvatarClick = { userClicked ->
+                        selectedUser.value = userClicked
+                        showPopup.value = true
+                    },
                 )
             }
 
-            item {
-                EventPicturesCard(
-                    title = "Estado del lugar",
-                    images = event.beforeImage,
-                )
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(66.dp))
-            }
+            item { EventPicturesCard(title = "Estado del lugar", images = event.beforeImage) }
+            item { Spacer(modifier = Modifier.height(66.dp)) }
         }
 
         Column(
@@ -107,81 +137,30 @@ fun EventDetailsScreen(
                     .padding(16.dp),
         ) {
             Spacer(modifier = Modifier.weight(1f))
+            if (!enableReporting) {
+                PrimaryButton(
+                    "Participar",
+                    width = 200.dp,
+                    onClick = {
+                        val eventDateFormatted =
+                            java.text
+                                .SimpleDateFormat(
+                                    "EEEE d 'de' MMMM, HH:mm 'hs'",
+                                    java.util.Locale("es", "AR"),
+                                ).format(java.util.Date(event.dateTime))
 
-            PrimaryButton(
-                "Participar",
-                width = 200.dp,
-                onClick = {
-                    //  fecha
-                    val eventDateFormatted =
-                        java.text
-                            .SimpleDateFormat(
-                                "EEEE d 'de' MMMM, HH:mm 'hs'",
-                                java.util.Locale("es", "AR"),
-                            ).format(java.util.Date(event.dateTime))
+                        val eventPlace = "Ubicación: ${event.lat}, ${event.lng}"
 
-                    // texto  con la ubicación (lat/lng)
-                    val eventPlace = "Ubicación: ${event.lat}, ${event.lng}"
+                        val encodedName = java.net.URLEncoder.encode(event.title, "UTF-8")
+                        val encodedDate = java.net.URLEncoder.encode(eventDateFormatted, "UTF-8")
+                        val encodedPlace = java.net.URLEncoder.encode(eventPlace, "UTF-8")
 
-                    // para que la ruta no falle con espacios o acentos
-                    val encodedName = java.net.URLEncoder.encode(event.title, "UTF-8")
-                    val encodedDate = java.net.URLEncoder.encode(eventDateFormatted, "UTF-8")
-                    val encodedPlace = java.net.URLEncoder.encode(eventPlace, "UTF-8")
-
-                    navController?.navigate(
-                        "confirmParticipation/${event.id}/$encodedName/$encodedDate/$encodedPlace",
-                    )
-                },
-            )
+                        navController?.navigate(
+                            "confirmParticipation/${event.id}/$encodedName/$encodedDate/$encodedPlace",
+                        )
+                    },
+                )
+            }
         }
     }
-}
-
-private val imageExamples =
-    listOf(
-        "https://cdn.pixabay.com/photo/2014/07/09/12/17/live-concert-388160_1280.jpg",
-        "https://shorturl.at/QUHmG",
-        "https://shorturl.at/ZehlK",
-        "https://www.bigfootdigital.co.uk/wp-content/uploads/2020/07/image-optimisation-scaled.jpg",
-        "https://i0.wp.com/picjumbo.com/wp-content/uploads/calming-nature-wallpaper-free-image.jpeg?w=600&quality=80",
-    )
-
-private val members =
-    (1..20)
-        .map {
-            User(
-                id = it.toLong(),
-                name = "Usuario $it",
-                avatarUrl = "https://media.vanityfair.com/photos/597f75b706f77f18ffaad3bc/master/w_1440,h_960,c_limit/avatar-2.jpg",
-                description = "",
-            )
-        }
-
-private val event =
-    Event(
-        id = "1",
-        title = "Concierto de Rock",
-        description = "Limpieza post concierto de rock con bandas locales e internacionales.",
-        dateTime = System.currentTimeMillis(),
-        image = "https://cdn.pixabay.com/photo/2014/07/09/12/17/live-concert-388160_1280.jpg",
-        lat = -34.5508002,
-        lng = -58.4548101,
-        beforeImage = imageExamples,
-        afterImage = null,
-        members = members,
-        creator =
-            User(
-                id = 1,
-                name = "Pepe Papa",
-                avatarUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBwr_zZjgvmu4BccwDNIHic8K5dyehw7cSYA&s",
-                description = null,
-            ),
-        saved = false,
-        participating = false,
-    )
-
-@Composable
-@Preview(showBackground = true)
-fun EventDetailsScreenPreview() {
-    EventDetailsScreen(eventId = 1)
 }
