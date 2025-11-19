@@ -1,5 +1,6 @@
 package ar.edu.unlam.mobile.scaffolding.ui.components
 
+import android.location.Location
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -16,13 +17,14 @@ import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
 import ar.edu.unlam.mobile.scaffolding.ui.theme.PrimaryGreen
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
+import com.google.android.gms.maps.model.LatLng
 import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
 fun EventHomeCard(
     event: EventList,
-    distance: String,
+    distance: LatLng,
     onViewEventClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -77,7 +79,16 @@ fun EventHomeCard(
             )
 
             // Distancia
-            Text(text = "Distancia: $distance", style = MaterialTheme.typography.bodySmall)
+            val results = FloatArray(1)
+            Location.distanceBetween(
+                event.lat,
+                event.lng,
+                distance.latitude,
+                distance.longitude,
+                results,
+            )
+            val distanceString = String.format(Locale.getDefault(), "%.2f", results[0] / 1000)
+            Text(text = "Distancia: $distanceString km", style = MaterialTheme.typography.bodySmall)
 
             // Botón
             Button(

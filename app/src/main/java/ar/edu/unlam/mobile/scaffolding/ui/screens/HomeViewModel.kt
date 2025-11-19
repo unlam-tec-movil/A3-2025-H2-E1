@@ -1,7 +1,9 @@
 package ar.edu.unlam.mobile.scaffolding.ui.screens
 
-import android.health.connect.datatypes.ExerciseRoute
+import android.annotation.SuppressLint
+import android.content.Context
 import android.location.Location
+import android.location.LocationManager
 import android.net.Uri
 import android.os.Build
 import android.util.Log
@@ -27,6 +29,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -38,6 +41,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.osmdroid.util.GeoPoint
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.UUID
@@ -47,7 +51,7 @@ data class HomeUIState(
     val eventList: List<SuggestedEvent> = emptyList(),
     val mapProperties: MapProperties = MapProperties(),
     val helloMessageState: MessageUIState,
-    val userLocation: ExerciseRoute.Location? = null,
+    val userLocation: GeoPoint? = null,
 )
 
 data class SearchUIState(
@@ -93,23 +97,87 @@ class HomeViewModel
         private val _selectedEvent = MutableStateFlow<EventList?>(null)
         val selectedEvent = _selectedEvent.asStateFlow()
 
-        // --- Ubicación del usuario ---
-        private val _userLocation = MutableStateFlow<Location?>(null)
-        val userLocation = _userLocation.asStateFlow()
-
-        fun setUserLocation(location: Location) {
-            _userLocation.value = location
-            Log.d("HomeViewModel", "Ubicación del usuario actualizada: ${location.latitude}, ${location.longitude}")
-        }
-
         init {
             _uiState.value = HomeUIState(helloMessageState = MessageUIState.Success("2b"))
             fetchEvents()
         }
 
+        // Entre un cambio y otro esto al final no lo use, pero lo dejo por si alguien si lo usa, sino se borra
+        @SuppressLint("MissingPermission")
+        fun getCurrentLocation(context: Context) {
+            val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            val location =
+                locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                    ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+            val userLocation =
+                if (location != null) {
+                    GeoPoint(location.latitude, location.longitude)
+                } else {
+                    GeoPoint(-34.6037, -58.3816) // Fallback: Obelisco
+                }
+            _uiState.update {
+                it.copy(userLocation = userLocation)
+            }
+        }
+
+        fun onCenterRequest() {
+            viewModelScope.launch {
+                _uiState.update {
+                    it.copy(
+                        mapProperties =
+                            it.mapProperties.copy(
+                                centerRequest = true,
+                            ),
+                    )
+                }
+                delay(100)
+                _uiState.update {
+                    it.copy(
+                        mapProperties =
+                            it.mapProperties.copy(
+                                centerRequest = false,
+                            ),
+                    )
+                }
+            }
+        }
+
         fun onMapPropertiesChanged(newProperties: MapProperties) {
             _uiState.update { currentState ->
                 currentState.copy(mapProperties = newProperties)
+            }
+        }
+
+        fun mapRotation(rotation: Float) {
+            _uiState.update { currentState ->
+                currentState.copy(
+                    mapProperties =
+                        currentState.mapProperties.copy(
+                            mapOrientation = rotation,
+                        ),
+                )
+            }
+        }
+
+        // Esto deberia hacer si tienes los permisos te coloque al iniciar en tu posicion en el mapa,
+        // de momento no lo hace, estoy en eso.
+        fun setUserLocation(location: Location) {
+            val userLatLng = GeoPoint(location.latitude, location.longitude)
+            _uiState.update { it.copy(userLocation = userLatLng) }
+        }
+
+        fun onMapStateChanged(
+            center: GeoPoint,
+            zoom: Double,
+        ) {
+            _uiState.update { state ->
+                state.copy(
+                    mapProperties =
+                        state.mapProperties.copy(
+                            center = center,
+                            zoom = zoom,
+                        ),
+                )
             }
         }
 
@@ -332,9 +400,5 @@ class HomeViewModel
 
         fun clearSelectedEvent() {
             _selectedEvent.value = null
-        }
-
-        fun setUserLocation(location: ExerciseRoute.Location) {
-            _uiState.update { it.copy(userLocation = location) }
         }
     }
