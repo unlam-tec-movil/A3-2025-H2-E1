@@ -1,6 +1,7 @@
 package ar.edu.unlam.mobile.scaffolding.data.repositories
 
 import ar.edu.unlam.mobile.scaffolding.data.mapper.toEntity
+import ar.edu.unlam.mobile.scaffolding.data.mapper.toEvent
 import ar.edu.unlam.mobile.scaffolding.data.mapper.toEventList
 import ar.edu.unlam.mobile.scaffolding.data.mapper.toSuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.data.model.EventEntity
@@ -438,9 +439,24 @@ class EventRepositoryImpl
                 }
             }
 
-        override suspend fun getEvent(id: Int): Flow<Resource<Event>> {
-            TODO("Not yet implemented")
-        }
+        override suspend fun getEvent(
+            id: Int,
+            userId: Long,
+        ): Flow<Resource<Event>> =
+            flow {
+                val eventEntity = mockEvents.find { it.eventId == id.toString() }
+
+                if (eventEntity != null) {
+                    emit(Resource.Success(eventEntity.toEvent(userId)))
+                } else {
+                    emit(
+                        Resource.Error<Event>(
+                            data = null,
+                            message = "Evento no encontrado",
+                        ),
+                    )
+                }
+            }
 
         override suspend fun createEvent(event: Event): Resource<Unit> =
             try {
