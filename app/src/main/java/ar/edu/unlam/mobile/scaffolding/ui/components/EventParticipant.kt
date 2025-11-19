@@ -38,6 +38,7 @@ import coil.compose.AsyncImage
 fun EventParticipant(
     user: User,
     members: List<User>?,
+    onAvatarClick: (User) -> Unit,
 ) {
     val isExpanded = remember { mutableStateOf(false) }
     val itemSpacing = 8.dp
@@ -48,6 +49,7 @@ fun EventParticipant(
             text = "Organizador",
             fontWeight = FontWeight.Medium,
         )
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(itemSpacing),
@@ -57,7 +59,7 @@ fun EventParticipant(
                 placeholder = rememberVectorPainter(Icons.Default.Person),
                 modifier =
                     Modifier
-                        .clip(shape = CircleShape)
+                        .clip(CircleShape)
                         .size(itemSize)
                         .background(Color.Gray),
                 model = user.avatarUrl,
@@ -76,24 +78,22 @@ fun EventParticipant(
             LazyVerticalGrid(
                 verticalArrangement = Arrangement.spacedBy(itemSpacing),
                 columns = GridCells.FixedSize(itemSize + (itemSpacing * 2)),
-                modifier =
-                    Modifier
-                        .heightIn(max = LocalWindowInfo.current.containerSize.height.dp),
+                modifier = Modifier.heightIn(max = LocalWindowInfo.current.containerSize.height.dp),
             ) {
                 val minMembers = minOf(members.size, 5)
-                val displayCount =
-                    if (isExpanded.value) members.size else minMembers
+                val displayCount = if (isExpanded.value) members.size else minMembers
 
                 items(displayCount) { index ->
+
                     if (index == minMembers - 1 && !isExpanded.value) {
                         Box(
                             modifier =
                                 Modifier
                                     .padding(horizontal = itemSpacing)
-                                    .clip(shape = CircleShape)
+                                    .clip(CircleShape)
                                     .size(itemSize)
                                     .background(Color.LightGray)
-                                    .clickable { isExpanded.value = !isExpanded.value },
+                                    .clickable { isExpanded.value = true },
                             contentAlignment = Alignment.Center,
                         ) {
                             Text(
@@ -110,7 +110,7 @@ fun EventParticipant(
                             modifier =
                                 Modifier
                                     .padding(horizontal = itemSpacing)
-                                    .clickable { isExpanded.value = !isExpanded.value },
+                                    .clickable { isExpanded.value = false },
                         )
                     } else {
                         AsyncImage(
@@ -119,9 +119,12 @@ fun EventParticipant(
                             modifier =
                                 Modifier
                                     .padding(horizontal = itemSpacing)
-                                    .clip(shape = CircleShape)
+                                    .clip(CircleShape)
                                     .size(itemSize)
-                                    .background(Color.Gray),
+                                    .background(Color.Gray)
+                                    .clickable {
+                                        onAvatarClick(members[index])
+                                    },
                             model = members[index].avatarUrl,
                             contentDescription = "Avatar Participante/s",
                         )
@@ -139,47 +142,27 @@ fun EventParticipant(
 
 @Composable
 @Preview(showBackground = true)
-fun EventParticipantPreview() {
+fun EventParticipantPreviewSimplified() {
+    val sampleUser =
+        User(
+            id = 1,
+            name = "Juan Perez",
+            avatarUrl = "",
+            description = "Organizador del evento",
+        )
+
+    val sampleMembers =
+        listOf(
+            User(id = 2, name = "Kiara Mochica", avatarUrl = "", description = ""),
+            User(id = 3, name = "Tatiana Sánchez", avatarUrl = "", description = ""),
+            User(id = 4, name = "Maria Lopez", avatarUrl = "", description = ""),
+            User(id = 5, name = "Ana Garcia", avatarUrl = "", description = ""),
+            User(id = 6, name = "Nico Ñoñez", avatarUrl = "", description = ""),
+        )
+
     EventParticipant(
-        user =
-            User(
-                id = 1,
-                name = "Juan Perez",
-                avatarUrl = "",
-                description = "",
-            ),
-        members =
-            listOf(
-                User(
-                    id = 2,
-                    name = "Kiara Mochica",
-                    avatarUrl = "",
-                    description = "",
-                ),
-                User(
-                    id = 3,
-                    name = "Tatiana Sánchez",
-                    avatarUrl = "",
-                    description = "",
-                ),
-                User(
-                    id = 4,
-                    name = "Maria Lopez",
-                    avatarUrl = "",
-                    description = "",
-                ),
-                User(
-                    id = 5,
-                    name = "Ana Garcia",
-                    avatarUrl = "",
-                    description = "",
-                ),
-                User(
-                    id = 6,
-                    name = "Nico Ñoñez",
-                    avatarUrl = "",
-                    description = "",
-                ),
-            ),
+        user = sampleUser,
+        members = sampleMembers,
+        onAvatarClick = { /* Nada en preview */ },
     )
 }

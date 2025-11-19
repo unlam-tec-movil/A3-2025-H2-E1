@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,6 +36,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import ar.edu.unlam.mobile.scaffolding.ui.components.PrimaryButton
+import ar.edu.unlam.mobile.scaffolding.ui.components.SystemBarStyle
+import ar.edu.unlam.mobile.scaffolding.ui.screens.HOME_SCREEN_ROUTE
 
 @Composable
 fun LoginScreen(
@@ -42,6 +45,15 @@ fun LoginScreen(
     navController: NavController,
 ) {
     val formState by viewModel.formState.collectAsState()
+    SystemBarStyle()
+
+    LaunchedEffect(formState.isLoggedIn) {
+        if (formState.isLoggedIn) {
+            navController.navigate(HOME_SCREEN_ROUTE) {
+                popUpTo("login") { inclusive = true }
+            }
+        }
+    }
 
     Column(
         modifier =

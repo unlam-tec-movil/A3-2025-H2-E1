@@ -1,5 +1,6 @@
 package ar.edu.unlam.mobile.scaffolding.data.repositories
 
+import ar.edu.unlam.mobile.scaffolding.data.mapper.toEntity
 import ar.edu.unlam.mobile.scaffolding.data.mapper.toEventList
 import ar.edu.unlam.mobile.scaffolding.data.mapper.toSuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.data.model.EventEntity
@@ -12,6 +13,8 @@ import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.domain.event.repositories.EventRepository
 import ar.edu.unlam.mobile.scaffolding.utils.Resource
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
@@ -25,59 +28,68 @@ class EventRepositoryImpl
                     name = "Juan Rodriguez",
                     avatarUrl = "https://picsum.photos/id/1005/200",
                     description = "Desarrollador Android y entusiasta de Kotlin.",
+                    password = "123",
                 ),
                 UserEntity(
                     id = 2,
                     name = "Ana García",
                     avatarUrl = "https://picsum.photos/id/1011/200",
                     description = "Diseñadora UX/UI.",
+                    password = "123",
                 ),
                 UserEntity(
                     id = 3,
                     name = "Carlos Martinez",
                     avatarUrl = "https://picsum.photos/id/1012/200",
                     description = "Project Manager.",
+                    password = "123",
                 ),
                 UserEntity(
                     id = 4,
                     name = "Sofía López",
                     avatarUrl = "https://picsum.photos/id/1013/200",
                     description = "Especialista en QA.",
+                    password = "123",
                 ),
                 UserEntity(
                     id = 5,
                     name = "David Gómez",
                     avatarUrl = "https://picsum.photos/id/1014/200",
                     description = "Analista de datos.",
+                    password = "123",
                 ),
                 UserEntity(
                     6,
                     "Juan Pérez",
                     "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg",
                     "Desarrollador Android.",
+                    password = "123",
                 ),
                 UserEntity(
                     7,
                     "María García",
                     "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
                     "Diseñadora UX/UI.",
+                    password = "123",
                 ),
                 UserEntity(
                     8,
                     "Carlos Rodríguez",
                     "https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg",
                     "Project Manager.",
+                    password = "123",
                 ),
                 UserEntity(
                     9,
                     "Pepe Papa",
                     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBwr_zZjgvmu4BccwDNIHic8K5dyehw7cSYA&s",
                     null,
+                    password = "123",
                 ),
             )
 
         private var mockEvents =
-            listOf(
+            mutableListOf(
                 EventEntity(
                     eventId = "1",
                     title = "Limpieza de la Plaza San Martín",
@@ -214,7 +226,95 @@ class EventRepositoryImpl
                     creator = mockUsers[3],
                     saved = listOf(2L),
                 ),
+                // --- Eventos PASADOS (realizados) ---
+                EventEntity(
+                    eventId = "10",
+                    title = "Limpieza en el Parque Centenario",
+                    description = "Jornada de limpieza general realizada en el Parque Centenario.",
+                    dateTime = System.currentTimeMillis() - 86400000,
+                    lat = -34.6050,
+                    lng = -58.4410,
+                    imageUrl =
+                        "https://i0.wp.com/www.buenosairesfreewalks.com/spanish/wp-content" +
+                            "/uploads/2021/01/parque-centenario2.jpg?resize=300%2C200&ssl=1",
+                    beforeImageUrl =
+                        listOf(
+                            "https://cdn.pixabay.com/photo/2016/10/01/19/09/park-1701827_1280.jpg",
+                        ),
+                    afterImageUrl =
+                        listOf(
+                            "https://cdn.pixabay.com/photo/2017/05/31/20/30/lawn-2369667_1280.jpg",
+                        ),
+                    members = listOf(mockUsers[0], mockUsers[1]),
+                    creator = mockUsers[3],
+                    saved = listOf(2L),
+                ),
+                EventEntity(
+                    eventId = "11",
+                    title = "Clasificación de residuos en Puerto Madero",
+                    description = "Actividad de concientización y reciclaje completada en Puerto Madero.",
+                    dateTime = System.currentTimeMillis() - 86400000 * 3,
+                    lat = -34.6083,
+                    lng = -58.3625,
+                    imageUrl =
+                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9Gc" +
+                            "TrLLOziN2sFo9UVvfdrK3U41-Nldga0DU0wg&s",
+                    beforeImageUrl =
+                        listOf(
+                            "https://cdn.pixabay.com/photo/2016/11/18/14/27/garbage-1835671_1280.jpg",
+                        ),
+                    afterImageUrl =
+                        listOf(
+                            "https://cdn.pixabay.com/photo/2015/09/02/12/25/recycle-918659_1280.jpg",
+                        ),
+                    members = listOf(mockUsers[2], mockUsers[4]),
+                    creator = mockUsers[1],
+                    saved = listOf(1L),
+                ),
+                EventEntity(
+                    eventId = "12",
+                    title = "Reforestación en Costanera Sur",
+                    description = "Plantación de árboles nativos, evento finalizado hace una semana.",
+                    dateTime = System.currentTimeMillis() - 86400000 * 7, // Hace 1 semana
+                    lat = -34.6167,
+                    lng = -58.3622,
+                    imageUrl =
+                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcToczqMDu10uq_" +
+                            "Crq-cCdwhoX8m4tLG0nceag&s",
+                    beforeImageUrl = listOf(),
+                    afterImageUrl =
+                        listOf(
+                            "https://cdn.pixabay.com/photo/2018/04/10/18/07/tree-3300214_1280.jpg",
+                        ),
+                    members = mockUsers.take(4),
+                    creator = mockUsers[0],
+                    saved = listOf(3L),
+                ),
+                EventEntity(
+                    eventId = "13",
+                    title = "Limpieza del Jardín Botánico",
+                    description = "Evento finalizado de mantenimiento de senderos y retiro de basura.",
+                    dateTime = System.currentTimeMillis() - 86400000 * 30,
+                    lat = -34.5882,
+                    lng = -58.4210,
+                    imageUrl =
+                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSrKY2d8aVTga5e" +
+                            "G61roNLm6kd7Zv8yfNutkQ&s",
+                    beforeImageUrl =
+                        listOf(
+                            "https://cdn.pixabay.com/photo/2016/10/18/21/22/park-1751540_1280.jpg",
+                        ),
+                    afterImageUrl =
+                        listOf(
+                            "https://cdn.pixabay.com/photo/2018/06/01/21/46/park-3447545_1280.jpg",
+                        ),
+                    members = listOf(mockUsers[5], mockUsers[7], mockUsers[8]),
+                    creator = mockUsers[4],
+                    saved = listOf(2L),
+                ),
             )
+        private val _eventsFlow = MutableStateFlow(mockEvents.toList())
+        val eventsFlow: StateFlow<List<EventEntity>> get() = _eventsFlow
 
         override suspend fun getMapEvents(): Flow<Resource<List<SuggestedEvent>>> =
             flow {
@@ -321,15 +421,36 @@ class EventRepositoryImpl
                 emit(Resource.Success(eventList))
             }
 
-        override suspend fun getEventList(id: Int): Flow<Resource<EventList>> {
-            TODO("Not yet implemented")
-        }
+        override suspend fun getEventList(id: Int): Flow<Resource<EventList>> =
+            flow {
+                mockEvents.find { it.eventId == id.toString() }?.let { eventEntity ->
+                    val eventList =
+                        EventList(
+                            id = eventEntity.eventId,
+                            title = eventEntity.title,
+                            description = eventEntity.description,
+                            dateTime = eventEntity.dateTime,
+                            lat = eventEntity.lat,
+                            lng = eventEntity.lng,
+                            image = eventEntity.imageUrl,
+                        )
+                    emit(Resource.Success(eventList))
+                }
+            }
 
         override suspend fun getEvent(id: Int): Flow<Resource<Event>> {
             TODO("Not yet implemented")
         }
 
-        override suspend fun createEvent(event: Event): Resource<Unit> {
-            TODO("Not yet implemented")
-        }
+        override suspend fun createEvent(event: Event): Resource<Unit> =
+            try {
+                val entity = event.toEntity()
+                mockEvents.add(entity)
+
+                _eventsFlow.value = mockEvents.toList()
+
+                Resource.Success(Unit)
+            } catch (e: Exception) {
+                Resource.Error(message = e.message ?: "Error al crear el evento")
+            }
     }

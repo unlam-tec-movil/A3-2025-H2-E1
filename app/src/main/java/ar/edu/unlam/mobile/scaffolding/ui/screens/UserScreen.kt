@@ -4,18 +4,21 @@ import android.Manifest
 import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -25,6 +28,8 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.WrongLocation
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -32,7 +37,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -51,12 +55,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventCard
+import ar.edu.unlam.mobile.scaffolding.ui.components.SystemBarStyle
 import coil.compose.AsyncImage
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -69,11 +75,12 @@ fun UserScreen(
     userId: Long,
     modifier: Modifier = Modifier,
     viewModel: UserViewModel = hiltViewModel(),
-    navController: NavController = rememberNavController(),
+    navController: NavController,
 ) {
     val uiState by viewModel.userUiState.collectAsState()
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(topAppBarState)
+    SystemBarStyle()
 
     var showMenu by remember { mutableStateOf(false) }
     var isDistanceFilter by remember { mutableStateOf(false) }
@@ -81,6 +88,7 @@ fun UserScreen(
 
     val context = LocalContext.current
     val permissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
+    var showingPast by remember { mutableStateOf(false) }
 
     LaunchedEffect(key1 = userId) {
         viewModel.getUser(userId)
@@ -97,31 +105,34 @@ fun UserScreen(
         Log.e("UserScreen", "No se otorgó permiso de ubicación")
     }
 
-    Box(modifier = modifier) {
+    Box(
+        modifier =
+            modifier
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .fillMaxSize(),
+    ) {
         when (uiState.userUiState) {
             MessageUIState.Loading -> {
                 CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
+                    modifier = modifier.align(Alignment.Center),
                 )
             }
 
             is MessageUIState.Success -> {
-                Scaffold(
-                    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-                ) { scaffoldPadding ->
-                    Column(modifier = Modifier.padding(scaffoldPadding)) {
-                        Box(
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.primary),
-                        ) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    TopAppBar(
+                        title = {
                             Row(
+                                verticalAlignment = Alignment.CenterVertically,
                                 modifier =
                                     Modifier
                                         .fillMaxWidth()
-                                        .padding(vertical = 12.dp)
-                                        .padding(start = 5.dp),
+                                        .padding(bottom = 4.dp)
+                                        .clickable(
+                                            onClick = { navController.navigate("userProfile/$userId") },
+                                        ),
                             ) {
                                 AsyncImage(
                                     model = uiState.avatar,
@@ -144,7 +155,7 @@ fun UserScreen(
                                     modifier =
                                         Modifier
                                             .padding(start = 5.dp)
-                                            .align(Alignment.CenterVertically),
+                                            .weight(1f),
                                 ) {
                                     Text(
                                         text = uiState.name,
@@ -154,124 +165,171 @@ fun UserScreen(
                                     Text(
                                         text = uiState.description ?: "",
                                         color = MaterialTheme.colorScheme.onPrimary,
+                                        style = MaterialTheme.typography.bodyMedium,
                                     )
                                 }
-
-                                Spacer(modifier = Modifier.weight(1f))
-
-                                IconButton(onClick = { /*TODO*/ }) {
+                                IconButton(
+                                    onClick = { navController.navigate("userProfile/$userId") },
+                                ) {
                                     Icon(
-                                        imageVector = Icons.Filled.MoreVert,
-                                        contentDescription = "Edit",
+                                        imageVector = Icons.Default.MoreVert,
+                                        contentDescription = "Más opciones",
                                         tint = MaterialTheme.colorScheme.onPrimary,
                                     )
                                 }
                             }
-                        }
+                        },
+                        colors =
+                            TopAppBarDefaults.topAppBarColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                scrolledContainerColor = MaterialTheme.colorScheme.primary,
+                            ),
+                        modifier = Modifier.fillMaxWidth(),
+                        scrollBehavior = scrollBehavior,
+                    )
 
-                        // Agregue esta topBar hasta que este el componente C15: DropDownMenu
-                        TopAppBar(
-                            title = { Text(text = "Eventos participando") },
-                            actions = {
-                                Box {
-                                    IconButton(onClick = { showMenu = true }) {
-                                        Icon(
-                                            imageVector = Icons.Default.FilterList,
-                                            contentDescription = "Ordenar eventos",
-                                        )
-                                    }
-
-                                    // Este DropdownMenu podria adaptarse para estar dentro de EventFilterButton,
-                                    // ya que cumple con la función de ser mas claro mostrando lo que hace.
-                                    DropdownMenu(
-                                        expanded = showMenu,
-                                        onDismissRequest = { showMenu = false },
-                                    ) {
-                                        DropdownMenuItem(
-                                            text = { Text("Más recientes") },
-                                            onClick = {
-                                                viewModel.getEvents(userId, sortBy = "date", order = "asc")
-                                                activeSort = "date"
-                                                showMenu = false
-                                                isDistanceFilter = false
-                                            },
-                                            leadingIcon = {
-                                                Icon(
-                                                    imageVector = Icons.Filled.AccessTime,
-                                                    contentDescription = "Ordenar por fecha",
-                                                    tint =
-                                                        if (activeSort == "date") {
-                                                            MaterialTheme.colorScheme.secondary
-                                                        } else {
-                                                            MaterialTheme.colorScheme.onSurfaceVariant
-                                                        },
-                                                )
-                                            },
-                                        )
-                                        DropdownMenuItem(
-                                            text = { Text("Más cercanos") },
-                                            onClick = {
-                                                viewModel.getEvents(userId, sortBy = "distance", order = "asc")
-                                                activeSort = "distance"
-                                                showMenu = false
-                                                isDistanceFilter = true
-                                            },
-                                            leadingIcon = {
-                                                Icon(
-                                                    imageVector = Icons.AutoMirrored.Filled.DirectionsRun,
-                                                    contentDescription = "Ordenar por distancia",
-                                                    tint =
-                                                        if (activeSort == "distance") {
-                                                            MaterialTheme.colorScheme.secondary
-                                                        } else {
-                                                            MaterialTheme.colorScheme.onSurfaceVariant
-                                                        },
-                                                )
-                                            },
-                                        )
-                                    }
-                                }
-                            },
-                            scrollBehavior = scrollBehavior,
-                        )
-                        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            if (uiState.joinedEvents.isNotEmpty()) {
-                                items(items = uiState.joinedEvents, key = { it.id }) { event ->
-                                    EventCard(
-                                        imageUrl = event.image,
-                                        title = event.title,
-                                        date = event.dateTime,
-                                        coordinates = LatLng(event.lat, event.lng),
-                                        myLocation = uiState.currentLocation,
-                                        isDistanceFilter = isDistanceFilter,
-                                        modifier =
-                                            Modifier
-                                                .padding(vertical = 4.dp)
-                                                .animateItem(tween(durationMillis = 500))
-                                                .clickable {
-                                                    // navController.navigate("eventDetails/${event.id}")
-                                                },
+                    // Agregue esta topBar hasta que este el componente C15: DropDownMenu
+                    TopAppBar(
+                        title = {
+                            Button(
+                                onClick = { viewModel.togglePastEvents() },
+                                colors =
+                                    ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.secondary,
+                                    ),
+                                shape = MaterialTheme.shapes.medium,
+                                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp),
+                                modifier =
+                                    Modifier
+                                        .padding(vertical = 6.dp)
+                                        .height(48.dp),
+                            ) {
+                                Text(
+                                    text =
+                                        if (uiState.showPastEvents) {
+                                            "Eventos que participé"
+                                        } else {
+                                            "Eventos participando"
+                                        },
+                                    style =
+                                        MaterialTheme.typography.titleMedium.copy(
+                                            color = MaterialTheme.colorScheme.onSecondary,
+                                            fontSize = 18.sp,
+                                            fontWeight = FontWeight.Bold,
+                                        ),
+                                )
+                            }
+                        },
+                        actions = {
+                            Box {
+                                IconButton(onClick = { showMenu = true }) {
+                                    Icon(
+                                        imageVector = Icons.Default.FilterList,
+                                        contentDescription = "Ordenar eventos",
                                     )
                                 }
-                            } else {
-                                item {
-                                    Box(modifier = Modifier.fillMaxSize()) {
-                                        Column(modifier = Modifier.align(Alignment.Center)) {
+
+                                // Este DropdownMenu podria adaptarse para estar dentro de EventFilterButton,
+                                // ya que cumple con la función de ser mas claro mostrando lo que hace.
+                                DropdownMenu(
+                                    expanded = showMenu,
+                                    onDismissRequest = { showMenu = false },
+                                ) {
+                                    DropdownMenuItem(
+                                        text = { Text("Más recientes") },
+                                        onClick = {
+                                            viewModel.getEvents(userId, sortBy = "date", order = "asc")
+                                            activeSort = "date"
+                                            showMenu = false
+                                            isDistanceFilter = false
+                                        },
+                                        leadingIcon = {
                                             Icon(
-                                                imageVector = Icons.Default.WrongLocation,
-                                                contentDescription = "No event found",
-                                                modifier =
-                                                    Modifier
-                                                        .size(100.dp)
-                                                        .align(Alignment.CenterHorizontally),
+                                                imageVector = Icons.Filled.AccessTime,
+                                                contentDescription = "Ordenar por fecha",
+                                                tint =
+                                                    if (activeSort == "date") {
+                                                        MaterialTheme.colorScheme.secondary
+                                                    } else {
+                                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                                    },
                                             )
-                                            Text(
-                                                text = "No te encuentras en ningun evento CleanUp",
-                                                color = Color.White,
-                                                modifier = Modifier.padding(4.dp),
+                                        },
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text("Más cercanos") },
+                                        onClick = {
+                                            viewModel.getEvents(userId, sortBy = "distance", order = "asc")
+                                            activeSort = "distance"
+                                            showMenu = false
+                                            isDistanceFilter = true
+                                        },
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Filled.DirectionsRun,
+                                                contentDescription = "Ordenar por distancia",
+                                                tint =
+                                                    if (activeSort == "distance") {
+                                                        MaterialTheme.colorScheme.secondary
+                                                    } else {
+                                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                                    },
                                             )
+                                        },
+                                    )
+                                }
+                            }
+                        },
+                        modifier = Modifier.consumeWindowInsets(WindowInsets.systemBars),
+                    )
+
+                    val eventsToShow = if (uiState.showPastEvents) uiState.pastEvents else uiState.joinedEvents
+
+                    LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        if (eventsToShow.isNotEmpty()) {
+                            items(items = eventsToShow, key = { it.id }) { event ->
+                                EventCard(
+                                    imageUrl = event.image,
+                                    title = event.title,
+                                    date = event.dateTime,
+                                    coordinates = LatLng(event.lat, event.lng),
+                                    myLocation = uiState.currentLocation,
+                                    isDistanceFilter = isDistanceFilter,
+                                    modifier =
+                                        Modifier
+                                            .padding(vertical = 4.dp)
+                                            .animateItem(tween(durationMillis = 500))
+                                            .clickable {
+                                                val isPast = uiState.showPastEvents // true si es evento pasado
+                                                navController.navigate("eventDetails/${event.id}?enableReporting=$isPast")
+                                            },
+                                )
+                            }
+                        } else {
+                            item {
+                                Box(modifier = Modifier.fillMaxSize()) {
+                                    Column(modifier = Modifier.align(Alignment.Center)) {
+                                        Icon(
+                                            imageVector = Icons.Default.WrongLocation,
+                                            contentDescription = "No event found",
+                                            modifier =
+                                                Modifier
+                                                    .size(100.dp)
+                                                    .align(Alignment.CenterHorizontally),
+                                        )
+                                        Text(
+                                            text =
+                                                if (uiState.showPastEvents) {
+                                                    "No participaste en eventos anteriores"
+                                                } else {
+                                                    "No te encuentras en ningun evento CleanUp"
+                                                },
+                                            color = Color.White,
+                                            modifier = Modifier.padding(4.dp),
+                                        )
+                                        if (!uiState.showPastEvents) {
                                             Text(
-                                                text = "Revisa eventos cercano para unirte a la ayuda ;)",
+                                                text = "Revisa eventos cercanos para unirte a la ayuda ;)",
                                                 color = Color.White,
                                                 modifier = Modifier.padding(4.dp),
                                             )

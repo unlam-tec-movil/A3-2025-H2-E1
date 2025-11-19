@@ -45,7 +45,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import ar.edu.unlam.mobile.scaffolding.ui.components.PrimaryButton
-import ar.edu.unlam.mobile.scaffolding.ui.components.TopBarSignUpScreen
+import ar.edu.unlam.mobile.scaffolding.ui.components.TopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,8 +61,9 @@ fun RegisterScreen(
 
     Scaffold(
         topBar = {
-            TopBarSignUpScreen(
-                onBackClick = { navController.popBackStack() },
+            TopBar(
+                title = "",
+                onNavigateBack = { navController.popBackStack() },
             )
         },
     ) { innerPadding ->

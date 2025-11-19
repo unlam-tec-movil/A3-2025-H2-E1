@@ -1,9 +1,13 @@
 package ar.edu.unlam.mobile.scaffolding
 
+import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -32,6 +36,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import ar.edu.unlam.mobile.scaffolding.data.datasources.local.SessionManager
 import ar.edu.unlam.mobile.scaffolding.ui.components.BottomBar
 import ar.edu.unlam.mobile.scaffolding.ui.components.NavigationItem
 import ar.edu.unlam.mobile.scaffolding.ui.components.SnackbarVisualsWithError
@@ -42,16 +47,29 @@ import ar.edu.unlam.mobile.scaffolding.ui.screens.FormScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.HOME_SCREEN_ROUTE
 import ar.edu.unlam.mobile.scaffolding.ui.screens.HomeScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.HomeViewModel
+import ar.edu.unlam.mobile.scaffolding.ui.screens.SplashScreen
+import ar.edu.unlam.mobile.scaffolding.ui.screens.UserProfileScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.UserScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.login.LoginScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.register.RegisterScreen
 import ar.edu.unlam.mobile.scaffolding.ui.theme.ScaffoldingV2Theme
 import dagger.hilt.android.AndroidEntryPoint
+import jakarta.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject
+    lateinit var sessionManager: SessionManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge(
+            statusBarStyle =
+                SystemBarStyle.light(
+                    Color.TRANSPARENT,
+                    Color.TRANSPARENT,
+                ),
+        )
         setContent {
             ScaffoldingV2Theme {
                 // A surface container using the 'background' color from the theme
@@ -59,6 +77,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
+                    if (BuildConfig.AUTO_LOGIN) {
+                        sessionManager.saveToken(BuildConfig.DEV_TOKEN)
+                    }
                     MainScreen()
                 }
             }
@@ -80,6 +101,7 @@ fun MainScreen() {
 
     val snackBarHostState = remember { SnackbarHostState() }
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             if (currentRoute == "home" || currentRoute == "eventList" || currentRoute == "user/{id}") {
                 BottomBar(
@@ -143,14 +165,9 @@ fun MainScreen() {
     ) { paddingValue ->
         // NavHost es el componente que funciona como contenedor de los otros componentes que
         // podrán ser destinos de navegación.
-        NavHost(navController = controller, startDestination = HOME_SCREEN_ROUTE) {
+        NavHost(navController = controller, startDestination = "splash") {
             // composable es el componente que se usa para definir un destino de navegación.
             // Por parámetro recibe la ruta que se utilizará para navegar a dicho destino.
-
-            composable(route = HOME_SCREEN_ROUTE) {
-                val homeViewModel: HomeViewModel = hiltViewModel()
-                HomeScreen(viewModel = homeViewModel, modifier = Modifier.padding(paddingValue))
-            }
 
             composable(
                 route = "$HOME_SCREEN_ROUTE/{lat}/{lng}",
@@ -171,9 +188,23 @@ fun MainScreen() {
                 HomeScreen(
                     viewModel = homeViewModel,
                     modifier = Modifier.padding(paddingValue),
+                    navController = controller,
                 )
             }
 
+            // Home es el componente en sí que es el destino de navegación.
+            composable("splash") {
+                SplashScreen(navController = controller)
+            }
+
+            composable(HOME_SCREEN_ROUTE) {
+                HomeScreen(
+                    modifier = Modifier.padding(paddingValue),
+                    navController = controller,
+                )
+            }
+
+            // LISTA DE EVENTOS
             composable("eventList") {
                 EventListScreen(
                     modifier = Modifier.padding(paddingValue),
@@ -181,6 +212,7 @@ fun MainScreen() {
                 )
             }
 
+            // PERFIL DE USUARIO
             composable(
                 route = "user/{id}",
                 arguments = listOf(navArgument("id") { type = NavType.LongType }),
@@ -189,9 +221,24 @@ fun MainScreen() {
                 UserScreen(
                     userId = id,
                     modifier = Modifier.padding(paddingValue),
+                    navController = controller,
                 )
             }
 
+            // USER PROFILE
+            composable(
+                route = "userProfile/{id}",
+                arguments = listOf(navArgument("id") { type = NavType.LongType }),
+            ) {
+                val id = navBackStackEntry?.arguments?.getLong("id") ?: 1L
+                UserProfileScreen(
+                    userId = id,
+                    modifier = Modifier.fillMaxSize(),
+                    navController = controller,
+                )
+            }
+
+            // FORMULARIO
             composable("form") {
                 FormScreen(
                     modifier = Modifier.padding(paddingValue),
@@ -199,29 +246,44 @@ fun MainScreen() {
                 )
             }
 
+            // EVENT DETAILS **CORREGIDO A IntType**
+            // EVENT DETAILS con parámetro opcional enableReporting
+            // forma de llamar a eventDetails habilitando reporting:
+            // controller.navigate("eventDetails/${event.id}?enableReport=true")
             composable(
-                route = "eventDetails/{id}",
-                arguments = listOf(navArgument("id") { type = NavType.StringType }),
+                route = "eventDetails/{id}?enableReporting={enableReporting}",
+                arguments =
+                    listOf(
+                        navArgument("id") { type = NavType.IntType },
+                        navArgument("enableReporting") {
+                            type = NavType.BoolType
+                            defaultValue = false
+                        },
+                    ),
             ) { navBackStackEntry ->
+
                 val id = navBackStackEntry.arguments?.getInt("id") ?: 1
+                val enableReporting = navBackStackEntry.arguments?.getBoolean("enableReporting") ?: false
+
                 EventDetailsScreen(
                     modifier = Modifier.padding(paddingValue),
                     eventId = id,
                     navController = controller,
+                    enableReporting = enableReporting,
                 )
             }
 
+            // LOGIN
             composable("login") {
-                LoginScreen(
-                    navController = controller,
-                )
+                LoginScreen(navController = controller)
             }
 
+            // REGISTER
             composable("register") {
-                RegisterScreen(
-                    navController = controller,
-                )
+                RegisterScreen(navController = controller)
             }
+
+            // CONFIRM PARTICIPATION
             composable(
                 route = "confirmParticipation/{eventId}/{eventName}/{eventDate}/{eventPlace}",
                 arguments =
@@ -242,7 +304,7 @@ fun MainScreen() {
                     eventPlace = eventPlace,
                     onBackClick = { controller.popBackStack() },
                     onAddToCalendarClick = { /* TODO */ },
-                    onParticipateClick = { /*todo*/ },
+                    onParticipateClick = { /* TODO */ },
                 )
             }
         }

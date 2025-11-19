@@ -1,6 +1,8 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.io.FileInputStream
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.androidApplication)
@@ -35,15 +37,28 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        val p = Properties()
+        val localProps = File(rootProject.rootDir, "local.properties")
+        if (localProps.exists()) {
+            p.load(FileInputStream(localProps))
+        }
+        buildConfigField("String", "API_KEY", "\"${p.getProperty("API_KEY", "")}\"")
     }
 
     buildTypes {
-        release {
+        getByName("debug") {
+            buildConfigField("boolean", "AUTO_LOGIN", "true")
+            buildConfigField("String", "DEV_TOKEN", "\"dev_token_123\"")
+        }
+        getByName("release") {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            buildConfigField("boolean", "AUTO_LOGIN", "false")
+            buildConfigField("String", "DEV_TOKEN", "\"\"")
         }
     }
     compileOptions {
@@ -52,6 +67,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     packaging {
         resources {
@@ -75,6 +91,8 @@ dependencies {
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
     implementation(libs.androidx.compose.animation)
+    implementation(libs.androidx.compose.runtime)
+    implementation(libs.androidx.compose.foundation.layout)
 
     // Testing
     testImplementation(libs.junit)
@@ -107,4 +125,9 @@ dependencies {
 
     // PreferenceManager moderno
     implementation("androidx.preference:preference-ktx:1.2.1")
+
+    // Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.google.code.gson:gson:2.11.0")
 }

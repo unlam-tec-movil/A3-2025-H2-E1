@@ -1,17 +1,27 @@
 package ar.edu.unlam.mobile.scaffolding.ui.screens
 
+import android.health.connect.datatypes.ExerciseRoute
+import android.location.Location
 import android.net.Uri
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
+import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.CreateEventUseCase
+import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetEventByIdUseCase
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetMapEventsUseCase
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetSuggestedEventsUseCase
+import ar.edu.unlam.mobile.scaffolding.domain.navigation.model.Coordinates
+import ar.edu.unlam.mobile.scaffolding.domain.navigation.model.Route
+import ar.edu.unlam.mobile.scaffolding.domain.navigation.repositories.NavigationRepository
 import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
 import ar.edu.unlam.mobile.scaffolding.ui.common.EventSearchState
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
+import ar.edu.unlam.mobile.scaffolding.ui.components.MapProperties
 import ar.edu.unlam.mobile.scaffolding.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -19,6 +29,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -34,9 +45,11 @@ import javax.inject.Inject
 
 data class HomeUIState(
     val eventList: List<SuggestedEvent> = emptyList(),
+    val mapProperties: MapProperties = MapProperties(),
     val helloMessageState: MessageUIState,
     val lat: Double? = null,
     val lng: Double? = null,
+    val userLocation: ExerciseRoute.Location? = null,
 )
 
 data class SearchUIState(
@@ -54,6 +67,8 @@ class HomeViewModel
         private val getMapEvent: GetMapEventsUseCase,
         private val getAutocompleteEvent: GetSuggestedEventsUseCase,
         private val createEventUseCase: CreateEventUseCase,
+        private val navigationRepository: NavigationRepository,
+        private val getEventByIdUseCase: GetEventByIdUseCase,
     ) : ViewModel() {
         // Mutable State Flow contiene un objeto de estado mutable. Simplifica la operación de
         // actualización de información y de manejo de estados de una aplicación: Cargando, Error, Éxito
@@ -71,8 +86,23 @@ class HomeViewModel
         private val _searchUiState = MutableStateFlow(SearchUIState())
         val searchUiState = _searchUiState.asStateFlow()
 
+        private val _currentRouteState = MutableStateFlow<Route?>(null)
+        val currentRouteState = _currentRouteState.asStateFlow()
+
         private var mapEventJob: Job? = null
         private var searchEventJob: Job? = null
+        private var navigationJob: Job? = null
+        private val _selectedEvent = MutableStateFlow<EventList?>(null)
+        val selectedEvent = _selectedEvent.asStateFlow()
+
+        // --- Ubicación del usuario ---
+        private val _userLocation = MutableStateFlow<Location?>(null)
+        val userLocation = _userLocation.asStateFlow()
+
+        fun setUserLocation(location: Location) {
+            _userLocation.value = location
+            Log.d("HomeViewModel", "Ubicación del usuario actualizada: ${location.latitude}, ${location.longitude}")
+        }
 
         init {
             _uiState.value = HomeUIState(helloMessageState = MessageUIState.Success("2b"))
@@ -90,6 +120,12 @@ class HomeViewModel
                     lat = lat,
                     lng = lng,
                 )
+            }
+        }
+
+        fun onMapPropertiesChanged(newProperties: MapProperties) {
+            _uiState.update { currentState ->
+                currentState.copy(mapProperties = newProperties)
             }
         }
 
@@ -229,24 +265,16 @@ class HomeViewModel
             Log.d("HomeViewModel", "onEventSelected: ${event.id}, ${event.lat}, ${event.lng}")
         }
 
+        @RequiresApi(Build.VERSION_CODES.O)
         fun createEvent(
             title: String,
             location: String,
             dateTime: LocalDateTime,
-            imageUri: Uri?,
+            imageUri: List<Uri>,
         ) {
             viewModelScope.launch {
                 val timestamp = dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-
-                val imageString = imageUri?.toString()
-
-                val user =
-                    User(
-                        id = 0L,
-                        name = "",
-                        avatarUrl = null,
-                        description = null,
-                    )
+                val imageString = imageUri.firstOrNull()?.toString()
 
                 val newEvent =
                     Event(
@@ -260,11 +288,69 @@ class HomeViewModel
                         beforeImage = emptyList(),
                         afterImage = null,
                         members = emptyList(),
-                        creator = user,
+                        creator = User(0L, "Usuario", null, null),
                         saved = false,
                         participating = false,
                     )
-                createEventUseCase(newEvent)
+                val result = createEventUseCase(newEvent)
+                when (result) {
+                    is Resource.Success -> {
+                        Log.d("HomeViewModel", "Evento creado correctamente")
+                    }
+
+                    is Resource.Error -> {
+                        Log.e("HomeViewModel", "Error: ${result.message}")
+                    }
+                }
             }
+        }
+
+        fun getRoute(
+            userCoordinates: Coordinates,
+            eventCoordinates: Coordinates,
+        ) {
+            navigationJob?.cancel()
+            navigationJob =
+                viewModelScope.launch {
+                    navigationRepository
+                        .getRoute(
+                            startLat = userCoordinates.lat,
+                            endLat = eventCoordinates.lat,
+                            startLon = userCoordinates.lon,
+                            endLon = userCoordinates.lon,
+                        ).collectLatest { result ->
+                            when (result) {
+                                is Resource.Success -> {
+                                    _currentRouteState.value = result.data
+                                }
+
+                                is Resource.Error -> {
+                                    Log.e("API call", result.message ?: "Error 400 - Bad Request")
+                                }
+                            }
+                        }
+                }
+        }
+
+        fun fetchEventById(eventId: Int) {
+            viewModelScope.launch {
+                getEventByIdUseCase(eventId).collect { resource ->
+                    when (resource) {
+                        is Resource.Success -> _selectedEvent.value = resource.data
+                        is Resource.Error -> {
+                            Log.e("HomeViewModel", "Evento no encontrado: ${resource.message}")
+                            _selectedEvent.value = null
+                        }
+                    }
+                }
+            }
+        }
+
+        fun clearSelectedEvent() {
+            _selectedEvent.value = null
+        }
+
+        fun setUserLocation(location: ExerciseRoute.Location) {
+            _uiState.update { it.copy(userLocation = location) }
         }
     }
