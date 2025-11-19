@@ -73,7 +73,7 @@ fun HomeScreen(
 
     // UBICACIÓN DESDE HOME SCREEN
     // Se pide el permiso de ubicación al entrar a la screen
-    LaunchedEffect(permissionState.status) {
+    LaunchedEffect(Unit) {
         if (!permissionState.status.isGranted) {
             permissionState.launchPermissionRequest()
         }
