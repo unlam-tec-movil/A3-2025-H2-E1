@@ -1,16 +1,17 @@
 package ar.edu.unlam.mobile.scaffolding.ui.screens
 
-import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.location.Location
-import androidx.annotation.RequiresPermission
+import android.location.LocationManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ar.edu.unlam.mobile.scaffolding.data.repositories.EventRepositoryImpl
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
-import com.google.android.gms.location.LocationServices
+import ar.edu.unlam.mobile.scaffolding.utils.Resource
+import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -26,48 +27,52 @@ data class EventListUiState(
 @HiltViewModel
 class EventListViewModel
     @Inject
-    constructor() : ViewModel() {
+    constructor(
+        private val repository: EventRepositoryImpl,
+    ) : ViewModel() {
         private val _uiState = MutableStateFlow(EventListUiState())
-
         val uiState = _uiState.asStateFlow()
 
-        var userLocation: Location? = null
+        var userLocation: LatLng? = null
 
         init {
             getEvents()
         }
 
         fun updateFilter(isDistance: Boolean) {
-            _uiState.update { currentState ->
-                currentState.copy(
-                    isDistance = isDistance,
-                )
-            }
+            _uiState.update { it.copy(isDistance = isDistance) }
             viewModelScope.launch {
-                if (isDistance) {
-                    sortEventsByDistance()
-                } else {
-                    sortEventsByDate()
-                }
+                getEvents()
             }
         }
 
+        @SuppressLint("MissingPermission")
+        fun getUserLocation(context: Context) {
+            val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            val location =
+                locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                    ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+
+            userLocation = location?.let { LatLng(it.latitude, it.longitude) } ?: LatLng(-34.6037, -58.3816)
+
+            if (_uiState.value.isDistance) sortEventsByDistance()
+        }
+
         private fun sortEventsByDistance() {
-            _uiState.update { events ->
-                events.copy(
+            val location = userLocation ?: return
+            _uiState.update { state ->
+                state.copy(
                     events =
-                        events.events.sortedBy { event ->
+                        state.events.sortedBy { event ->
                             val result = FloatArray(1)
-                            userLocation?.let {
-                                Location.distanceBetween(
-                                    userLocation!!.latitude,
-                                    userLocation!!.longitude,
-                                    event.lat,
-                                    event.lng,
-                                    result,
-                                )
-                                result[0]
-                            }
+                            Location.distanceBetween(
+                                location.latitude,
+                                location.longitude,
+                                event.lat,
+                                event.lng,
+                                result,
+                            )
+                            result[0]
                         },
                 )
             }
@@ -80,64 +85,49 @@ class EventListViewModel
                     events =
                         state.events.sortedBy { event ->
                             val remaining = event.dateTime - now
-                            if (remaining > 0L) remaining else Long.MAX_VALUE
+                            if (remaining > 0) remaining else Long.MAX_VALUE
                         },
                 )
             }
         }
 
-        @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
-        fun getUserLocation(context: Context) {
-            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-            fusedLocationClient.lastLocation
-                .addOnSuccessListener { location ->
-                    if (location != null) {
-                        userLocation = location
-                    }
-                }
-        }
-
-        private fun getEvents() {
+        fun getEvents() {
             viewModelScope.launch {
-                // Quitar delay para ver la lista en EventListScreenPreview
-                delay(timeMillis = 1000L)
-                _uiState.update { currentState ->
-                    currentState.copy(
-                        events = sampleEvents,
-                        currentState = MessageUIState.Success("Success"),
-                    )
+                _uiState.update { it.copy(currentState = MessageUIState.Loading) }
+
+                try {
+                    repository
+                        .getEventsList(
+                            sort = if (_uiState.value.isDistance) "distance" else "date",
+                            order = "asc",
+                            size = null,
+                        ).collect { resource ->
+                            when (resource) {
+                                is Resource.Success -> {
+                                    _uiState.update { state ->
+                                        state.copy(
+                                            events = resource.data,
+                                            currentState = MessageUIState.Success("Success"),
+                                        )
+                                    }
+                                    if (_uiState.value.isDistance) {
+                                        sortEventsByDistance()
+                                    } else {
+                                        sortEventsByDate()
+                                    }
+                                }
+                                is Resource.Error -> {
+                                    _uiState.update { state ->
+                                        state.copy(currentState = MessageUIState.Error(resource.message ?: "Error inesperado"))
+                                    }
+                                }
+                            }
+                        }
+                } catch (e: Exception) {
+                    _uiState.update { state ->
+                        state.copy(currentState = MessageUIState.Error(e.message ?: "Error inesperado"))
+                    }
                 }
             }
         }
     }
-
-private val sampleEvents =
-    listOf(
-        EventList(
-            id = "1",
-            image = "https://cdn.pixabay.com/photo/2014/07/09/12/17/live-concert-388160_1280.jpg",
-            title = "Concierto de Rock",
-            description = "Limpieza post concierto",
-            dateTime = System.currentTimeMillis() - 1000L * 60 * 60 * 24, // 1 día atrás
-            lat = -34.5508002,
-            lng = -58.4548101,
-        ),
-        EventList(
-            id = "2",
-            image = "https://shorturl.at/QUHmG",
-            title = "Feria de Libro",
-            description = "Limpieza post feria",
-            dateTime = System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 2, // en 2 días
-            lat = -34.641347,
-            lng = -58.561187,
-        ),
-        EventList(
-            id = "3",
-            image = "https://shorturl.at/ZehlK",
-            title = "Festival de Tecnología",
-            description = "Limpieza post festival",
-            dateTime = System.currentTimeMillis() + 1000L * 60 * 60 * 5, // en 5 horas
-            lat = -34.6707531,
-            lng = -58.5676761,
-        ),
-    )
