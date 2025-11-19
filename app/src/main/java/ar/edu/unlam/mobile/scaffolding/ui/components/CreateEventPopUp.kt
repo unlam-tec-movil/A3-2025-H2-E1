@@ -7,6 +7,7 @@ import android.os.Environment
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -48,6 +49,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -71,14 +73,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.FileProvider
-import ar.edu.unlam.mobile.scaffolding.ui.theme.Black
-import ar.edu.unlam.mobile.scaffolding.ui.theme.White
 import coil.compose.AsyncImage
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -309,7 +307,7 @@ fun CreateEventPopUp(
                     Card(
                         modifier = Modifier.size(100.dp),
                         onClick = { showSheet = true },
-                        colors = CardDefaults.cardColors(containerColor = White),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
                         shape = RoundedCornerShape(8.dp),
                     ) {
                         Column(
@@ -321,7 +319,7 @@ fun CreateEventPopUp(
                                 modifier = Modifier.size(50.dp),
                                 imageVector = Icons.Default.CameraAlt,
                                 contentDescription = "Upload images",
-                                tint = Black,
+                                tint = Color.Black,
                             )
                         }
                     }
@@ -369,21 +367,19 @@ fun CreateEventPopUp(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                 ) {
-                    Button(
-                        onClick = {
-                            onDismiss()
-                        },
+                    OutlinedButton(
+                        onClick = { onDismiss() },
                         colors =
                             ButtonDefaults.buttonColors(
                                 containerColor = Color.White,
-                                contentColor = MaterialTheme.colorScheme.primary,
+                                contentColor = Color.Black,
                             ),
+                        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
                         shape = RoundedCornerShape(12.dp),
                     ) {
                         Text(
                             text = "Cancelar",
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 16.sp,
+                            style = MaterialTheme.typography.titleLarge,
                         )
                     }
                     Button(
@@ -401,8 +397,7 @@ fun CreateEventPopUp(
                     ) {
                         Text(
                             text = "Crear",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp,
+                            style = MaterialTheme.typography.titleLarge,
                         )
                     }
                 }
