@@ -158,8 +158,7 @@ fun HomeScreen(
                         }
                     },
                     onEventoClick = { evento ->
-                        eventoSeleccionado = evento
-                        viewModel.fetchEventById(evento.id.toInt())
+                        viewModel.fetchEventById(evento.id)
                     },
                 )
 
@@ -235,7 +234,7 @@ fun HomeScreen(
                         onSearch = viewModel::onSearch,
                         onSuggestionSelected = { event ->
                             viewModel.onEventSelected(event)
-                            viewModel.fetchEventById(event.id.toInt())
+                            viewModel.fetchEventById(event.id)
                         },
                         onActiveChange = viewModel::onActiveChange,
                     )

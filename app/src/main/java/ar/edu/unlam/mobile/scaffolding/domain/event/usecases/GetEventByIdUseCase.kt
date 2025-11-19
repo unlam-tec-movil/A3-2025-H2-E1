@@ -11,5 +11,5 @@ class GetEventByIdUseCase
     constructor(
         private val repository: EventRepository,
     ) {
-        suspend operator fun invoke(id: Int): Flow<Resource<EventList>> = repository.getEventList(id)
+        suspend operator fun invoke(id: String): Flow<Resource<EventList>> = repository.getEventList(id)
     }

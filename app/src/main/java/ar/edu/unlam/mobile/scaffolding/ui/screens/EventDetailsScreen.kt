@@ -7,12 +7,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -21,8 +24,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
 import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventParticipant
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventPicturesCard
@@ -37,10 +40,21 @@ import coil.compose.AsyncImage
 @Composable
 fun EventDetailsScreen(
     modifier: Modifier = Modifier,
-    eventId: Int,
+    viewModel: EventDetailsViewModel = hiltViewModel(),
     enableReporting: Boolean = false,
     navController: NavController? = null,
 ) {
+    val state = viewModel.uiState.collectAsState()
+    if (state.value.isLoading || state.value.event == null) {
+        androidx.compose.foundation.layout.Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+    val event = state.value.event ?: return
     val scrollState = rememberScrollState()
     val showPopup = remember { mutableStateOf(false) }
     val selectedUser = remember { mutableStateOf<User?>(null) }
@@ -60,6 +74,7 @@ fun EventDetailsScreen(
             modifier =
                 Modifier
                     .padding(paddingValues)
+                    .padding(start = 16.dp, end = 16.dp, top = 16.dp)
                     .verticalScroll(scrollState),
         ) {
             if (event.image != null) {
@@ -127,6 +142,10 @@ fun EventDetailsScreen(
             PrimaryButton(
                 "Participar",
                 width = 200.dp,
+                modifier =
+                    Modifier
+                        .navigationBarsPadding()
+                        .padding(bottom = 16.dp),
                 onClick = {
                     //  fecha
                     val eventDateFormatted =
@@ -153,51 +172,8 @@ fun EventDetailsScreen(
     }
 }
 
-private val imageExamples =
-    listOf(
-        "https://cdn.pixabay.com/photo/2014/07/09/12/17/live-concert-388160_1280.jpg",
-        "https://shorturl.at/QUHmG",
-        "https://shorturl.at/ZehlK",
-        "https://www.bigfootdigital.co.uk/wp-content/uploads/2020/07/image-optimisation-scaled.jpg",
-        "https://i0.wp.com/picjumbo.com/wp-content/uploads/calming-nature-wallpaper-free-image.jpeg?w=600&quality=80",
-    )
-
-private val members =
-    (1..20)
-        .map {
-            User(
-                id = it.toLong(),
-                name = "Usuario $it",
-                avatarUrl = "https://media.vanityfair.com/photos/597f75b706f77f18ffaad3bc/master/w_1440,h_960,c_limit/avatar-2.jpg",
-                description = "Descripcion de prueba",
-            )
-        }
-
-private val event =
-    Event(
-        id = "1",
-        title = "Concierto de Rock",
-        description = "Limpieza post concierto de rock con bandas locales e internacionales.",
-        dateTime = System.currentTimeMillis(),
-        image = "https://cdn.pixabay.com/photo/2014/07/09/12/17/live-concert-388160_1280.jpg",
-        lat = -34.5508002,
-        lng = -58.4548101,
-        beforeImage = imageExamples,
-        afterImage = null,
-        members = members,
-        creator =
-            User(
-                id = 1,
-                name = "Pepe Papa",
-                avatarUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBwr_zZjgvmu4BccwDNIHic8K5dyehw7cSYA&s",
-                description = null,
-            ),
-        saved = false,
-        participating = false,
-    )
-
 @Composable
 @Preview(showBackground = true)
 fun EventDetailsScreenPreview() {
-    EventDetailsScreen(eventId = 1)
+    EventDetailsScreen()
 }

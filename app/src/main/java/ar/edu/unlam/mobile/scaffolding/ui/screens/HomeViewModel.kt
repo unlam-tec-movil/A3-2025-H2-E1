@@ -332,7 +332,7 @@ class HomeViewModel
                 }
         }
 
-        fun fetchEventById(eventId: Int) {
+        fun fetchEventById(eventId: String) {
             viewModelScope.launch {
                 getEventByIdUseCase(eventId).collect { resource ->
                     when (resource) {

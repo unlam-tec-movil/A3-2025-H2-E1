@@ -3,6 +3,7 @@ package ar.edu.unlam.mobile.scaffolding.data.repositories
 import ar.edu.unlam.mobile.scaffolding.data.mapper.toEntity
 import ar.edu.unlam.mobile.scaffolding.data.mapper.toEventList
 import ar.edu.unlam.mobile.scaffolding.data.mapper.toSuggestedEvent
+import ar.edu.unlam.mobile.scaffolding.data.mapper.toUser
 import ar.edu.unlam.mobile.scaffolding.data.model.EventEntity
 import ar.edu.unlam.mobile.scaffolding.data.model.EventListEntity
 import ar.edu.unlam.mobile.scaffolding.data.model.SuggestedEventEntity
@@ -421,9 +422,9 @@ class EventRepositoryImpl
                 emit(Resource.Success(eventList))
             }
 
-        override suspend fun getEventList(id: Int): Flow<Resource<EventList>> =
+        override suspend fun getEventList(id: String): Flow<Resource<EventList>> =
             flow {
-                mockEvents.find { it.eventId == id.toString() }?.let { eventEntity ->
+                mockEvents.find { it.eventId == id }?.let { eventEntity ->
                     val eventList =
                         EventList(
                             id = eventEntity.eventId,
@@ -438,9 +439,28 @@ class EventRepositoryImpl
                 }
             }
 
-        override suspend fun getEvent(id: Int): Flow<Resource<Event>> {
-            TODO("Not yet implemented")
-        }
+        override suspend fun getEvent(id: String): Flow<Resource<Event>> =
+            flow {
+                mockEvents.find { it.eventId == id }?.let { eventEntity ->
+                    val event =
+                        Event(
+                            id = eventEntity.eventId,
+                            title = eventEntity.title,
+                            description = eventEntity.description,
+                            dateTime = eventEntity.dateTime,
+                            lat = eventEntity.lat,
+                            lng = eventEntity.lng,
+                            image = eventEntity.imageUrl,
+                            beforeImage = eventEntity.beforeImageUrl,
+                            afterImage = eventEntity.afterImageUrl,
+                            members = eventEntity.members.map { it.toUser() },
+                            creator = eventEntity.creator.toUser(),
+                            saved = false,
+                            participating = false,
+                        )
+                    emit(Resource.Success(event))
+                }
+            }
 
         override suspend fun createEvent(event: Event): Resource<Unit> =
             try {
