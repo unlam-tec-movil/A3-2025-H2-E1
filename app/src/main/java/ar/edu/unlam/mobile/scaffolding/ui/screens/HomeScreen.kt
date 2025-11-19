@@ -151,10 +151,12 @@ fun HomeScreen(
                 NearbyMap(
                     nearbyEvents = uiState.eventList,
                     modifier = Modifier.matchParentSize(),
-                    onEventoClick = { evento ->
-                        viewModel.fetchEventById(evento.id.toInt())
-                    },
+                    lat = null,
+                    lng = null,
                     mapProperties = uiState.mapProperties,
+                    onEventoClick = { evento ->
+                        viewModel.fetchEventById(evento.id)
+                    },
                     rotationChanged = viewModel::mapRotation,
                     onMapStateChanged = viewModel::onMapStateChanged,
                     userLocation = uiState.userLocation,
@@ -223,7 +225,7 @@ fun HomeScreen(
                         onSearch = viewModel::onSearch,
                         onSuggestionSelected = { event ->
                             viewModel.onEventSelected(event)
-                            viewModel.fetchEventById(event.id.toInt())
+                            viewModel.fetchEventById(event.id)
                         },
                         onActiveChange = viewModel::onActiveChange,
                     )

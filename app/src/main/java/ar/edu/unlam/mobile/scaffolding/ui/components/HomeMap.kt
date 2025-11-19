@@ -24,6 +24,8 @@ import org.osmdroid.views.overlay.gestures.RotationGestureOverlay
 fun NearbyMap(
     nearbyEvents: List<SuggestedEvent>,
     modifier: Modifier = Modifier,
+    lat: Double? = null,
+    lng: Double? = null,
     onEventoClick: (SuggestedEvent) -> Unit = {}, //  callback al hacer clic en un evento
     mapProperties: MapProperties,
     rotationChanged: (Float) -> Unit = {},
@@ -123,6 +125,16 @@ fun NearbyMap(
                     }
                 mv.overlays.add(marker)
             }
+
+            print("Dibujando ${nearbyEvents.size} eventos en el mapa.")
+
+            if (lat != null && lng != null) {
+                print("Centrándose en coordenadas: $lat, $lng")
+                val targetPoint = GeoPoint(lat, lng)
+                mv.controller.animateTo(targetPoint)
+                mv.controller.setZoom(15.0)
+            }
+
             mv.invalidate()
         },
         onRelease = { mv ->

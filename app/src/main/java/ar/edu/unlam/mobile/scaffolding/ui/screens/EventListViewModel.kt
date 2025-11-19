@@ -6,8 +6,8 @@ import android.location.Location
 import android.location.LocationManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ar.edu.unlam.mobile.scaffolding.data.repositories.EventRepositoryImpl
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
+import ar.edu.unlam.mobile.scaffolding.domain.event.repositories.EventRepository
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.utils.Resource
 import com.google.android.gms.maps.model.LatLng
@@ -28,7 +28,7 @@ data class EventListUiState(
 class EventListViewModel
     @Inject
     constructor(
-        private val repository: EventRepositoryImpl,
+        private val repository: EventRepository,
     ) : ViewModel() {
         private val _uiState = MutableStateFlow(EventListUiState())
         val uiState = _uiState.asStateFlow()
@@ -118,7 +118,7 @@ class EventListViewModel
                                 }
                                 is Resource.Error -> {
                                     _uiState.update { state ->
-                                        state.copy(currentState = MessageUIState.Error(resource.message ?: "Error inesperado"))
+                                        state.copy(currentState = MessageUIState.Error(resource.message))
                                     }
                                 }
                             }

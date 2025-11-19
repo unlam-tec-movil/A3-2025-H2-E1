@@ -3,27 +3,28 @@ package ar.edu.unlam.mobile.scaffolding.ui.screens
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
 import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventParticipant
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventPicturesCard
@@ -32,42 +33,28 @@ import ar.edu.unlam.mobile.scaffolding.ui.components.PrimaryButton
 import ar.edu.unlam.mobile.scaffolding.ui.components.SystemBarStyle
 import ar.edu.unlam.mobile.scaffolding.ui.components.TimePlaceEventCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.TopBar
-import ar.edu.unlam.mobile.scaffolding.utils.Resource
 import coil.compose.AsyncImage
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun EventDetailsScreen(
     modifier: Modifier = Modifier,
-    eventId: Int,
+    viewModel: EventDetailsViewModel = hiltViewModel(),
     enableReporting: Boolean = false,
     navController: NavController? = null,
-    viewModel: EventDetailsViewModel = hiltViewModel(),
 ) {
-    val eventState by viewModel.eventState.collectAsState()
-
-    // Cargar evento cuando la pantalla se muestra
-    LaunchedEffect(eventId) {
-        viewModel.getEventById(eventId, 1L)
-    }
-
-    when (eventState) {
-        is Resource.Success -> {
-            val event = (eventState as Resource.Success).data
-            EventDetailsContent(event, enableReporting, navController)
+    val state = viewModel.uiState.collectAsState()
+    if (state.value.isLoading || state.value.event == null) {
+        androidx.compose.foundation.layout.Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator()
         }
-        is Resource.Error -> {
-            Text("Error: ${(eventState as Resource.Error).message}")
-        }
+        return
     }
-}
-
-@Composable
-fun EventDetailsContent(
-    event: Event,
-    enableReporting: Boolean,
-    navController: NavController? = null,
-) {
+    val event = state.value.event ?: return
+    val scrollState = rememberScrollState()
     val showPopup = remember { mutableStateOf(false) }
     val selectedUser = remember { mutableStateOf<User?>(null) }
     SystemBarStyle()
@@ -80,53 +67,64 @@ fun EventDetailsContent(
             )
         },
     ) { paddingValues ->
-        LazyColumn(
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
+        Column(
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.padding(paddingValues),
+            modifier =
+                Modifier
+                    .padding(paddingValues)
+                    .padding(start = 16.dp, end = 16.dp, top = 16.dp)
+                    .verticalScroll(scrollState),
         ) {
             if (event.image != null) {
-                item {
-                    AsyncImage(
-                        model = event.image,
-                        contentDescription = "Imagen del evento",
-                        modifier =
-                            Modifier
-                                .height(180.dp)
-                                .fillMaxWidth(),
-                        contentScale = ContentScale.Crop,
-                    )
-                }
-            }
-
-            // Popup
-            item {
-                if (showPopup.value && selectedUser.value != null) {
-                    ParticipantInfoPopUp(
-                        user = selectedUser.value!!,
-                        onDismiss = { showPopup.value = false },
-                        onReportClick = { showPopup.value = false },
-                        enableReporting = enableReporting,
-                    )
-                }
-            }
-
-            item { TimePlaceEventCard(event = event) }
-            item { Text(text = event.description) }
-
-            item {
-                EventParticipant(
-                    user = event.creator,
-                    members = event.members,
-                    onAvatarClick = { userClicked ->
-                        selectedUser.value = userClicked
-                        showPopup.value = true
-                    },
+                AsyncImage(
+                    model = event.image,
+                    contentDescription = "Imagen del evento",
+                    modifier =
+                        modifier
+                            .height(180.dp)
+                            .fillMaxWidth(),
+                    contentScale = ContentScale.Crop,
                 )
             }
 
-            item { EventPicturesCard(title = "Estado del lugar", images = event.beforeImage) }
-            item { Spacer(modifier = Modifier.height(66.dp)) }
+            // ✔ Popup dentro de item{} para evitar el error
+            if (showPopup.value && selectedUser.value != null) {
+                ParticipantInfoPopUp(
+                    user = selectedUser.value!!,
+                    onDismiss = { showPopup.value = false },
+                    onReportClick = {
+                        showPopup.value = false
+                    },
+                    enableReporting = enableReporting,
+                )
+            }
+
+            TimePlaceEventCard(
+                event = event,
+                onLocationClick = { lat, lng ->
+                    navController?.navigate("$HOME_SCREEN_ROUTE/$lat/$lng")
+                },
+            )
+
+            Text(
+                text = event.description,
+            )
+
+            EventParticipant(
+                user = event.creator,
+                members = event.members,
+                onAvatarClick = { userClicked ->
+                    selectedUser.value = userClicked
+                    showPopup.value = true
+                },
+            )
+
+            EventPicturesCard(
+                title = "Estado del lugar",
+                images = event.beforeImage,
+            )
+
+            Spacer(modifier = Modifier.height(66.dp))
         }
 
         Column(
@@ -141,6 +139,10 @@ fun EventDetailsContent(
                 PrimaryButton(
                     "Participar",
                     width = 200.dp,
+                    modifier =
+                        Modifier
+                            .navigationBarsPadding()
+                            .padding(bottom = 16.dp),
                     onClick = {
                         val eventDateFormatted =
                             java.text
@@ -163,4 +165,10 @@ fun EventDetailsContent(
             }
         }
     }
+}
+
+@Composable
+@Preview(showBackground = true)
+fun EventDetailsScreenPreview() {
+    EventDetailsScreen()
 }

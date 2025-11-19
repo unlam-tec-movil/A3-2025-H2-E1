@@ -5,9 +5,7 @@ import android.content.Context
 import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
@@ -51,6 +49,8 @@ data class HomeUIState(
     val eventList: List<SuggestedEvent> = emptyList(),
     val mapProperties: MapProperties = MapProperties(),
     val helloMessageState: MessageUIState,
+    val lat: Double? = null,
+    val lng: Double? = null,
     val userLocation: GeoPoint? = null,
 )
 
@@ -100,6 +100,20 @@ class HomeViewModel
         init {
             _uiState.value = HomeUIState(helloMessageState = MessageUIState.Success("2b"))
             fetchEvents()
+        }
+
+        fun setTargetLocation(
+            lat: Double?,
+            lng: Double?,
+        ) {
+            if (lat == null || lng == null) return
+
+            _uiState.update { currentState ->
+                currentState.copy(
+                    lat = lat,
+                    lng = lng,
+                )
+            }
         }
 
         // Entre un cambio y otro esto al final no lo use, pero lo dejo por si alguien si lo usa, sino se borra
@@ -317,7 +331,6 @@ class HomeViewModel
             Log.d("HomeViewModel", "onEventSelected: ${event.id}, ${event.lat}, ${event.lng}")
         }
 
-        @RequiresApi(Build.VERSION_CODES.O)
         fun createEvent(
             title: String,
             location: String,
@@ -384,7 +397,7 @@ class HomeViewModel
                 }
         }
 
-        fun fetchEventById(eventId: Int) {
+        fun fetchEventById(eventId: String) {
             viewModelScope.launch {
                 getEventByIdUseCase(eventId).collect { resource ->
                     when (resource) {

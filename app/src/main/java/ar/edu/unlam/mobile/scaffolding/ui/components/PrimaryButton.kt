@@ -19,12 +19,13 @@ import androidx.compose.ui.unit.sp
 fun PrimaryButton(
     text: String,
     width: Dp,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
 ) {
     Button(
         onClick = onClick,
         modifier =
-            Modifier
+            modifier
                 .width(width)
                 .height(50.dp),
         colors =

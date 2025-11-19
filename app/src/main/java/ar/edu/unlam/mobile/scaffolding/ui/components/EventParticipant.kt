@@ -80,12 +80,13 @@ fun EventParticipant(
                 columns = GridCells.FixedSize(itemSize + (itemSpacing * 2)),
                 modifier = Modifier.heightIn(max = LocalWindowInfo.current.containerSize.height.dp),
             ) {
+                val maxToExpand = 4
                 val minMembers = minOf(members.size, 5)
                 val displayCount = if (isExpanded.value) members.size else minMembers
 
                 items(displayCount) { index ->
 
-                    if (index == minMembers - 1 && !isExpanded.value) {
+                    if (index == maxToExpand && !isExpanded.value) {
                         Box(
                             modifier =
                                 Modifier
@@ -97,7 +98,7 @@ fun EventParticipant(
                             contentAlignment = Alignment.Center,
                         ) {
                             Text(
-                                text = "+${members.size - (minMembers - 1)}",
+                                text = "+${members.size - maxToExpand - 1}",
                                 fontWeight = FontWeight.Bold,
                             )
                         }
