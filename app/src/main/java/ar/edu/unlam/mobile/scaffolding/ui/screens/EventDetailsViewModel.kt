@@ -13,18 +13,24 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class EventDetailsViewModel @Inject constructor(
-    private val repository: EventRepository
-) : ViewModel() {
+class EventDetailsViewModel
+    @Inject
+    constructor(
+        private val repository: EventRepository,
+    ) : ViewModel() {
+        private val _eventState: MutableStateFlow<Resource<Event>> =
+            MutableStateFlow(Resource.Error(null, "Sin datos"))
 
-    private val _eventState = MutableStateFlow<Resource<Event>>(Resource.Error(null, "Sin datos"))
-    val eventState: StateFlow<Resource<Event>> = _eventState.asStateFlow()
+        val eventState: StateFlow<Resource<Event>> = _eventState.asStateFlow()
 
-    fun getEventById(eventId: Int, userId: Long) {
-        viewModelScope.launch {
-            repository.getEvent(eventId, userId).collect { result ->
-                _eventState.value = result
+        fun getEventById(
+            eventId: Int,
+            userId: Long,
+        ) {
+            viewModelScope.launch {
+                repository.getEvent(eventId, userId).collect { result ->
+                    _eventState.value = result
+                }
             }
         }
     }
-}
