@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,6 +40,8 @@ fun EventDetailsScreen(
     eventId: Int,
     navController: NavController? = null,
 ) {
+    val scrollState = rememberScrollState()
+
     Scaffold(
         modifier =
             modifier
@@ -50,53 +54,47 @@ fun EventDetailsScreen(
             )
         },
     ) {
-        LazyColumn(
+        Column(
+            modifier =
+                Modifier
+                    .verticalScroll(scrollState),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             if (event.image != null) {
-                item {
-                    AsyncImage(
-                        model = event.image,
-                        contentDescription = "Imagen del evento",
-                        modifier =
-                            modifier
-                                .height(180.dp)
-                                .fillMaxWidth(),
-                        contentScale = ContentScale.Crop,
-                    )
-                }
-            }
-
-            item {
-                TimePlaceEventCard(
-                    event = event,
+                AsyncImage(
+                    model = event.image,
+                    contentDescription = "Imagen del evento",
+                    modifier =
+                        modifier
+                            .height(180.dp)
+                            .fillMaxWidth(),
+                    contentScale = ContentScale.Crop,
                 )
             }
 
-            item {
-                Text(
-                    text = event.description,
-                    fontSize = TextUnit.Unspecified,
-                )
-            }
+            TimePlaceEventCard(
+                event = event,
+                onLocationClick = { lat, lng ->
+                    navController?.navigate("$HOME_SCREEN_ROUTE/$lat/$lng")
+                },
+            )
 
-            item {
-                EventParticipant(
-                    user = event.creator,
-                    members = event.members,
-                )
-            }
+            Text(
+                text = event.description,
+                fontSize = TextUnit.Unspecified,
+            )
 
-            item {
-                EventPicturesCard(
-                    title = "Estado del lugar",
-                    images = event.beforeImage,
-                )
-            }
+            EventParticipant(
+                user = event.creator,
+                members = event.members,
+            )
 
-            item {
-                Spacer(modifier = Modifier.height(66.dp))
-            }
+            EventPicturesCard(
+                title = "Estado del lugar",
+                images = event.beforeImage,
+            )
+
+            Spacer(modifier = Modifier.height(66.dp))
         }
 
         Column(

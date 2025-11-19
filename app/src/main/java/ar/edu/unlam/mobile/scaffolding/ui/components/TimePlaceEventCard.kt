@@ -1,5 +1,6 @@
 package ar.edu.unlam.mobile.scaffolding.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -17,6 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
@@ -29,6 +31,7 @@ import java.util.Locale
 fun TimePlaceEventCard(
     modifier: Modifier = Modifier,
     event: Event,
+    onLocationClick: (latitude: Double, longitude: Double) -> Unit
 ) {
     val dateFormat = SimpleDateFormat("dd 'de' MMMM 'de' yyyy", Locale.getDefault())
     val dateString = dateFormat.format(event.dateTime)
@@ -44,7 +47,14 @@ fun TimePlaceEventCard(
     Column(
         modifier = modifier,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier =
+                modifier
+                    .clickable {
+                        onLocationClick(event.lat, event.lng)
+                    },
+        ) {
             Icon(
                 imageVector = Icons.Default.Place,
                 contentDescription = "Lugar del evento",
@@ -54,6 +64,7 @@ fun TimePlaceEventCard(
                     modifier
                         .padding(4.dp),
                 text = address,
+                fontWeight = FontWeight.Bold,
             )
         }
 
@@ -98,5 +109,6 @@ fun TimePlaceEventCardPreview() {
                 saved = false,
                 participating = false,
             ),
+        onLocationClick = { _, _ -> },
     )
 }

@@ -20,10 +20,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -39,6 +41,7 @@ import ar.edu.unlam.mobile.scaffolding.ui.screens.EventListScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.FormScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.HOME_SCREEN_ROUTE
 import ar.edu.unlam.mobile.scaffolding.ui.screens.HomeScreen
+import ar.edu.unlam.mobile.scaffolding.ui.screens.HomeViewModel
 import ar.edu.unlam.mobile.scaffolding.ui.screens.UserScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.login.LoginScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.register.RegisterScreen
@@ -143,9 +146,32 @@ fun MainScreen() {
         NavHost(navController = controller, startDestination = HOME_SCREEN_ROUTE) {
             // composable es el componente que se usa para definir un destino de navegación.
             // Por parámetro recibe la ruta que se utilizará para navegar a dicho destino.
-            composable(HOME_SCREEN_ROUTE) {
-                // Home es el componente en sí que es el destino de navegación.
-                HomeScreen(modifier = Modifier.padding(paddingValue))
+
+            composable(route = HOME_SCREEN_ROUTE) {
+                val homeViewModel: HomeViewModel = hiltViewModel()
+                HomeScreen(viewModel = homeViewModel, modifier = Modifier.padding(paddingValue))
+            }
+
+            composable(
+                route = "$HOME_SCREEN_ROUTE/{lat}/{lng}",
+                arguments =
+                    listOf(
+                        navArgument("lat") { type = NavType.StringType },
+                        navArgument("lng") { type = NavType.StringType },
+                    ),
+            ) { backStackEntry ->
+                val homeViewModel: HomeViewModel = hiltViewModel()
+                val lat = backStackEntry.arguments?.getString("lat")?.toDoubleOrNull()
+                val lng = backStackEntry.arguments?.getString("lng")?.toDoubleOrNull()
+
+                LaunchedEffect(lat, lng) {
+                    homeViewModel.setTargetLocation(lat, lng)
+                }
+
+                HomeScreen(
+                    viewModel = homeViewModel,
+                    modifier = Modifier.padding(paddingValue),
+                )
             }
 
             composable("eventList") {

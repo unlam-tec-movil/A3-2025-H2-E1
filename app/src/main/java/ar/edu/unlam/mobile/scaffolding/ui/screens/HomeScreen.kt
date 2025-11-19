@@ -62,6 +62,8 @@ fun HomeScreen(
                 NearbyMap(
                     nearbyEvents = uiState.eventList,
                     modifier = Modifier.matchParentSize(),
+                    lat = null,
+                    lng = null,
                     onEventoClick = { eventoSeleccionado = it },
                 )
 

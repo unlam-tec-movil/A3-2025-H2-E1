@@ -35,6 +35,8 @@ import javax.inject.Inject
 data class HomeUIState(
     val eventList: List<SuggestedEvent> = emptyList(),
     val helloMessageState: MessageUIState,
+    val lat: Double? = null,
+    val lng: Double? = null,
 )
 
 data class SearchUIState(
@@ -75,6 +77,20 @@ class HomeViewModel
         init {
             _uiState.value = HomeUIState(helloMessageState = MessageUIState.Success("2b"))
             fetchEvents()
+        }
+
+        fun setTargetLocation(
+            lat: Double?,
+            lng: Double?,
+        ) {
+            if (lat == null || lng == null) return
+
+            _uiState.update { currentState ->
+                currentState.copy(
+                    lat = lat,
+                    lng = lng,
+                )
+            }
         }
 
         private fun fetchEvents() {
