@@ -195,7 +195,7 @@ class HomeViewModel
             }
         }
 
-        private fun fetchEvents() {
+        fun fetchEvents() {
             mapEventJob?.cancel()
             mapEventJob =
                 viewModelScope.launch {
@@ -333,7 +333,7 @@ class HomeViewModel
 
         fun createEvent(
             title: String,
-            location: String,
+            location: GeoPoint,
             dateTime: LocalDateTime,
             imageUri: List<Uri>,
         ) {
@@ -347,8 +347,8 @@ class HomeViewModel
                         title = title,
                         description = "",
                         dateTime = timestamp,
-                        lat = 0.0,
-                        lng = 0.0,
+                        lat = location.latitude,
+                        lng = location.longitude,
                         image = imageString,
                         beforeImage = emptyList(),
                         afterImage = null,

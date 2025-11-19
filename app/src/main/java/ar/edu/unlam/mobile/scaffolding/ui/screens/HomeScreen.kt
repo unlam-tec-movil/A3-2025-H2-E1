@@ -328,9 +328,11 @@ fun HomeScreen(
                 if (showCreateEventDialog) {
                     CreateEventPopUp(
                         onDismiss = { showCreateEventDialog = false },
+                        userLocation = uiState.userLocation,
                         onConfirm = { name, location, dateTime, imageUri ->
                             viewModel.createEvent(name, location, dateTime, imageUri)
                             showCreateEventDialog = false
+                            viewModel.fetchEvents()
                         },
                     )
                 }
