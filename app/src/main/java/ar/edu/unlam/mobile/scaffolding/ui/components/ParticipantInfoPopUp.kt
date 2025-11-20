@@ -21,12 +21,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
+import ar.edu.unlam.mobile.scaffolding.domain.user.model.UserItem
 import coil.compose.AsyncImage
 
 @Composable
 fun ParticipantInfoPopUp(
-    user: User,
+    user: UserItem,
     onDismiss: () -> Unit,
     onReportClick: (String) -> Unit,
     enableReporting: Boolean = false, // ← nuevo parámetro
@@ -192,7 +192,7 @@ fun ParticipantInfoPopUpPreview() {
     val showDialog = remember { mutableStateOf(true) }
 
     val sampleUser =
-        User(
+        UserItem(
             id = 1,
             name = "Nombre usuario",
             avatarUrl = null,

@@ -18,7 +18,7 @@ import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetSuggestedEventsU
 import ar.edu.unlam.mobile.scaffolding.domain.navigation.model.Coordinates
 import ar.edu.unlam.mobile.scaffolding.domain.navigation.model.Route
 import ar.edu.unlam.mobile.scaffolding.domain.navigation.repositories.NavigationRepository
-import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
+import ar.edu.unlam.mobile.scaffolding.domain.user.model.UserItem
 import ar.edu.unlam.mobile.scaffolding.ui.common.EventSearchState
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.ui.components.MapProperties
@@ -52,6 +52,7 @@ data class HomeUIState(
     val lat: Double? = null,
     val lng: Double? = null,
     val userLocation: GeoPoint? = null,
+    val targetLocation: GeoPoint? = null
 )
 
 data class SearchUIState(
@@ -353,7 +354,7 @@ class HomeViewModel
                         beforeImage = emptyList(),
                         afterImage = null,
                         members = emptyList(),
-                        creator = User(0L, "Usuario", null, null),
+                        creator = UserItem(0L, "Usuario", null, null),
                         saved = false,
                         participating = false,
                     )
@@ -408,6 +409,14 @@ class HomeViewModel
                         }
                     }
                 }
+            }
+        }
+
+        fun setTargetLocation(geoPoint: GeoPoint) {
+            viewModelScope.launch {
+                _uiState.update { it.copy(targetLocation = geoPoint) }
+                delay(300)
+                _uiState.update { it.copy(targetLocation = null) }
             }
         }
 

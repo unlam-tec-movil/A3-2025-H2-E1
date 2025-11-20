@@ -48,6 +48,7 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.model.LatLng
+import org.osmdroid.util.GeoPoint
 
 const val HOME_SCREEN_ROUTE = "home"
 
@@ -151,11 +152,12 @@ fun HomeScreen(
                 NearbyMap(
                     nearbyEvents = uiState.eventList,
                     modifier = Modifier.matchParentSize(),
-                    lat = null,
-                    lng = null,
+                    lat = uiState.targetLocation?.latitude,
+                    lng = uiState.targetLocation?.longitude,
                     mapProperties = uiState.mapProperties,
                     onEventoClick = { evento ->
                         viewModel.fetchEventById(evento.id)
+                        viewModel.setTargetLocation(GeoPoint(evento.lat, evento.lng))
                     },
                     rotationChanged = viewModel::mapRotation,
                     onMapStateChanged = viewModel::onMapStateChanged,
@@ -225,6 +227,7 @@ fun HomeScreen(
                         onSearch = viewModel::onSearch,
                         onSuggestionSelected = { event ->
                             viewModel.onEventSelected(event)
+                            viewModel.setTargetLocation(GeoPoint(event.lat, event.lng))
                             viewModel.fetchEventById(event.id)
                         },
                         onActiveChange = viewModel::onActiveChange,

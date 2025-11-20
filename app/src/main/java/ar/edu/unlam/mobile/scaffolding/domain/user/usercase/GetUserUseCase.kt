@@ -1,6 +1,6 @@
 package ar.edu.unlam.mobile.scaffolding.domain.user.usercase
 
-import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
+import ar.edu.unlam.mobile.scaffolding.domain.user.model.UserItem
 import ar.edu.unlam.mobile.scaffolding.domain.user.repositories.UserRepository
 import ar.edu.unlam.mobile.scaffolding.utils.Resource
 import kotlinx.coroutines.flow.Flow
@@ -11,5 +11,5 @@ class GetUserUseCase
     constructor(
         private val userRepository: UserRepository,
     ) {
-        suspend operator fun invoke(id: Long): Flow<Resource<User>> = userRepository.getUser(id)
+        suspend operator fun invoke(id: Long): Flow<Resource<UserItem>> = userRepository.getUser(id)
     }

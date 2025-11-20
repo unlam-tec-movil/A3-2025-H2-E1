@@ -31,14 +31,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
+import ar.edu.unlam.mobile.scaffolding.domain.user.model.UserItem
 import coil.compose.AsyncImage
 
 @Composable
 fun EventParticipant(
-    user: User,
-    members: List<User>?,
-    onAvatarClick: (User) -> Unit,
+    user: UserItem,
+    members: List<UserItem>?,
+    onAvatarClick: (UserItem) -> Unit,
 ) {
     val isExpanded = remember { mutableStateOf(false) }
     val itemSpacing = 8.dp
@@ -147,7 +147,7 @@ fun EventParticipant(
 @Preview(showBackground = true)
 fun EventParticipantPreviewSimplified() {
     val sampleUser =
-        User(
+        UserItem(
             id = 1,
             name = "Juan Perez",
             avatarUrl = "",
@@ -156,11 +156,11 @@ fun EventParticipantPreviewSimplified() {
 
     val sampleMembers =
         listOf(
-            User(id = 2, name = "Kiara Mochica", avatarUrl = "", description = ""),
-            User(id = 3, name = "Tatiana Sánchez", avatarUrl = "", description = ""),
-            User(id = 4, name = "Maria Lopez", avatarUrl = "", description = ""),
-            User(id = 5, name = "Ana Garcia", avatarUrl = "", description = ""),
-            User(id = 6, name = "Nico Ñoñez", avatarUrl = "", description = ""),
+            UserItem(id = 2, name = "Kiara Mochica", avatarUrl = "", description = ""),
+            UserItem(id = 3, name = "Tatiana Sánchez", avatarUrl = "", description = ""),
+            UserItem(id = 4, name = "Maria Lopez", avatarUrl = "", description = ""),
+            UserItem(id = 5, name = "Ana Garcia", avatarUrl = "", description = ""),
+            UserItem(id = 6, name = "Nico Ñoñez", avatarUrl = "", description = ""),
         )
 
     EventParticipant(
