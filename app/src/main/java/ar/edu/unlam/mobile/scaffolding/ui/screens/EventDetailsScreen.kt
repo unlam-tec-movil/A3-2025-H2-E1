@@ -41,6 +41,7 @@ fun EventDetailsScreen(
     modifier: Modifier = Modifier,
     viewModel: EventDetailsViewModel = hiltViewModel(),
     enableReporting: Boolean = false,
+    hideParticipateButton: Boolean = false,
     navController: NavController? = null,
 ) {
     val state = viewModel.uiState.collectAsState()
@@ -87,7 +88,7 @@ fun EventDetailsScreen(
                 )
             }
 
-            // ✔ Popup dentro de item{} para evitar el error
+            // ✔ Popup dentro de item
             if (showPopup.value && selectedUser.value != null) {
                 ParticipantInfoPopUp(
                     user = selectedUser.value!!,
@@ -135,7 +136,7 @@ fun EventDetailsScreen(
                     .padding(16.dp),
         ) {
             Spacer(modifier = Modifier.weight(1f))
-            if (!enableReporting) {
+            if (!hideParticipateButton && !enableReporting) {
                 PrimaryButton(
                     "Participar",
                     width = 200.dp,

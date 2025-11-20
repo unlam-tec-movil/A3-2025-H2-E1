@@ -249,27 +249,38 @@ fun MainScreen() {
             // forma de llamar a eventDetails habilitando reporting:
             // controller.navigate("eventDetails/${event.id}?enableReport=true")
             composable(
-                route = "eventDetails/{id}?enableReporting={enableReporting}",
-                arguments =
-                    listOf(
-                        navArgument("id") { type = NavType.StringType },
-                        navArgument("enableReporting") {
-                            type = NavType.BoolType
-                            defaultValue = false
-                        },
-                    ),
+                route = "eventDetails/{id}" +
+                        "?enableReporting={enableReporting}" +
+                        "&hideParticipateButton={hideParticipateButton}",
+
+                arguments = listOf(
+                    navArgument("id") { type = NavType.StringType },
+
+                    navArgument("enableReporting") {
+                        type = NavType.BoolType
+                        defaultValue = false
+                    },
+
+                    navArgument("hideParticipateButton") {
+                        type = NavType.BoolType
+                        defaultValue = false
+                    }
+                ),
             ) { navBackStackEntry ->
 
                 val id = navBackStackEntry.arguments?.getInt("id") ?: 1
                 val enableReporting = navBackStackEntry.arguments?.getBoolean("enableReporting") ?: false
+                val hideParticipate = navBackStackEntry.arguments?.getBoolean("hideParticipateButton") ?: false
 
                 EventDetailsScreen(
                     modifier = Modifier.padding(paddingValue),
                     viewModel = hiltViewModel(),
                     navController = controller,
                     enableReporting = enableReporting,
+                    hideParticipateButton = hideParticipate
                 )
             }
+
 
             // LOGIN
             composable("login") {
