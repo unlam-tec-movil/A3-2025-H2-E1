@@ -1,6 +1,7 @@
 package ar.edu.unlam.mobile.scaffolding.ui.components
 
 import android.location.Location
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -25,81 +26,86 @@ fun EventHomeCard(
     event: EventList,
     distance: LatLng,
     onViewEventClick: () -> Unit,
+    onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // Título
+            // --- X para cerrar ---
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Text(
+                    text = "✕",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .clickable { onCloseClick() }
+                )
+            }
+
+            // --- Título ---
             Text(
                 text = event.title,
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             )
 
-            // Fecha formateada
-            val formattedDate =
-                remember(event.dateTime) {
-                    val sdf = SimpleDateFormat("dd/MM/yyyy - HH:mm", Locale.getDefault())
-                    sdf.format(Date(event.dateTime))
-                }
-            Text(text = "Fecha: $formattedDate", style = MaterialTheme.typography.bodyMedium)
+            // --- Fecha ---
+            val formattedDate = remember(event.dateTime) {
+                val sdf = SimpleDateFormat("dd/MM/yyyy - HH:mm", Locale.getDefault())
+                sdf.format(Date(event.dateTime))
+            }
+            Text(text = "Fecha: $formattedDate")
 
-            // Descripción
-            if (!event.description.isNullOrEmpty()) {
+            // --- Descripción ---
+            event.description?.takeIf { it.isNotEmpty() }?.let {
                 Text(
-                    text = event.description,
+                    text = it,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
 
-            // Imagen
+            // --- Imagen ---
             AsyncImage(
                 model = event.image ?: R.drawable.sin_imagen,
                 contentDescription = "Imagen del evento",
                 placeholder = rememberAsyncImagePainter(R.drawable.sin_imagen),
                 error = rememberAsyncImagePainter(R.drawable.sin_imagen),
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
-                        .clip(RoundedCornerShape(12.dp)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp)
+                    .clip(RoundedCornerShape(12.dp)),
                 contentScale = ContentScale.Crop,
             )
 
-            // Distancia
+            // --- Distancia ---
             val results = FloatArray(1)
             Location.distanceBetween(
-                event.lat,
-                event.lng,
-                distance.latitude,
-                distance.longitude,
+                event.lat, event.lng,
+                distance.latitude, distance.longitude,
                 results,
             )
             val distanceString = String.format(Locale.getDefault(), "%.2f", results[0] / 1000)
-            Text(text = "Distancia: $distanceString km", style = MaterialTheme.typography.bodySmall)
 
-            // Botón
+            Text(text = "Distancia: $distanceString km")
+
+            // --- Botón Ver Evento ---
             Button(
                 onClick = onViewEventClick,
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                colors = ButtonDefaults.buttonColors(),
-                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("Ver Evento", color = MaterialTheme.colorScheme.onPrimary)
+                Text("Ver Evento")
             }
         }
     }
