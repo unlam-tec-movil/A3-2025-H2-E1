@@ -317,10 +317,40 @@ class EventRepositoryImpl
         private val _eventsFlow = MutableStateFlow(mockEvents.toList())
         val eventsFlow: StateFlow<List<EventEntity>> get() = _eventsFlow
 
-        override suspend fun getMapEvents(): Flow<Resource<List<SuggestedEvent>>> =
-            flow {
-                val suggestedEvents =
-                    mockEvents.map { values ->
+    override suspend fun getMapEvents(): Flow<Resource<List<SuggestedEvent>>> =
+        flow {
+            val now = System.currentTimeMillis()
+
+            val futureEvents =
+                mockEvents
+                    .filter { it.dateTime > now } // Filtramos SOLO futuros
+                    .map { event ->
+                        SuggestedEventEntity(
+                            id = event.eventId,
+                            title = event.title,
+                            lat = event.lat,
+                            lng = event.lng,
+                        ).toSuggestedEvent()
+                    }
+
+            emit(Resource.Success(futureEvents))
+        }
+
+
+    override suspend fun getSuggestedEvent(query: String): Flow<Resource<List<SuggestedEvent>>> =
+        flow {
+            val now = System.currentTimeMillis()
+
+            val suggestedEvents =
+                mockEvents
+                    .filter { eventEntity ->
+                        eventEntity.title.contains(query, ignoreCase = true)
+                    }
+                    .filter { eventEntity ->
+                        //  Solo eventos futuros
+                        eventEntity.dateTime > now
+                    }
+                    .map { values ->
                         SuggestedEventEntity(
                             id = values.eventId,
                             title = values.title,
@@ -328,27 +358,11 @@ class EventRepositoryImpl
                             lng = values.lng,
                         ).toSuggestedEvent()
                     }
-                emit(Resource.Success(suggestedEvents))
-            }
 
-        override suspend fun getSuggestedEvent(query: String): Flow<Resource<List<SuggestedEvent>>> =
-            flow {
-                val suggestedEvents =
-                    mockEvents
-                        .filter { eventEntity ->
-                            eventEntity.title.contains(query, ignoreCase = true)
-                        }.map { values ->
-                            SuggestedEventEntity(
-                                id = values.eventId,
-                                title = values.title,
-                                lat = values.lat,
-                                lng = values.lng,
-                            ).toSuggestedEvent()
-                        }
-                emit(Resource.Success(suggestedEvents))
-            }
+            emit(Resource.Success(suggestedEvents))
+        }
 
-        // El parametro sort solo soporta "date" como parametro de entrada, ya que ordenar por "distance",
+    // El parametro sort solo soporta "date" como parametro de entrada, ya que ordenar por "distance",
         // lo hace en el viewModel (en el vm de UserScreen esta por ejemplo).
         override suspend fun getEventsList(
             sort: String?,

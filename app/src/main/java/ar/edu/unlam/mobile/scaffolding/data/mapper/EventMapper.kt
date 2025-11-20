@@ -61,3 +61,7 @@ fun EventEntity.toEventListEntity(): EventListEntity =
         lng = lng,
         imageUrl = imageUrl,
     )
+fun List<Event>.toFutureEvents(): List<Event> {
+    val now = System.currentTimeMillis()
+    return this.filter { it.dateTime > now }
+}

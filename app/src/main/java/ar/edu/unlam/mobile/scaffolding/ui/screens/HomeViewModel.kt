@@ -414,4 +414,5 @@ class HomeViewModel
         fun clearSelectedEvent() {
             _selectedEvent.value = null
         }
+
     }
