@@ -319,24 +319,34 @@ class EventRepositoryImpl
 
         override suspend fun getMapEvents(): Flow<Resource<List<SuggestedEvent>>> =
             flow {
-                val suggestedEvents =
-                    mockEvents.map { values ->
-                        SuggestedEventEntity(
-                            id = values.eventId,
-                            title = values.title,
-                            lat = values.lat,
-                            lng = values.lng,
-                        ).toSuggestedEvent()
-                    }
-                emit(Resource.Success(suggestedEvents))
+                val now = System.currentTimeMillis()
+
+                val futureEvents =
+                    mockEvents
+                        .filter { it.dateTime > now } // Filtramos SOLO futuros
+                        .map { event ->
+                            SuggestedEventEntity(
+                                id = event.eventId,
+                                title = event.title,
+                                lat = event.lat,
+                                lng = event.lng,
+                            ).toSuggestedEvent()
+                        }
+
+                emit(Resource.Success(futureEvents))
             }
 
         override suspend fun getSuggestedEvent(query: String): Flow<Resource<List<SuggestedEvent>>> =
             flow {
+                val now = System.currentTimeMillis()
+
                 val suggestedEvents =
                     mockEvents
                         .filter { eventEntity ->
                             eventEntity.title.contains(query, ignoreCase = true)
+                        }.filter { eventEntity ->
+                            //  Solo eventos futuros
+                            eventEntity.dateTime > now
                         }.map { values ->
                             SuggestedEventEntity(
                                 id = values.eventId,
@@ -345,6 +355,7 @@ class EventRepositoryImpl
                                 lng = values.lng,
                             ).toSuggestedEvent()
                         }
+
                 emit(Resource.Success(suggestedEvents))
             }
 

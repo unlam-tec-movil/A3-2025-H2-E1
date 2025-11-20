@@ -45,6 +45,7 @@ fun EventParticipant(
     val itemSize = 44.dp
 
     Column(verticalArrangement = Arrangement.spacedBy(itemSpacing)) {
+        // --- ORGANIZADOR ---
         Text(
             text = "Organizador",
             style = MaterialTheme.typography.titleMedium,
@@ -53,6 +54,7 @@ fun EventParticipant(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(itemSpacing),
+            modifier = Modifier.clickable { onAvatarClick(user) },
         ) {
             AsyncImage(
                 contentScale = ContentScale.Crop,
@@ -71,6 +73,7 @@ fun EventParticipant(
             )
         }
 
+        // --- PARTICIPANTES ---
         Text(
             text = "Participantes",
             style = MaterialTheme.typography.titleMedium,
@@ -88,6 +91,7 @@ fun EventParticipant(
 
                 items(displayCount) { index ->
 
+                    // Botón "+X"
                     if (index == maxToExpand && !isExpanded.value) {
                         Box(
                             modifier =
@@ -129,7 +133,7 @@ fun EventParticipant(
                                         onAvatarClick(members[index])
                                     },
                             model = members[index].avatarUrl,
-                            contentDescription = "Avatar Participante/s",
+                            contentDescription = "Avatar Participante",
                         )
                     }
                 }
