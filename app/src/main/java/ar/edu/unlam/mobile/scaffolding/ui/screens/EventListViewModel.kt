@@ -91,43 +91,50 @@ class EventListViewModel
             }
         }
 
-        fun getEvents() {
-            viewModelScope.launch {
-                _uiState.update { it.copy(currentState = MessageUIState.Loading) }
+    fun getEvents() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(currentState = MessageUIState.Loading) }
 
-                try {
-                    repository
-                        .getEventsList(
-                            sort = if (_uiState.value.isDistance) "distance" else "date",
-                            order = "asc",
-                            size = null,
-                        ).collect { resource ->
-                            when (resource) {
-                                is Resource.Success -> {
-                                    _uiState.update { state ->
-                                        state.copy(
-                                            events = resource.data,
-                                            currentState = MessageUIState.Success("Success"),
-                                        )
-                                    }
-                                    if (_uiState.value.isDistance) {
-                                        sortEventsByDistance()
-                                    } else {
-                                        sortEventsByDate()
-                                    }
+            try {
+                repository
+                    .getEventsList(
+                        sort = if (_uiState.value.isDistance) null else "date",
+                        order = "asc",
+                        size = null,
+                    ).collect { resource ->
+                        when (resource) {
+                            is Resource.Success -> {
+                                val now = System.currentTimeMillis()
+
+                                // Filtrar solo futuros
+                                val futureEvents = resource.data.filter { it.dateTime > now }
+
+                                _uiState.update { state ->
+                                    state.copy(
+                                        events = futureEvents,
+                                        currentState = MessageUIState.Success("Success"),
+                                    )
                                 }
-                                is Resource.Error -> {
-                                    _uiState.update { state ->
-                                        state.copy(currentState = MessageUIState.Error(resource.message))
-                                    }
+
+                                if (_uiState.value.isDistance) {
+                                    sortEventsByDistance()
+                                } else {
+                                    sortEventsByDate()
+                                }
+                            }
+
+                            is Resource.Error -> {
+                                _uiState.update { state ->
+                                    state.copy(currentState = MessageUIState.Error(resource.message))
                                 }
                             }
                         }
-                } catch (e: Exception) {
-                    _uiState.update { state ->
-                        state.copy(currentState = MessageUIState.Error(e.message ?: "Error inesperado"))
                     }
+            } catch (e: Exception) {
+                _uiState.update { state ->
+                    state.copy(currentState = MessageUIState.Error(e.message ?: "Error inesperado"))
                 }
             }
         }
     }
+}
