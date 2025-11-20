@@ -249,23 +249,22 @@ fun MainScreen() {
             // forma de llamar a eventDetails habilitando reporting:
             // controller.navigate("eventDetails/${event.id}?enableReport=true")
             composable(
-                route = "eventDetails/{id}" +
+                route =
+                    "eventDetails/{id}" +
                         "?enableReporting={enableReporting}" +
                         "&hideParticipateButton={hideParticipateButton}",
-
-                arguments = listOf(
-                    navArgument("id") { type = NavType.StringType },
-
-                    navArgument("enableReporting") {
-                        type = NavType.BoolType
-                        defaultValue = false
-                    },
-
-                    navArgument("hideParticipateButton") {
-                        type = NavType.BoolType
-                        defaultValue = false
-                    }
-                ),
+                arguments =
+                    listOf(
+                        navArgument("id") { type = NavType.StringType },
+                        navArgument("enableReporting") {
+                            type = NavType.BoolType
+                            defaultValue = false
+                        },
+                        navArgument("hideParticipateButton") {
+                            type = NavType.BoolType
+                            defaultValue = false
+                        },
+                    ),
             ) { navBackStackEntry ->
 
                 val id = navBackStackEntry.arguments?.getInt("id") ?: 1
@@ -277,10 +276,9 @@ fun MainScreen() {
                     viewModel = hiltViewModel(),
                     navController = controller,
                     enableReporting = enableReporting,
-                    hideParticipateButton = hideParticipate
+                    hideParticipateButton = hideParticipate,
                 )
             }
-
 
             // LOGIN
             composable("login") {

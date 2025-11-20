@@ -45,7 +45,6 @@ fun EventParticipant(
     val itemSize = 44.dp
 
     Column(verticalArrangement = Arrangement.spacedBy(itemSpacing)) {
-
         // --- ORGANIZADOR ---
         Text(
             text = "Organizador",
@@ -55,7 +54,7 @@ fun EventParticipant(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(itemSpacing),
-            modifier = Modifier.clickable { onAvatarClick(user) } // <-- AHORA ES CLIQUEABLE
+            modifier = Modifier.clickable { onAvatarClick(user) },
         ) {
             AsyncImage(
                 contentScale = ContentScale.Crop,
@@ -109,9 +108,7 @@ fun EventParticipant(
                                 fontWeight = FontWeight.Bold,
                             )
                         }
-                    }
-                    // Botón "Ver menos"
-                    else if (index == members.size - 1 && isExpanded.value) {
+                    } else if (index == members.size - 1 && isExpanded.value) {
                         Text(
                             text = "Ver menos",
                             fontSize = 12.sp,
@@ -122,9 +119,7 @@ fun EventParticipant(
                                     .padding(horizontal = itemSpacing)
                                     .clickable { isExpanded.value = false },
                         )
-                    }
-                    // Avatar normal
-                    else {
+                    } else {
                         AsyncImage(
                             contentScale = ContentScale.Crop,
                             placeholder = rememberVectorPainter(Icons.Default.Person),
@@ -135,7 +130,7 @@ fun EventParticipant(
                                     .size(itemSize)
                                     .background(Color.Gray)
                                     .clickable {
-                                        onAvatarClick(members[index]) // Ya cliqueable
+                                        onAvatarClick(members[index])
                                     },
                             model = members[index].avatarUrl,
                             contentDescription = "Avatar Participante",

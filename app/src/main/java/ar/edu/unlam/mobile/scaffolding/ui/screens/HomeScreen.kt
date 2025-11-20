@@ -193,10 +193,11 @@ fun HomeScreen(
                         ) {
                             EventHomeCard(
                                 event = event,
-                                distance = LatLng(
-                                    uiState.userLocation?.latitude ?: 0.0,
-                                    uiState.userLocation?.longitude ?: 0.0,
-                                ),
+                                distance =
+                                    LatLng(
+                                        uiState.userLocation?.latitude ?: 0.0,
+                                        uiState.userLocation?.longitude ?: 0.0,
+                                    ),
                                 onViewEventClick = {
                                     showEventCard = false
                                     navController.navigate("eventDetails/${event.id}")
@@ -208,11 +209,11 @@ fun HomeScreen(
                                     // Limpia el evento seleccionado
                                     viewModel.clearSelectedEvent()
                                 },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 16.dp),
                             )
-
                         }
                     }
                 }

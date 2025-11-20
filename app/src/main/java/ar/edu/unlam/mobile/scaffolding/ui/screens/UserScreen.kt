@@ -302,9 +302,8 @@ fun UserScreen(
                                             .clickable {
                                                 val isPast = uiState.showPastEvents // true si es evento pasado
                                                 navController.navigate(
-                                                    "eventDetails/${event.id}?enableReporting=$isPast&hideParticipateButton=true"
+                                                    "eventDetails/${event.id}?enableReporting=$isPast&hideParticipateButton=true",
                                                 )
-
                                             },
                                 )
                             }
