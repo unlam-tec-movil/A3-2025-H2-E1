@@ -9,7 +9,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
-import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
+import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventItem
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.CreateEventUseCase
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetEventByIdUseCase
@@ -52,7 +52,7 @@ data class HomeUIState(
     val lat: Double? = null,
     val lng: Double? = null,
     val userLocation: GeoPoint? = null,
-    val targetLocation: GeoPoint? = null
+    val targetLocation: GeoPoint? = null,
 )
 
 data class SearchUIState(
@@ -95,7 +95,7 @@ class HomeViewModel
         private var mapEventJob: Job? = null
         private var searchEventJob: Job? = null
         private var navigationJob: Job? = null
-        private val _selectedEvent = MutableStateFlow<EventList?>(null)
+        private val _selectedEvent = MutableStateFlow<EventItem?>(null)
         val selectedEvent = _selectedEvent.asStateFlow()
 
         init {

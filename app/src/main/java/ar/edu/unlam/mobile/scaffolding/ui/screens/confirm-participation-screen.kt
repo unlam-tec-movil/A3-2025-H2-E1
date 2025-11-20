@@ -150,7 +150,7 @@ fun ConfirmParticipationScreen(
 @Preview(showBackground = true, widthDp = 360, heightDp = 640)
 @Composable
 fun ConfirmParticipationScreenPreview() {
-    ScaffoldingV2Theme() {
+    ScaffoldingV2Theme {
         ConfirmParticipationScreen(
             eventName = "Jornada de Limpieza en la Playa",
             eventDate = "Domingo 27 de Octubre, 10:00 hs",

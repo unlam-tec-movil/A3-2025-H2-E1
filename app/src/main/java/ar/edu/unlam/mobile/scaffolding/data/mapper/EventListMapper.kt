@@ -1,10 +1,10 @@
 package ar.edu.unlam.mobile.scaffolding.data.mapper
 
-import ar.edu.unlam.mobile.scaffolding.data.model.EventListEntity
-import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
+import ar.edu.unlam.mobile.scaffolding.data.model.EventItemEntity
+import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventItem
 
-fun EventListEntity.toEventList(): EventList =
-    EventList(
+fun EventItemEntity.toEventItem(): EventItem =
+    EventItem(
         id = id,
         title = title,
         description = description,
@@ -14,8 +14,8 @@ fun EventListEntity.toEventList(): EventList =
         image = imageUrl,
     )
 
-fun EventList.toEntity(): EventListEntity =
-    EventListEntity(
+fun EventItem.toEntity(): EventItemEntity =
+    EventItemEntity(
         id = id,
         title = title,
         description = description,

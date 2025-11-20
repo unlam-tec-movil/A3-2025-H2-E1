@@ -13,7 +13,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ar.edu.unlam.mobile.scaffolding.R
-import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
+import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventItem
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.google.android.gms.maps.model.LatLng
@@ -22,7 +22,7 @@ import java.util.*
 
 @Composable
 fun EventHomeCard(
-    event: EventList,
+    event: EventItem,
     distance: LatLng,
     onViewEventClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -106,6 +106,6 @@ fun EventHomeCard(
 }
 
 fun getEventDateById(
-    eventList: List<EventList>,
+    eventItem: List<EventItem>,
     eventId: String,
-): Long? = eventList.find { it.id == eventId }?.dateTime
+): Long? = eventItem.find { it.id == eventId }?.dateTime
