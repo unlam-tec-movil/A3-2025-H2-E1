@@ -45,6 +45,8 @@ fun EventParticipant(
     val itemSize = 44.dp
 
     Column(verticalArrangement = Arrangement.spacedBy(itemSpacing)) {
+
+        // --- ORGANIZADOR ---
         Text(
             text = "Organizador",
             style = MaterialTheme.typography.titleMedium,
@@ -53,6 +55,7 @@ fun EventParticipant(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(itemSpacing),
+            modifier = Modifier.clickable { onAvatarClick(user) } // <-- AHORA ES CLIQUEABLE
         ) {
             AsyncImage(
                 contentScale = ContentScale.Crop,
@@ -71,6 +74,7 @@ fun EventParticipant(
             )
         }
 
+        // --- PARTICIPANTES ---
         Text(
             text = "Participantes",
             style = MaterialTheme.typography.titleMedium,
@@ -88,6 +92,7 @@ fun EventParticipant(
 
                 items(displayCount) { index ->
 
+                    // Botón "+X"
                     if (index == maxToExpand && !isExpanded.value) {
                         Box(
                             modifier =
@@ -104,7 +109,9 @@ fun EventParticipant(
                                 fontWeight = FontWeight.Bold,
                             )
                         }
-                    } else if (index == members.size - 1 && isExpanded.value) {
+                    }
+                    // Botón "Ver menos"
+                    else if (index == members.size - 1 && isExpanded.value) {
                         Text(
                             text = "Ver menos",
                             fontSize = 12.sp,
@@ -115,7 +122,9 @@ fun EventParticipant(
                                     .padding(horizontal = itemSpacing)
                                     .clickable { isExpanded.value = false },
                         )
-                    } else {
+                    }
+                    // Avatar normal
+                    else {
                         AsyncImage(
                             contentScale = ContentScale.Crop,
                             placeholder = rememberVectorPainter(Icons.Default.Person),
@@ -126,10 +135,10 @@ fun EventParticipant(
                                     .size(itemSize)
                                     .background(Color.Gray)
                                     .clickable {
-                                        onAvatarClick(members[index])
+                                        onAvatarClick(members[index]) // Ya cliqueable
                                     },
                             model = members[index].avatarUrl,
-                            contentDescription = "Avatar Participante/s",
+                            contentDescription = "Avatar Participante",
                         )
                     }
                 }
