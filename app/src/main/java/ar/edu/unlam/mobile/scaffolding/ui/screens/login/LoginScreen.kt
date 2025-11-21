@@ -37,7 +37,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import ar.edu.unlam.mobile.scaffolding.ui.components.PrimaryButton
 import ar.edu.unlam.mobile.scaffolding.ui.components.SystemBarStyle
-import ar.edu.unlam.mobile.scaffolding.ui.screens.HOME_SCREEN_ROUTE
 
 @Composable
 fun LoginScreen(
@@ -49,7 +48,7 @@ fun LoginScreen(
 
     LaunchedEffect(formState.isLoggedIn) {
         if (formState.isLoggedIn) {
-            navController.navigate(HOME_SCREEN_ROUTE) {
+            navController.navigate("welcome") {
                 popUpTo("login") { inclusive = true }
             }
         }
