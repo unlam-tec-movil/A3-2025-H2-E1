@@ -26,7 +26,7 @@ fun SplashScreen(
     LaunchedEffect(isLoggedIn) {
         if (isLoggedIn != null) {
             if (isLoggedIn == true) {
-                navController.navigate("welcome") {
+                navController.navigate("home") {
                     popUpTo(0)
                 }
             } else {

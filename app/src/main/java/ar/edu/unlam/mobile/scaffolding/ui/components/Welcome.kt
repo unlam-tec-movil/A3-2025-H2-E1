@@ -1,4 +1,4 @@
-package ar.edu.unlam.mobile.scaffolding.ui.screens
+package ar.edu.unlam.mobile.scaffolding.ui.components
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Animatable
@@ -11,24 +11,13 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,15 +25,16 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import ar.edu.unlam.mobile.scaffolding.R
 import kotlinx.coroutines.delay
 
 @Composable
-fun WelcomeScreen(navController: NavController) {
+fun Welcome(
+    modifier: Modifier = Modifier,
+    onStartClick: () -> Unit = {},
+) {
     val scale = remember { Animatable(0.8f) }
 
-    // Animación del icono (rebote)
     LaunchedEffect(Unit) {
         scale.animateTo(
             targetValue = 1.15f,
@@ -57,7 +47,7 @@ fun WelcomeScreen(navController: NavController) {
     }
 
     Surface(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
     ) {
         Column(
@@ -68,22 +58,17 @@ fun WelcomeScreen(navController: NavController) {
                     .padding(top = 80.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // --- Ícono ---
             Image(
                 painter = painterResource(id = R.drawable.icono_app),
                 contentDescription = "Icono de la app",
                 modifier =
                     Modifier
-                        .size(160.dp) // un poquito más grande
-                        .graphicsLayer(
-                            scaleX = scale.value,
-                            scaleY = scale.value,
-                        ),
+                        .size(160.dp)
+                        .graphicsLayer(scaleX = scale.value, scaleY = scale.value),
             )
 
             Spacer(modifier = Modifier.height(30.dp))
 
-            // --- Texto ---
             Text(
                 text = "Bienvenido a la App",
                 style = MaterialTheme.typography.headlineLarge,
@@ -91,7 +76,6 @@ fun WelcomeScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(50.dp))
 
-            // --- Carrusel ---
             EventCarousel(
                 images =
                     listOf(
@@ -110,13 +94,8 @@ fun WelcomeScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(60.dp))
 
-            // --- BOTÓN INICIO ---
             Button(
-                onClick = {
-                    navController.navigate("home") {
-                        popUpTo("welcome") { inclusive = true }
-                    }
-                },
+                onClick = onStartClick,
                 modifier =
                     Modifier
                         .fillMaxWidth()
@@ -141,7 +120,6 @@ fun EventCarousel(
     var index by remember { mutableStateOf(0) }
     var previousIndex by remember { mutableStateOf(0) }
 
-    // Cambio automático
     LaunchedEffect(Unit) {
         while (true) {
             delay(intervalMillis)
@@ -150,7 +128,6 @@ fun EventCarousel(
         }
     }
 
-    // Carrusel con efecto slide
     AnimatedContent(
         targetState = index,
         transitionSpec = {

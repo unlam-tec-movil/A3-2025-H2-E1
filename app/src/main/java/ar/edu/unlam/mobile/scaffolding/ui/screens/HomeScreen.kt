@@ -13,14 +13,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MyLocation
@@ -37,17 +29,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
-import ar.edu.unlam.mobile.scaffolding.ui.components.CreateEventPopUp
-import ar.edu.unlam.mobile.scaffolding.ui.components.EventHomeCard
-import ar.edu.unlam.mobile.scaffolding.ui.components.EventSearchBar
-import ar.edu.unlam.mobile.scaffolding.ui.components.FloatingButtons
-import ar.edu.unlam.mobile.scaffolding.ui.components.NearbyMap
-import ar.edu.unlam.mobile.scaffolding.ui.components.SystemBarStyle
+import ar.edu.unlam.mobile.scaffolding.ui.components.*
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.location.*
-import com.google.android.gms.maps.model.LatLng
 
 const val HOME_SCREEN_ROUTE = "home"
 
@@ -70,6 +56,9 @@ fun HomeScreen(
     val sensorManager = remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
     val permissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+
+    // Estado para mostrar el componente de bienvenida al inicio
+    var showWelcome by remember { mutableStateOf(true) }
 
     // UBICACIÓN DESDE HOME SCREEN
     // Se pide el permiso de ubicación al entrar a la screen
@@ -139,224 +128,230 @@ fun HomeScreen(
 
     // PANTALLA PRINCIPAL
     Box(modifier = modifier.fillMaxSize()) {
-        when (val helloState = uiState.helloMessageState) {
-            MessageUIState.Loading -> {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                )
-            }
-
-            is MessageUIState.Success -> {
-                // --- MAPA ---
-                NearbyMap(
-                    nearbyEvents = uiState.eventList,
-                    modifier = Modifier.matchParentSize(),
-                    lat = null,
-                    lng = null,
-                    mapProperties = uiState.mapProperties,
-                    onEventoClick = { evento ->
-                        viewModel.fetchEventById(evento.id)
-                    },
-                    rotationChanged = viewModel::mapRotation,
-                    onMapStateChanged = viewModel::onMapStateChanged,
-                    userLocation = uiState.userLocation,
-                )
-
-                // Estado para animar tarjeta del evento seleccionado
-                var showEventCard by remember { mutableStateOf(false) }
-
-                LaunchedEffect(selectedEvent) {
-                    showEventCard = selectedEvent != null
+        // --- Componente de bienvenida ---
+        if (showWelcome) {
+            Welcome(
+                onStartClick = { showWelcome = false },
+            )
+        } else {
+            when (val helloState = uiState.helloMessageState) {
+                MessageUIState.Loading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                    )
                 }
 
-                selectedEvent?.let { event ->
+                is MessageUIState.Success -> {
+                    // --- MAPA ---
+                    NearbyMap(
+                        nearbyEvents = uiState.eventList,
+                        modifier = Modifier.matchParentSize(),
+                        lat = null,
+                        lng = null,
+                        mapProperties = uiState.mapProperties,
+                        onEventoClick = { evento ->
+                            viewModel.fetchEventById(evento.id)
+                        },
+                        rotationChanged = viewModel::mapRotation,
+                        onMapStateChanged = viewModel::onMapStateChanged,
+                        userLocation = uiState.userLocation,
+                    )
+
+                    // Estado para animar tarjeta del evento seleccionado
+                    var showEventCard by remember { mutableStateOf(false) }
+
+                    LaunchedEffect(selectedEvent) {
+                        showEventCard = selectedEvent != null
+                    }
+
+                    selectedEvent?.let { event ->
+                        Column(
+                            modifier =
+                                Modifier
+                                    .fillMaxSize()
+                                    .zIndex(15f),
+                            verticalArrangement = Arrangement.Bottom,
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            AnimatedVisibility(
+                                visible = showEventCard,
+                                enter =
+                                    expandVertically(
+                                        expandFrom = Alignment.Bottom,
+                                        animationSpec = tween(durationMillis = 1000),
+                                    ) + fadeIn(animationSpec = tween(durationMillis = 1000)),
+                                exit =
+                                    shrinkVertically(
+                                        shrinkTowards = Alignment.Bottom,
+                                        animationSpec = tween(durationMillis = 1000),
+                                    ) + fadeOut(animationSpec = tween(durationMillis = 1000)),
+                            ) {
+                                EventHomeCard(
+                                    event = event,
+                                    distance =
+                                        com.google.android.gms.maps.model.LatLng(
+                                            uiState.userLocation?.latitude ?: 0.0,
+                                            uiState.userLocation?.longitude ?: 0.0,
+                                        ),
+                                    onViewEventClick = {
+                                        showEventCard = false
+                                        navController.navigate("eventDetails/${event.id}")
+                                        viewModel.clearSelectedEvent()
+                                    },
+                                    onCloseClick = {
+                                        showEventCard = false
+                                        viewModel.clearSelectedEvent()
+                                    },
+                                    modifier =
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 16.dp, vertical = 16.dp),
+                                )
+                            }
+                        }
+                    }
+
+                    // --- Búsqueda ---
                     Column(
                         modifier =
                             Modifier
-                                .fillMaxSize()
-                                .zIndex(15f),
-                        verticalArrangement = Arrangement.Bottom,
-                        horizontalAlignment = Alignment.CenterHorizontally,
+                                .fillMaxWidth()
+                                .zIndex(zIndex = 20f),
                     ) {
-                        AnimatedVisibility(
-                            visible = showEventCard,
-                            enter =
-                                expandVertically(
-                                    expandFrom = Alignment.Bottom,
-                                    animationSpec = tween(durationMillis = 1000),
-                                ) + fadeIn(animationSpec = tween(durationMillis = 1000)),
-                            exit =
-                                shrinkVertically(
-                                    shrinkTowards = Alignment.Bottom,
-                                    animationSpec = tween(durationMillis = 1000),
-                                ) + fadeOut(animationSpec = tween(durationMillis = 1000)),
-                        ) {
-                            EventHomeCard(
-                                event = event,
-                                distance =
-                                    LatLng(
-                                        uiState.userLocation?.latitude ?: 0.0,
-                                        uiState.userLocation?.longitude ?: 0.0,
-                                    ),
-                                onViewEventClick = {
-                                    showEventCard = false
-                                    navController.navigate("eventDetails/${event.id}")
-                                    viewModel.clearSelectedEvent()
-                                },
-                                onCloseClick = {
-                                    // Oculta la tarjeta
-                                    showEventCard = false
-                                    // Limpia el evento seleccionado
-                                    viewModel.clearSelectedEvent()
-                                },
-                                modifier =
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 16.dp, vertical = 16.dp),
-                            )
-                        }
-                    }
-                }
+                        EventSearchBar(
+                            searchUiState = searchBarState,
+                            onSearchQueryChange = viewModel::onSearchQueryChange,
+                            onSearch = viewModel::onSearch,
+                            onSuggestionSelected = { event ->
+                                viewModel.onEventSelected(event)
+                                viewModel.fetchEventById(event.id)
+                            },
+                            onActiveChange = viewModel::onActiveChange,
+                        )
 
-                // --- Búsqueda ---
-                Column(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .zIndex(zIndex = 20f),
-                ) {
-                    EventSearchBar(
-                        searchUiState = searchBarState,
-                        onSearchQueryChange = viewModel::onSearchQueryChange,
-                        onSearch = viewModel::onSearch,
-                        onSuggestionSelected = { event ->
-                            viewModel.onEventSelected(event)
-                            viewModel.fetchEventById(event.id)
-                        },
-                        onActiveChange = viewModel::onActiveChange,
-                    )
-
-                    Row {
-                        AnimatedVisibility(searchBarState.lastQuery.isNotEmpty()) {
-                            Card(
-                                colors =
-                                    CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.surface,
-                                    ),
-                                shape = MaterialTheme.shapes.medium,
-                                modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
-                            ) {
-                                Text(
-                                    text =
-                                        if (uiState.eventList.size > 1) {
-                                            "Resultados de búsqueda: ${uiState.eventList.size}"
-                                        } else {
-                                            "Resultado de búsqueda"
-                                        },
-                                    modifier = Modifier.padding(horizontal = 6.dp),
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.weight(1f))
-
-                        Column {
-                            FloatingActionButton(
-                                onClick = {
-                                    val props = uiState.mapProperties
-                                    viewModel.onMapPropertiesChanged(
-                                        props.copy(
-                                            rotationBySensor = !props.rotationBySensor,
-                                            rotationByGesture = !props.rotationByGesture,
+                        Row {
+                            AnimatedVisibility(searchBarState.lastQuery.isNotEmpty()) {
+                                Card(
+                                    colors =
+                                        CardDefaults.cardColors(
+                                            containerColor = MaterialTheme.colorScheme.surface,
                                         ),
+                                    shape = MaterialTheme.shapes.medium,
+                                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
+                                ) {
+                                    Text(
+                                        text =
+                                            if (uiState.eventList.size > 1) {
+                                                "Resultados de búsqueda: ${uiState.eventList.size}"
+                                            } else {
+                                                "Resultado de búsqueda"
+                                            },
+                                        modifier = Modifier.padding(horizontal = 6.dp),
                                     )
-                                },
-                                containerColor =
-                                    if (uiState.mapProperties.rotationBySensor) {
-                                        MaterialTheme.colorScheme.secondary
-                                    } else {
-                                        MaterialTheme.colorScheme.surfaceContainer
-                                    },
-                                shape = CircleShape,
-                                modifier =
-                                    Modifier
-                                        .size(52.dp)
-                                        .padding(12.dp),
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Navigation,
-                                    contentDescription = "Cambiar modo de rotación",
-                                    modifier = Modifier.rotate(uiState.mapProperties.mapOrientation),
-                                )
+                                }
                             }
-                            FloatingActionButton(
-                                onClick = {
-                                    if (permissionState.status.isGranted) {
-                                        viewModel.onCenterRequest()
-                                    } else {
-                                        permissionState.launchPermissionRequest()
-                                    }
-                                },
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                shape = CircleShape,
-                                modifier =
-                                    Modifier
-                                        .size(52.dp)
-                                        .padding(12.dp),
-                            ) {
-                                Icon(
-                                    Icons.Default.MyLocation,
-                                    contentDescription = "Centrar en mi posición",
-                                )
+
+                            Spacer(modifier = Modifier.weight(1f))
+
+                            Column {
+                                FloatingActionButton(
+                                    onClick = {
+                                        val props = uiState.mapProperties
+                                        viewModel.onMapPropertiesChanged(
+                                            props.copy(
+                                                rotationBySensor = !props.rotationBySensor,
+                                                rotationByGesture = !props.rotationByGesture,
+                                            ),
+                                        )
+                                    },
+                                    containerColor =
+                                        if (uiState.mapProperties.rotationBySensor) {
+                                            MaterialTheme.colorScheme.secondary
+                                        } else {
+                                            MaterialTheme.colorScheme.surfaceContainer
+                                        },
+                                    shape = CircleShape,
+                                    modifier =
+                                        Modifier
+                                            .size(52.dp)
+                                            .padding(12.dp),
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Navigation,
+                                        contentDescription = "Cambiar modo de rotación",
+                                        modifier = Modifier.rotate(uiState.mapProperties.mapOrientation),
+                                    )
+                                }
+                                FloatingActionButton(
+                                    onClick = {
+                                        if (permissionState.status.isGranted) {
+                                            viewModel.onCenterRequest()
+                                        } else {
+                                            permissionState.launchPermissionRequest()
+                                        }
+                                    },
+                                    containerColor = MaterialTheme.colorScheme.surface,
+                                    shape = CircleShape,
+                                    modifier =
+                                        Modifier
+                                            .size(52.dp)
+                                            .padding(12.dp),
+                                ) {
+                                    Icon(
+                                        Icons.Default.MyLocation,
+                                        contentDescription = "Centrar en mi posición",
+                                    )
+                                }
                             }
                         }
                     }
+
+                    // --- Botones Flotantes ---
+                    Column(
+                        modifier =
+                            Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(8.dp),
+                    ) {
+                        FloatingButtons(
+                            isSessionActive = isSessionActive,
+                            onClickCamera = { },
+                            onClickAddEvent = { showCreateEventDialog = true },
+                            onClickCenterMap = {
+                                isSessionActive = !isSessionActive
+                            },
+                        )
+                    }
+
+                    // --- Crear Evento ---
+                    if (showCreateEventDialog) {
+                        CreateEventPopUp(
+                            onDismiss = { showCreateEventDialog = false },
+                            userLocation = uiState.userLocation,
+                            onConfirm = { name, location, dateTime, imageUri ->
+                                viewModel.createEvent(name, location, dateTime, imageUri)
+                                showCreateEventDialog = false
+                                viewModel.fetchEvents()
+                            },
+                        )
+                    }
                 }
 
-                // --- Botones Flotantes ---
-                Column(
-                    modifier =
-                        Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(8.dp),
-                ) {
-                    FloatingButtons(
-                        isSessionActive = isSessionActive,
-                        onClickCamera = { },
-                        onClickAddEvent = { showCreateEventDialog = true },
-                        onClickCenterMap = {
-                            isSessionActive = !isSessionActive
-                        },
+                is MessageUIState.Error -> {
+                    Text(
+                        text = helloState.message,
+                        modifier =
+                            Modifier
+                                .padding(16.dp)
+                                .align(Alignment.Center),
                     )
                 }
-
-                // --- Crear Evento ---
-                if (showCreateEventDialog) {
-                    CreateEventPopUp(
-                        onDismiss = { showCreateEventDialog = false },
-                        userLocation = uiState.userLocation,
-                        onConfirm = { name, location, dateTime, imageUri ->
-                            viewModel.createEvent(name, location, dateTime, imageUri)
-                            showCreateEventDialog = false
-                            viewModel.fetchEvents()
-                        },
-                    )
-                }
-            }
-
-            is MessageUIState.Error -> {
-                Text(
-                    text = helloState.message,
-                    modifier =
-                        Modifier
-                            .padding(16.dp)
-                            .align(Alignment.Center),
-                )
             }
         }
     }
 }
 
+// MapRotationSensor
 @Composable
 fun MapRotationSensor(
     enabled: Boolean,
@@ -382,10 +377,7 @@ fun MapRotationSensor(
                             val orientation = FloatArray(3)
                             SensorManager.getOrientation(rotationMatrix, orientation)
 
-                            // Convierte la orientación a grados
                             var azimuth = Math.toDegrees(orientation[0].toDouble()).toFloat()
-                            // Esto cambia el eje de sentido horario a antihorario para que la brujula apunte
-                            // bien el este y el oeste, pero da problemas al poner la app en vertical.
                             azimuth = (360 - azimuth) % 360
 
                             val diff = ((azimuth - lastOrientation + 540f) % 360f) - 180f

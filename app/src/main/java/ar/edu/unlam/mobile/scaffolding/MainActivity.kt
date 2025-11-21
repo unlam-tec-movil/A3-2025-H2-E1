@@ -50,7 +50,6 @@ import ar.edu.unlam.mobile.scaffolding.ui.screens.HomeViewModel
 import ar.edu.unlam.mobile.scaffolding.ui.screens.SplashScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.UserProfileScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.UserScreen
-import ar.edu.unlam.mobile.scaffolding.ui.screens.WelcomeScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.login.LoginScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.register.RegisterScreen
 import ar.edu.unlam.mobile.scaffolding.ui.theme.ScaffoldingV2Theme
@@ -314,10 +313,6 @@ fun MainScreen() {
                     onAddToCalendarClick = { /* TODO */ },
                     onParticipateClick = { /* TODO */ },
                 )
-            }
-            // Pantalla de presentacion
-            composable("welcome") {
-                WelcomeScreen(navController = controller)
             }
         }
     }
