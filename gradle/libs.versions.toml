@@ -25,6 +25,8 @@ testCore = "1.6.1"
 animation = "1.9.4"
 runtime = "1.9.4"
 foundationLayout = "1.9.4"
+ui = "1.9.5"
+animationCore = "1.9.5"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -57,6 +59,8 @@ org-mockito-android = { group = "org.mockito", name = "mockito-android", version
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "animation" }
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
 androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
+androidx-compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "ui" }
+androidx-compose-animation-core = { group = "androidx.compose.animation", name = "animation-core", version.ref = "animationCore" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
