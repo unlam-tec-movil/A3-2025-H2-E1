@@ -40,6 +40,7 @@ import ar.edu.unlam.mobile.scaffolding.data.datasources.local.SessionManager
 import ar.edu.unlam.mobile.scaffolding.ui.components.BottomBar
 import ar.edu.unlam.mobile.scaffolding.ui.components.NavigationItem
 import ar.edu.unlam.mobile.scaffolding.ui.components.SnackbarVisualsWithError
+import ar.edu.unlam.mobile.scaffolding.ui.components.Welcome
 import ar.edu.unlam.mobile.scaffolding.ui.screens.ConfirmParticipationScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.EventDetailsScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.EventListScreen
@@ -89,17 +90,13 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainScreen() {
-    // Controller es el elemento que nos permite navegar entre pantallas. Tiene las acciones
-    // para navegar como naviegate y también la información de en dónde se "encuentra" el usuario
-    // a través del back stack
     val controller = rememberNavController()
     val navBackStackEntry by controller.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    // id del usuario logeado, de momento es hardcodeado hasta que se pueda logear
     val idLogUser = 1L
-
     val snackBarHostState = remember { SnackbarHostState() }
+
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
@@ -130,7 +127,6 @@ fun MainScreen() {
         },
         snackbarHost = {
             SnackbarHost(snackBarHostState) { data ->
-                // custom snackbar with the custom action button color and border
                 val isError = (data.visuals as? SnackbarVisualsWithError)?.isError ?: false
                 val buttonColor =
                     if (isError) {
@@ -163,12 +159,36 @@ fun MainScreen() {
             }
         },
     ) { paddingValue ->
-        // NavHost es el componente que funciona como contenedor de los otros componentes que
-        // podrán ser destinos de navegación.
-        NavHost(navController = controller, startDestination = "splash") {
-            // composable es el componente que se usa para definir un destino de navegación.
-            // Por parámetro recibe la ruta que se utilizará para navegar a dicho destino.
 
+        NavHost(
+            navController = controller,
+            startDestination = "splash",
+        ) {
+            // SPLASH
+            composable("splash") {
+                SplashScreen(navController = controller)
+            }
+
+            // WELCOME
+            composable("welcome") {
+                Welcome(
+                    onStartClick = {
+                        controller.navigate("home") {
+                            popUpTo("welcome") { inclusive = true }
+                        }
+                    },
+                )
+            }
+
+            // HOME (sin params)
+            composable(HOME_SCREEN_ROUTE) {
+                HomeScreen(
+                    modifier = Modifier.padding(paddingValue),
+                    navController = controller,
+                )
+            }
+
+            // HOME (con lat/lng)
             composable(
                 route = "$HOME_SCREEN_ROUTE/{lat}/{lng}",
                 arguments =
@@ -177,28 +197,17 @@ fun MainScreen() {
                         navArgument("lng") { type = NavType.StringType },
                     ),
             ) { backStackEntry ->
-                val homeViewModel: HomeViewModel = hiltViewModel()
+
+                val vm: HomeViewModel = hiltViewModel()
                 val lat = backStackEntry.arguments?.getString("lat")?.toDoubleOrNull()
                 val lng = backStackEntry.arguments?.getString("lng")?.toDoubleOrNull()
 
                 LaunchedEffect(lat, lng) {
-                    homeViewModel.setTargetLocation(lat, lng)
+                    vm.setTargetLocation(lat, lng)
                 }
 
                 HomeScreen(
-                    viewModel = homeViewModel,
-                    modifier = Modifier.padding(paddingValue),
-                    navController = controller,
-                )
-            }
-
-            // Home es el componente en sí que es el destino de navegación.
-            composable("splash") {
-                SplashScreen(navController = controller)
-            }
-
-            composable(HOME_SCREEN_ROUTE) {
-                HomeScreen(
+                    viewModel = vm,
                     modifier = Modifier.padding(paddingValue),
                     navController = controller,
                 )
@@ -212,12 +221,12 @@ fun MainScreen() {
                 )
             }
 
-            // PERFIL DE USUARIO
+            // PERFIL USUARIO
             composable(
                 route = "user/{id}",
                 arguments = listOf(navArgument("id") { type = NavType.LongType }),
-            ) { navBackStackEntry ->
-                val id = navBackStackEntry.arguments?.getLong("id") ?: 1
+            ) { entry ->
+                val id = entry.arguments?.getLong("id") ?: 1
                 UserScreen(
                     userId = id,
                     modifier = Modifier.padding(paddingValue),
@@ -238,7 +247,7 @@ fun MainScreen() {
                 )
             }
 
-            // FORMULARIO
+            // FORM
             composable("form") {
                 FormScreen(
                     modifier = Modifier.padding(paddingValue),
@@ -246,8 +255,7 @@ fun MainScreen() {
                 )
             }
 
-            // forma de llamar a eventDetails habilitando reporting:
-            // controller.navigate("eventDetails/${event.id}?enableReport=true")
+            // EVENT DETAILS
             composable(
                 route =
                     "eventDetails/{id}" +
@@ -265,11 +273,11 @@ fun MainScreen() {
                             defaultValue = false
                         },
                     ),
-            ) { navBackStackEntry ->
+            ) { entry ->
 
-                val id = navBackStackEntry.arguments?.getInt("id") ?: 1
-                val enableReporting = navBackStackEntry.arguments?.getBoolean("enableReporting") ?: false
-                val hideParticipate = navBackStackEntry.arguments?.getBoolean("hideParticipateButton") ?: false
+                val id = entry.arguments?.getInt("id") ?: 1
+                val enableReporting = entry.arguments?.getBoolean("enableReporting") ?: false
+                val hideParticipate = entry.arguments?.getBoolean("hideParticipateButton") ?: false
 
                 EventDetailsScreen(
                     modifier = Modifier.padding(paddingValue),
@@ -300,18 +308,19 @@ fun MainScreen() {
                         navArgument("eventDate") { type = NavType.StringType },
                         navArgument("eventPlace") { type = NavType.StringType },
                     ),
-            ) { navBackStackEntry ->
-                val eventName = navBackStackEntry.arguments?.getString("eventName") ?: "Evento"
-                val eventDate = navBackStackEntry.arguments?.getString("eventDate") ?: "Sin fecha"
-                val eventPlace = navBackStackEntry.arguments?.getString("eventPlace") ?: "Sin lugar"
+            ) { entry ->
+
+                val eventName = entry.arguments?.getString("eventName") ?: "Evento"
+                val eventDate = entry.arguments?.getString("eventDate") ?: "Sin fecha"
+                val eventPlace = entry.arguments?.getString("eventPlace") ?: "Sin lugar"
 
                 ConfirmParticipationScreen(
                     eventName = eventName,
                     eventDate = eventDate,
                     eventPlace = eventPlace,
                     onBackClick = { controller.popBackStack() },
-                    onAddToCalendarClick = { /* TODO */ },
-                    onParticipateClick = { /* TODO */ },
+                    onAddToCalendarClick = { },
+                    onParticipateClick = { },
                 )
             }
         }

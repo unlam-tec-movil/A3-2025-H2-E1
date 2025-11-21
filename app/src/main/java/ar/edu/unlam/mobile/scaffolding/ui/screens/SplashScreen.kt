@@ -26,12 +26,12 @@ fun SplashScreen(
     LaunchedEffect(isLoggedIn) {
         if (isLoggedIn != null) {
             if (isLoggedIn == true) {
-                navController.navigate("home") {
-                    popUpTo(0)
+                navController.navigate("welcome") {
+                    popUpTo("splash") { inclusive = true }
                 }
             } else {
                 navController.navigate("login") {
-                    popUpTo(0)
+                    popUpTo("splash") { inclusive = true }
                 }
             }
         }
