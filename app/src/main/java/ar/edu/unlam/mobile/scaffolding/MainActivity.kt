@@ -47,6 +47,7 @@ import ar.edu.unlam.mobile.scaffolding.ui.screens.FormScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.HOME_SCREEN_ROUTE
 import ar.edu.unlam.mobile.scaffolding.ui.screens.HomeScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.HomeViewModel
+import ar.edu.unlam.mobile.scaffolding.ui.screens.OnBoardingScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.SplashScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.UserProfileScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.UserScreen
@@ -165,7 +166,7 @@ fun MainScreen() {
     ) { paddingValue ->
         // NavHost es el componente que funciona como contenedor de los otros componentes que
         // podrán ser destinos de navegación.
-        NavHost(navController = controller, startDestination = "splash") {
+        NavHost(navController = controller, startDestination = "onboarding") {
             // composable es el componente que se usa para definir un destino de navegación.
             // Por parámetro recibe la ruta que se utilizará para navegar a dicho destino.
 
@@ -312,6 +313,13 @@ fun MainScreen() {
                     onBackClick = { controller.popBackStack() },
                     onAddToCalendarClick = { /* TODO */ },
                     onParticipateClick = { /* TODO */ },
+                )
+            }
+
+            composable("onboarding") {
+                 OnBoardingScreen(
+                     navController = controller,
+                     modifier = Modifier.padding(paddingValue),
                 )
             }
         }
