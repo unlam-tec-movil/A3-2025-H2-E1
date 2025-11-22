@@ -6,7 +6,7 @@ import android.location.Location
 import android.location.LocationManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
+import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventItem
 import ar.edu.unlam.mobile.scaffolding.domain.event.repositories.EventRepository
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.utils.Resource
@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class EventListUiState(
-    val events: List<EventList> = emptyList(),
+    val events: List<EventItem> = emptyList(),
     val currentState: MessageUIState = MessageUIState.Loading,
     val isDistance: Boolean = true,
 )

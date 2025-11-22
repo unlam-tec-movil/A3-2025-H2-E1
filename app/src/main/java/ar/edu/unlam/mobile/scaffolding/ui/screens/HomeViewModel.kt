@@ -9,7 +9,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
-import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
+import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventItem
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.CreateEventUseCase
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetEventByIdUseCase
@@ -18,7 +18,7 @@ import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetSuggestedEventsU
 import ar.edu.unlam.mobile.scaffolding.domain.navigation.model.Coordinates
 import ar.edu.unlam.mobile.scaffolding.domain.navigation.model.Route
 import ar.edu.unlam.mobile.scaffolding.domain.navigation.repositories.NavigationRepository
-import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
+import ar.edu.unlam.mobile.scaffolding.domain.user.model.UserItem
 import ar.edu.unlam.mobile.scaffolding.ui.common.EventSearchState
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.ui.components.MapProperties
@@ -49,9 +49,8 @@ data class HomeUIState(
     val eventList: List<SuggestedEvent> = emptyList(),
     val mapProperties: MapProperties = MapProperties(),
     val helloMessageState: MessageUIState,
-    val lat: Double? = null,
-    val lng: Double? = null,
     val userLocation: GeoPoint? = null,
+    val isSelectingLocation: Boolean = false,
 )
 
 data class SearchUIState(
@@ -94,26 +93,12 @@ class HomeViewModel
         private var mapEventJob: Job? = null
         private var searchEventJob: Job? = null
         private var navigationJob: Job? = null
-        private val _selectedEvent = MutableStateFlow<EventList?>(null)
+        private val _selectedEvent = MutableStateFlow<EventItem?>(null)
         val selectedEvent = _selectedEvent.asStateFlow()
 
         init {
             _uiState.value = HomeUIState(helloMessageState = MessageUIState.Success("2b"))
             fetchEvents()
-        }
-
-        fun setTargetLocation(
-            lat: Double?,
-            lng: Double?,
-        ) {
-            if (lat == null || lng == null) return
-
-            _uiState.update { currentState ->
-                currentState.copy(
-                    lat = lat,
-                    lng = lng,
-                )
-            }
         }
 
         // Entre un cambio y otro esto al final no lo use, pero lo dejo por si alguien si lo usa, sino se borra
@@ -134,25 +119,41 @@ class HomeViewModel
             }
         }
 
-        fun onCenterRequest() {
+        // Esto deberia hacer si tienes los permisos te coloque al iniciar en tu posicion en el mapa,
+        // de momento no lo hace, estoy en eso.
+        fun setUserLocation(location: Location) {
+            val userLocation = GeoPoint(location.latitude, location.longitude)
+            _uiState.update {
+                it.copy(
+                    userLocation = userLocation,
+                    mapProperties = it.mapProperties.copy(center = userLocation),
+                )
+            }
+        }
+
+        fun setTargetLocation(location: GeoPoint) {
             viewModelScope.launch {
                 _uiState.update {
                     it.copy(
                         mapProperties =
                             it.mapProperties.copy(
-                                centerRequest = true,
+                                targetLocation = GeoPoint(location.latitude, location.longitude),
                             ),
                     )
                 }
-                delay(100)
-                _uiState.update {
-                    it.copy(
-                        mapProperties =
-                            it.mapProperties.copy(
-                                centerRequest = false,
-                            ),
-                    )
-                }
+                delay(timeMillis = 300)
+                _uiState.update { it.copy(mapProperties = it.mapProperties.copy(targetLocation = null)) }
+            }
+        }
+
+        fun onMapLongPress(location: GeoPoint?) {
+            _uiState.update {
+                it.copy(
+                    mapProperties =
+                        it.mapProperties.copy(
+                            longPressPoint = location,
+                        ),
+                )
             }
         }
 
@@ -168,28 +169,6 @@ class HomeViewModel
                     mapProperties =
                         currentState.mapProperties.copy(
                             mapOrientation = rotation,
-                        ),
-                )
-            }
-        }
-
-        // Esto deberia hacer si tienes los permisos te coloque al iniciar en tu posicion en el mapa,
-        // de momento no lo hace, estoy en eso.
-        fun setUserLocation(location: Location) {
-            val userLatLng = GeoPoint(location.latitude, location.longitude)
-            _uiState.update { it.copy(userLocation = userLatLng) }
-        }
-
-        fun onMapStateChanged(
-            center: GeoPoint,
-            zoom: Double,
-        ) {
-            _uiState.update { state ->
-                state.copy(
-                    mapProperties =
-                        state.mapProperties.copy(
-                            center = center,
-                            zoom = zoom,
                         ),
                 )
             }
@@ -315,6 +294,7 @@ class HomeViewModel
         }
 
         fun onEventSelected(event: SuggestedEvent) {
+            searchEventJob?.cancel()
             _searchUiState.update { currentState ->
                 currentState.copy(
                     lastQuery = event.title,
@@ -325,14 +305,12 @@ class HomeViewModel
             _uiState.update { currentState ->
                 currentState.copy(eventList = listOf(event))
             }
-            searchEventJob?.cancel()
-            // TODO Abrir C3: EventHomeCard o mostrar en el mapa el evento seleccionado
-            Log.d("HomeViewModel", "onEventSelected: ${event.title}")
-            Log.d("HomeViewModel", "onEventSelected: ${event.id}, ${event.lat}, ${event.lng}")
+            fetchEventById(eventId = event.id)
         }
 
         fun createEvent(
             title: String,
+            description: String,
             location: GeoPoint,
             dateTime: LocalDateTime,
             imageUri: List<Uri>,
@@ -345,7 +323,7 @@ class HomeViewModel
                     Event(
                         id = UUID.randomUUID().toString(),
                         title = title,
-                        description = "",
+                        description = description,
                         dateTime = timestamp,
                         lat = location.latitude,
                         lng = location.longitude,
@@ -353,7 +331,7 @@ class HomeViewModel
                         beforeImage = emptyList(),
                         afterImage = null,
                         members = emptyList(),
-                        creator = User(0L, "Usuario", null, null),
+                        creator = UserItem(0L, "Usuario", null, null),
                         saved = false,
                         participating = false,
                     )
@@ -401,7 +379,10 @@ class HomeViewModel
             viewModelScope.launch {
                 getEventByIdUseCase(eventId).collect { resource ->
                     when (resource) {
-                        is Resource.Success -> _selectedEvent.value = resource.data
+                        is Resource.Success -> {
+                            _selectedEvent.value = resource.data
+                            setTargetLocation(GeoPoint(resource.data.lat, resource.data.lng))
+                        }
                         is Resource.Error -> {
                             Log.e("HomeViewModel", "Evento no encontrado: ${resource.message}")
                             _selectedEvent.value = null

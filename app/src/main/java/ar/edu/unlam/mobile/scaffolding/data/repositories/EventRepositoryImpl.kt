@@ -2,14 +2,14 @@ package ar.edu.unlam.mobile.scaffolding.data.repositories
 
 import ar.edu.unlam.mobile.scaffolding.data.mapper.toEntity
 import ar.edu.unlam.mobile.scaffolding.data.mapper.toEvent
-import ar.edu.unlam.mobile.scaffolding.data.mapper.toEventList
-import ar.edu.unlam.mobile.scaffolding.data.mapper.toEventListEntity
+import ar.edu.unlam.mobile.scaffolding.data.mapper.toEventItem
+import ar.edu.unlam.mobile.scaffolding.data.mapper.toEventItemEntity
 import ar.edu.unlam.mobile.scaffolding.data.mapper.toSuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.data.model.EventEntity
 import ar.edu.unlam.mobile.scaffolding.data.model.SuggestedEventEntity
 import ar.edu.unlam.mobile.scaffolding.data.model.UserEntity
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
-import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
+import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventItem
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.domain.event.repositories.EventRepository
 import ar.edu.unlam.mobile.scaffolding.utils.Resource
@@ -365,10 +365,10 @@ class EventRepositoryImpl
             sort: String?,
             order: String?,
             size: Int?,
-        ): Flow<Resource<List<EventList>>> =
+        ): Flow<Resource<List<EventItem>>> =
             flow {
                 val eventListEntity =
-                    mockEvents.map { it.toEventListEntity() }
+                    mockEvents.map { it.toEventItemEntity() }
                 // Esto podria mejorarse con un when() para poner mas tipos de ordenados.
                 val sortedEvents =
                     if (sort == "date") {
@@ -381,7 +381,7 @@ class EventRepositoryImpl
                         eventListEntity
                     }
 
-                val eventList = sortedEvents.map { it.toEventList() }
+                val eventList = sortedEvents.map { it.toEventItem() }
                 emit(Resource.Success(eventList))
             }
 
@@ -390,13 +390,13 @@ class EventRepositoryImpl
             sort: String?,
             order: String?,
             userId: Long,
-        ): Flow<Resource<List<EventList>>> =
+        ): Flow<Resource<List<EventItem>>> =
             flow {
                 val filteredEvents =
                     mockEvents
                         .filter { eventEntity ->
                             eventEntity.members.any { member -> member.id == userId }
-                        }.map { it.toEventListEntity() }
+                        }.map { it.toEventItemEntity() }
 
                 val sortedEvents =
                     if (sort == "date") {
@@ -409,14 +409,14 @@ class EventRepositoryImpl
                         filteredEvents
                     }
 
-                val eventList = sortedEvents.map { it.toEventList() }
+                val eventList = sortedEvents.map { it.toEventItem() }
                 emit(Resource.Success(eventList))
             }
 
-        override suspend fun getEventList(id: String): Flow<Resource<EventList>> =
+        override suspend fun getEventList(id: String): Flow<Resource<EventItem>> =
             flow {
                 mockEvents.find { it.eventId == id }?.let { eventEntity ->
-                    val eventList = eventEntity.toEventList()
+                    val eventList = eventEntity.toEventItem()
                     emit(Resource.Success(eventList))
                 }
             }

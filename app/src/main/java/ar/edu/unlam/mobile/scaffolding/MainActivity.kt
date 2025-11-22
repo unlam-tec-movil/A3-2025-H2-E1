@@ -55,6 +55,7 @@ import ar.edu.unlam.mobile.scaffolding.ui.screens.register.RegisterScreen
 import ar.edu.unlam.mobile.scaffolding.ui.theme.ScaffoldingV2Theme
 import dagger.hilt.android.AndroidEntryPoint
 import jakarta.inject.Inject
+import org.osmdroid.util.GeoPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -182,7 +183,7 @@ fun MainScreen() {
                 val lng = backStackEntry.arguments?.getString("lng")?.toDoubleOrNull()
 
                 LaunchedEffect(lat, lng) {
-                    homeViewModel.setTargetLocation(lat, lng)
+                    homeViewModel.setTargetLocation(GeoPoint(lat ?: 0.0, lng ?: 0.0))
                 }
 
                 HomeScreen(
