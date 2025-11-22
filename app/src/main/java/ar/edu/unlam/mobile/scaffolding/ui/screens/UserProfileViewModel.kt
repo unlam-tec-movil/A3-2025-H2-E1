@@ -30,9 +30,9 @@ class UserProfileViewModel
         private val _uiState = MutableStateFlow(UserProfileUIState())
         val uiState = _uiState.asStateFlow()
 
-    init {
-        loadUserData()
-    }
+        init {
+            loadUserData()
+        }
 
         fun loadUserData() {
             val userId = sessionManager.getLoggedUserId()
