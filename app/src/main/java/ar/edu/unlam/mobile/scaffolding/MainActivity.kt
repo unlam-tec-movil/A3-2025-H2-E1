@@ -81,7 +81,7 @@ class MainActivity : ComponentActivity() {
                     if (BuildConfig.AUTO_LOGIN) {
                         sessionManager.saveToken(BuildConfig.DEV_TOKEN)
                     }
-                    MainScreen()
+                    MainScreen(sessionManager)
                 }
             }
         }
@@ -89,7 +89,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainScreen() {
+fun MainScreen(sessionManager: SessionManager) {
     // Controller es el elemento que nos permite navegar entre pantallas. Tiene las acciones
     // para navegar como naviegate y también la información de en dónde se "encuentra" el usuario
     // a través del back stack
@@ -98,7 +98,7 @@ fun MainScreen() {
     val currentRoute = navBackStackEntry?.destination?.route
 
     // id del usuario logeado, de momento es hardcodeado hasta que se pueda logear
-    val idLogUser = 1L
+    val loggedUserId = sessionManager.getLoggedUserId()
 
     val snackBarHostState = remember { SnackbarHostState() }
     Scaffold(
@@ -121,7 +121,7 @@ fun MainScreen() {
                             ),
                             NavigationItem(
                                 navRoute = "user/{id}",
-                                navRouteWithArgs = "user/$idLogUser",
+                                navRouteWithArgs = "user/$loggedUserId",
                                 icon = Icons.Default.AccountCircle,
                                 label = "User",
                             ),
@@ -229,9 +229,14 @@ fun MainScreen() {
             // USER PROFILE
             composable(
                 route = "userProfile/{id}",
-                arguments = listOf(navArgument("id") { type = NavType.LongType }),
-            ) {
-                val id = navBackStackEntry?.arguments?.getLong("id") ?: 1L
+                arguments =
+                    listOf(
+                        navArgument("id") { type = NavType.LongType },
+                    ),
+            ) { navBackStackEntry ->
+
+                val id = navBackStackEntry.arguments?.getLong("id") ?: 1L
+
                 UserProfileScreen(
                     userId = id,
                     modifier = Modifier.fillMaxSize(),
@@ -268,7 +273,7 @@ fun MainScreen() {
                     ),
             ) { navBackStackEntry ->
 
-                val id = navBackStackEntry.arguments?.getInt("id") ?: 1
+                val id = navBackStackEntry.arguments?.getString("id") ?: ""
                 val enableReporting = navBackStackEntry.arguments?.getBoolean("enableReporting") ?: false
                 val hideParticipate = navBackStackEntry.arguments?.getBoolean("hideParticipateButton") ?: false
 

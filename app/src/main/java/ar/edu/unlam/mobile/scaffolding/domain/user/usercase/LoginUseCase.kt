@@ -1,22 +1,19 @@
 package ar.edu.unlam.mobile.scaffolding.domain.user.usercase
-
 import ar.edu.unlam.mobile.scaffolding.data.datasources.local.SessionManager
-import ar.edu.unlam.mobile.scaffolding.data.repositories.UserRepositoryImpl
+import ar.edu.unlam.mobile.scaffolding.domain.user.model.UserSession
+import ar.edu.unlam.mobile.scaffolding.domain.user.repositories.AuthRepository
 import javax.inject.Inject
 
 class LoginUseCase
     @Inject
     constructor(
-        private val userRepository: UserRepositoryImpl,
+        private val authRepository: AuthRepository,
         private val sessionManager: SessionManager,
     ) {
-        operator fun invoke(
-            name: String,
-            password: String,
-        ): Boolean {
-            val user = userRepository.getUserByNameAndPassword(name, password)
+        suspend operator fun invoke(session: UserSession): Boolean {
+            val user = authRepository.login(session)
             return if (user != null) {
-                sessionManager.saveLogin(name)
+                sessionManager.saveLogin(session.email, user.id)
                 true
             } else {
                 false
