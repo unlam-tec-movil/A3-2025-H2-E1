@@ -1,11 +1,12 @@
 package ar.edu.unlam.mobile.scaffolding.data.repositories
 
-import ar.edu.unlam.mobile.scaffolding.data.mapper.toUser
+import ar.edu.unlam.mobile.scaffolding.data.mapper.toUserItem
 import ar.edu.unlam.mobile.scaffolding.data.model.UserEntity
 import ar.edu.unlam.mobile.scaffolding.data.model.UserSessionEntity
 import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
 import ar.edu.unlam.mobile.scaffolding.domain.user.model.UserSession
 import ar.edu.unlam.mobile.scaffolding.domain.user.repositories.AuthRepository
+import ar.edu.unlam.mobile.scaffolding.domain.user.model.UserItem
 import ar.edu.unlam.mobile.scaffolding.domain.user.repositories.UserRepository
 import ar.edu.unlam.mobile.scaffolding.utils.Resource
 import kotlinx.coroutines.flow.Flow
@@ -60,11 +61,11 @@ class UserRepositoryImpl
                 ),
             )
 
-        override suspend fun getUser(userId: Long): Flow<Resource<User>> =
+        override suspend fun getUser(userId: Long): Flow<Resource<UserItem>> =
             flow {
                 val userEntity = mockUsers.find { it.id == userId }
                 if (userEntity != null) {
-                    emit(Resource.Success(data = userEntity.toUser()))
+                    emit(Resource.Success(data = userEntity.toUserItem()))
                 } else {
                     emit(Resource.Error(message = "Usuario con ID $userId no encontrado."))
                 }
@@ -81,3 +82,12 @@ class UserRepositoryImpl
             return userEntity?.toUser()
         }
     }
+
+data class UserDto(
+    val id: Long,
+    val name: String,
+    val email: String,
+    val password: String,
+    val avatarUrl: String,
+    val description: String,
+)

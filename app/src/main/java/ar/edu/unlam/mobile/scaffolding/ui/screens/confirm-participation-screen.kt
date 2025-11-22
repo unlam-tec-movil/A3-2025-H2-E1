@@ -18,6 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import ar.edu.unlam.mobile.scaffolding.ui.theme.ScaffoldingV2Theme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,7 +58,7 @@ fun ConfirmParticipationScreen(
             Icon(
                 imageVector = Icons.Default.CheckCircle,
                 contentDescription = "Confirmación",
-                tint = Color(0xFF4CAF50),
+                tint = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.size(96.dp),
             )
 
@@ -149,12 +150,14 @@ fun ConfirmParticipationScreen(
 @Preview(showBackground = true, widthDp = 360, heightDp = 640)
 @Composable
 fun ConfirmParticipationScreenPreview() {
-    ConfirmParticipationScreen(
-        eventName = "Jornada de Limpieza en la Playa",
-        eventDate = "Domingo 27 de Octubre, 10:00 hs",
-        eventPlace = "Playa Grande, Mar del Plata",
-        onBackClick = {},
-        onAddToCalendarClick = {},
-        onParticipateClick = {},
-    )
+    ScaffoldingV2Theme {
+        ConfirmParticipationScreen(
+            eventName = "Jornada de Limpieza en la Playa",
+            eventDate = "Domingo 27 de Octubre, 10:00 hs",
+            eventPlace = "Playa Grande, Mar del Plata",
+            onBackClick = {},
+            onAddToCalendarClick = {},
+            onParticipateClick = {},
+        )
+    }
 }

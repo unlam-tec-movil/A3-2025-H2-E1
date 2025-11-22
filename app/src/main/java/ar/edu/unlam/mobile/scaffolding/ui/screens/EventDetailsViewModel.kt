@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import ar.edu.unlam.mobile.scaffolding.data.datasources.local.SessionManager
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
 import ar.edu.unlam.mobile.scaffolding.domain.event.repositories.EventRepository
-import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
+import ar.edu.unlam.mobile.scaffolding.domain.user.model.UserItem
 import ar.edu.unlam.mobile.scaffolding.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +20,7 @@ data class EventDetailsUiState(
     val event: Event? = null,
     val isLoading: Boolean = false,
     val error: String? = null,
-    val selectedParticipant: User? = null,
+    val selectedParticipant: UserItem? = null,
     val showParticipantPopup: Boolean = false,
     val isParticipating: Boolean = false,
 )
@@ -75,7 +75,7 @@ class EventDetailsViewModel
             }
         }
 
-        fun onParticipantClick(user: User) {
+        fun onParticipantClick(user: UserItem) {
             _uiState.update {
                 it.copy(
                     selectedParticipant = user,
