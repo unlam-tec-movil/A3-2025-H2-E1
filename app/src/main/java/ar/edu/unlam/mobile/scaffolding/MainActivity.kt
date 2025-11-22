@@ -317,9 +317,9 @@ fun MainScreen() {
             }
 
             composable("onboarding") {
-                 OnBoardingScreen(
-                     navController = controller,
-                     modifier = Modifier.padding(paddingValue),
+                OnBoardingScreen(
+                    navController = controller,
+                    modifier = Modifier.padding(paddingValue),
                 )
             }
         }
