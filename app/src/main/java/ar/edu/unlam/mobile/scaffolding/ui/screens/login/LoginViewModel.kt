@@ -22,8 +22,8 @@ class LoginViewModel
     ) : ViewModel() {
         private val _formState = MutableStateFlow(LoginFormState())
         val formState: StateFlow<LoginFormState> = _formState
-        var isLoading by mutableStateOf(false)
-        var error by mutableStateOf<String?>(null)
+    var isLoading by mutableStateOf(false)
+    var error by mutableStateOf<String?>(null)
 
         fun onEmailChanged(email: String) {
             _formState.value = _formState.value.copy(email = email, emailError = null)
@@ -33,26 +33,25 @@ class LoginViewModel
             _formState.value = _formState.value.copy(password = password, passwordError = null)
         }
 
-        fun onLoginClicked() {
-            viewModelScope.launch {
-                isLoading = true
-                error = null
+    fun onLoginClicked() {
+        viewModelScope.launch {
+            isLoading = true
+            error = null
 
-                val success =
-                    loginUseCase(
-                        UserSession(
-                            email = formState.value.email,
-                            password = formState.value.password,
-                        ),
-                    )
+            val success = loginUseCase(
+                UserSession(
+                    email = formState.value.email,
+                    password = formState.value.password,
+                )
+            )
 
-                isLoading = false
+            isLoading = false
 
-                if (success) {
-                    _formState.value = _formState.value.copy(isLoggedIn = true)
-                } else {
-                    error = "Email o contraseña incorrectos"
-                }
+            if (success) {
+                _formState.value = _formState.value.copy(isLoggedIn = true)
+            } else {
+                error = "Email o contraseña incorrectos"
             }
         }
+    }
     }
