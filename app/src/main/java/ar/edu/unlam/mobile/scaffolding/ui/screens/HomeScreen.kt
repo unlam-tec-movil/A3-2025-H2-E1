@@ -182,13 +182,13 @@ fun HomeScreen(
                             enter =
                                 expandVertically(
                                     expandFrom = Alignment.Bottom,
-                                    animationSpec = tween(durationMillis = 300),
-                                ) + fadeIn(animationSpec = tween(durationMillis = 300)),
+                                    animationSpec = tween(durationMillis = 1000),
+                                ) + fadeIn(animationSpec = tween(durationMillis = 1000)),
                             exit =
                                 shrinkVertically(
                                     shrinkTowards = Alignment.Bottom,
-                                    animationSpec = tween(durationMillis = 300),
-                                ) + fadeOut(animationSpec = tween(durationMillis = 300)),
+                                    animationSpec = tween(durationMillis = 1000),
+                                ) + fadeOut(animationSpec = tween(durationMillis = 1000)),
                         ) {
                             EventHomeCard(
                                 event = event,
@@ -200,6 +200,12 @@ fun HomeScreen(
                                 onViewEventClick = {
                                     showEventCard = false
                                     navController.navigate("eventDetails/${event.id}")
+                                    viewModel.clearSelectedEvent()
+                                },
+                                onCloseClick = {
+                                    // Oculta la tarjeta
+                                    showEventCard = false
+                                    // Limpia el evento seleccionado
                                     viewModel.clearSelectedEvent()
                                 },
                                 modifier =
