@@ -99,7 +99,7 @@ fun HomeScreen(
             val locationCallback =
                 object : LocationCallback() {
                     override fun onLocationResult(result: LocationResult) {
-                        result.lastLocation?.let { viewModel.setUserLocation(it) }
+                        result.lastLocation?.let { viewModel::setUserLocation }
                     }
                 }
 
@@ -152,15 +152,12 @@ fun HomeScreen(
                 NearbyMap(
                     nearbyEvents = uiState.eventList,
                     modifier = Modifier.matchParentSize(),
-                    lat = uiState.targetLocation?.latitude,
-                    lng = uiState.targetLocation?.longitude,
                     mapProperties = uiState.mapProperties,
                     onEventoClick = { evento ->
                         viewModel.fetchEventById(evento.id)
-                        viewModel.setTargetLocation(GeoPoint(evento.lat, evento.lng))
                     },
+                    onLongPress = viewModel::onMapLongPress,
                     rotationChanged = viewModel::mapRotation,
-                    onMapStateChanged = viewModel::onMapStateChanged,
                     userLocation = uiState.userLocation,
                 )
 
@@ -227,8 +224,6 @@ fun HomeScreen(
                         onSearch = viewModel::onSearch,
                         onSuggestionSelected = { event ->
                             viewModel.onEventSelected(event)
-                            viewModel.setTargetLocation(GeoPoint(event.lat, event.lng))
-                            viewModel.fetchEventById(event.id)
                         },
                         onActiveChange = viewModel::onActiveChange,
                     )
@@ -289,7 +284,12 @@ fun HomeScreen(
                             FloatingActionButton(
                                 onClick = {
                                     if (permissionState.status.isGranted) {
-                                        viewModel.onCenterRequest()
+                                        viewModel.setTargetLocation(
+                                            GeoPoint(
+                                                uiState.userLocation!!.latitude,
+                                                uiState.userLocation!!.longitude,
+                                            ),
+                                        )
                                     } else {
                                         permissionState.launchPermissionRequest()
                                     }
@@ -331,9 +331,9 @@ fun HomeScreen(
                 if (showCreateEventDialog) {
                     CreateEventPopUp(
                         onDismiss = { showCreateEventDialog = false },
-                        userLocation = uiState.userLocation,
-                        onConfirm = { name, location, dateTime, imageUri ->
-                            viewModel.createEvent(name, location, dateTime, imageUri)
+                        userLocation = uiState.mapProperties.longPressPoint ?: uiState.userLocation,
+                        onConfirm = { name, description, location, dateTime, imageUri ->
+                            viewModel.createEvent(name, description, location, dateTime, imageUri)
                             showCreateEventDialog = false
                             viewModel.fetchEvents()
                         },
