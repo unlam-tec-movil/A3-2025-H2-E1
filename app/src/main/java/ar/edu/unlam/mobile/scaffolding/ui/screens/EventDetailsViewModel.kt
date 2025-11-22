@@ -3,6 +3,7 @@ package ar.edu.unlam.mobile.scaffolding.ui.screens
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ar.edu.unlam.mobile.scaffolding.data.datasources.local.SessionManager
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
 import ar.edu.unlam.mobile.scaffolding.domain.event.repositories.EventRepository
 import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
@@ -29,6 +30,7 @@ class EventDetailsViewModel
     @Inject
     constructor(
         private val eventRepository: EventRepository,
+        private val sessionManager: SessionManager,
         savedStateHandle: SavedStateHandle,
     ) : ViewModel() {
         private val eventId: String = checkNotNull(savedStateHandle["id"])
@@ -40,10 +42,16 @@ class EventDetailsViewModel
         }
 
         private fun loadEventDetails() {
+            val userId = sessionManager.getLoggedUserId()
+
+            if (userId == -1L) {
+                _uiState.update { it.copy(isLoading = false, error = "Sesión no válida") }
+                return
+            }
             viewModelScope.launch {
                 _uiState.update { it.copy(isLoading = true, error = null) }
 
-                eventRepository.getEvent(eventId, 1L).collect { result ->
+                eventRepository.getEvent(eventId, userId).collect { result ->
                     when (result) {
                         is Resource.Success -> {
                             _uiState.update { currentState ->

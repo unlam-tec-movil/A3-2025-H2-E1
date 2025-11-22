@@ -6,6 +6,7 @@ import ar.edu.unlam.mobile.scaffolding.data.repositories.NavigationRepositoryImp
 import ar.edu.unlam.mobile.scaffolding.data.repositories.UserRepositoryImpl
 import ar.edu.unlam.mobile.scaffolding.domain.event.repositories.EventRepository
 import ar.edu.unlam.mobile.scaffolding.domain.navigation.repositories.NavigationRepository
+import ar.edu.unlam.mobile.scaffolding.domain.user.repositories.AuthRepository
 import ar.edu.unlam.mobile.scaffolding.domain.user.repositories.UserRepository
 import dagger.Module
 import dagger.Provides
@@ -33,8 +34,10 @@ object AppModule {
     fun provideEventRepository(): EventRepository = EventRepositoryImpl()
 
     @Provides
-    @Singleton
-    fun provideUserRepository(): UserRepository = UserRepositoryImpl()
+    fun provideUserRepository(impl: UserRepositoryImpl): UserRepository = impl
+
+    @Provides
+    fun provideAuthRepository(impl: UserRepositoryImpl): AuthRepository = impl
 
     @Provides
     @Singleton

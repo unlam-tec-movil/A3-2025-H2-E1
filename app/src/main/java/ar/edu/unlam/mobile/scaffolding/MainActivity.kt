@@ -227,14 +227,11 @@ fun MainScreen() {
 
             // USER PROFILE
             composable(
-                route = "userProfile/{id}",
-                arguments = listOf(navArgument("id") { type = NavType.LongType }),
+                route = "userProfile"
             ) {
-                val id = navBackStackEntry?.arguments?.getLong("id") ?: 1L
                 UserProfileScreen(
-                    userId = id,
                     modifier = Modifier.fillMaxSize(),
-                    navController = controller,
+                    navController = controller
                 )
             }
 
@@ -251,23 +248,22 @@ fun MainScreen() {
             composable(
                 route =
                     "eventDetails/{id}" +
-                        "?enableReporting={enableReporting}" +
-                        "&hideParticipateButton={hideParticipateButton}",
-                arguments =
-                    listOf(
-                        navArgument("id") { type = NavType.StringType },
-                        navArgument("enableReporting") {
-                            type = NavType.BoolType
-                            defaultValue = false
-                        },
-                        navArgument("hideParticipateButton") {
-                            type = NavType.BoolType
-                            defaultValue = false
-                        },
-                    ),
+                            "?enableReporting={enableReporting}" +
+                            "&hideParticipateButton={hideParticipateButton}",
+                arguments = listOf(
+                    navArgument("id") { type = NavType.StringType },
+                    navArgument("enableReporting") {
+                        type = NavType.BoolType
+                        defaultValue = false
+                    },
+                    navArgument("hideParticipateButton") {
+                        type = NavType.BoolType
+                        defaultValue = false
+                    }
+                )
             ) { navBackStackEntry ->
 
-                val id = navBackStackEntry.arguments?.getInt("id") ?: 1
+                val id = navBackStackEntry.arguments?.getString("id") ?: ""
                 val enableReporting = navBackStackEntry.arguments?.getBoolean("enableReporting") ?: false
                 val hideParticipate = navBackStackEntry.arguments?.getBoolean("hideParticipateButton") ?: false
 

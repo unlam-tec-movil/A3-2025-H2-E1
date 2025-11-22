@@ -44,16 +44,11 @@ import coil.compose.AsyncImage
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserProfileScreen(
-    userId: Long,
     viewModel: UserProfileViewModel = hiltViewModel(),
     navController: NavController,
     modifier: Modifier,
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
-    LaunchedEffect(key1 = userId) {
-        viewModel.loadUserData(userId)
-    }
 
     Scaffold(
         topBar = {

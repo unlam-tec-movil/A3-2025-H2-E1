@@ -33,8 +33,8 @@ fun Event.toEntity(): EventEntity =
         imageUrl = image,
         beforeImageUrl = beforeImage,
         afterImageUrl = afterImage,
-        members = members.map { it.toEntity(password = "") },
-        creator = creator.toEntity(password = ""),
+        members = members.map { it.toEntity() },
+        creator = creator.toEntity(),
         // Esto en un caso real se manejaría con una operación de "update" o "save",
         // pero por simplicidad lo dejo así.
         saved = emptyList(),

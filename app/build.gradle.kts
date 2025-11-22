@@ -48,7 +48,7 @@ android {
 
     buildTypes {
         getByName("debug") {
-            buildConfigField("boolean", "AUTO_LOGIN", "true")
+            buildConfigField("boolean", "AUTO_LOGIN", "false")
             buildConfigField("String", "DEV_TOKEN", "\"dev_token_123\"")
         }
         getByName("release") {
