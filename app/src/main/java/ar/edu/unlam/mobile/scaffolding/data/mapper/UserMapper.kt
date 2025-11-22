@@ -5,4 +5,4 @@ import ar.edu.unlam.mobile.scaffolding.domain.user.model.UserItem
 
 fun UserEntity.toUserItem(): UserItem = UserItem(id, name, avatarUrl, description)
 
-fun User.toEntity(): UserEntity = UserEntity(id, name, avatarUrl, description)
+fun UserItem.toEntity(): UserEntity = UserEntity(id, name, avatarUrl, description)

@@ -3,10 +3,9 @@ package ar.edu.unlam.mobile.scaffolding.data.repositories
 import ar.edu.unlam.mobile.scaffolding.data.mapper.toUserItem
 import ar.edu.unlam.mobile.scaffolding.data.model.UserEntity
 import ar.edu.unlam.mobile.scaffolding.data.model.UserSessionEntity
-import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
+import ar.edu.unlam.mobile.scaffolding.domain.user.model.UserItem
 import ar.edu.unlam.mobile.scaffolding.domain.user.model.UserSession
 import ar.edu.unlam.mobile.scaffolding.domain.user.repositories.AuthRepository
-import ar.edu.unlam.mobile.scaffolding.domain.user.model.UserItem
 import ar.edu.unlam.mobile.scaffolding.domain.user.repositories.UserRepository
 import ar.edu.unlam.mobile.scaffolding.utils.Resource
 import kotlinx.coroutines.flow.Flow
@@ -17,7 +16,9 @@ import javax.inject.Singleton
 @Singleton
 class UserRepositoryImpl
     @Inject
-    constructor() : UserRepository, AuthRepository {
+    constructor() :
+    UserRepository,
+        AuthRepository {
         private var mockUsers =
             listOf(
                 UserEntity(
@@ -40,24 +41,24 @@ class UserRepositoryImpl
                 ),
             )
 
-    private val mockCredentials =
-        listOf(
-            UserSessionEntity(
-                userId = 1,
-                email = "juan@gmail.com",
-                password = "123",
-            ),
-            UserSessionEntity(
-                userId = 2,
-                email = "ana@gmail.com",
-                password = "123",
-            ),
-            UserSessionEntity(
-                userId = 3,
-                email = "carlos@gmail.com",
-                password = "123",
-            ),
-        )
+        private val mockCredentials =
+            listOf(
+                UserSessionEntity(
+                    userId = 1,
+                    email = "juan@gmail.com",
+                    password = "123",
+                ),
+                UserSessionEntity(
+                    userId = 2,
+                    email = "ana@gmail.com",
+                    password = "123",
+                ),
+                UserSessionEntity(
+                    userId = 3,
+                    email = "carlos@gmail.com",
+                    password = "123",
+                ),
+            )
 
         override suspend fun getUser(userId: Long): Flow<Resource<UserItem>> =
             flow {
@@ -69,16 +70,16 @@ class UserRepositoryImpl
                 }
             }
 
-    override suspend fun login(userSession: UserSession): User? {
-        val credentialEntity =
-            mockCredentials.find {
-                it.email.equals(userSession.email, ignoreCase = true) &&
+        override suspend fun login(userSession: UserSession): UserItem? {
+            val credentialEntity =
+                mockCredentials.find {
+                    it.email.equals(userSession.email, ignoreCase = true) &&
                         it.password == userSession.password
-            } ?: return null
+                } ?: return null
 
-        val userEntity = mockUsers.find { it.id == credentialEntity.userId }
-        return userEntity?.toUser()
-    }
+            val userEntity = mockUsers.find { it.id == credentialEntity.userId }
+            return userEntity?.toUserItem()
+        }
     }
 
 data class UserDto(

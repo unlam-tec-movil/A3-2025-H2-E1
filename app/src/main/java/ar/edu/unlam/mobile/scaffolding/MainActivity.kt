@@ -89,9 +89,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainScreen(
-    sessionManager: SessionManager
-) {
+fun MainScreen(sessionManager: SessionManager) {
     // Controller es el elemento que nos permite navegar entre pantallas. Tiene las acciones
     // para navegar como naviegate y también la información de en dónde se "encuentra" el usuario
     // a través del back stack
@@ -231,9 +229,10 @@ fun MainScreen(
             // USER PROFILE
             composable(
                 route = "userProfile/{id}",
-                arguments = listOf(
-                    navArgument("id") { type = NavType.LongType }
-                )
+                arguments =
+                    listOf(
+                        navArgument("id") { type = NavType.LongType },
+                    ),
             ) { navBackStackEntry ->
 
                 val id = navBackStackEntry.arguments?.getLong("id") ?: 1L
@@ -241,7 +240,7 @@ fun MainScreen(
                 UserProfileScreen(
                     userId = id,
                     modifier = Modifier.fillMaxSize(),
-                    navController = controller
+                    navController = controller,
                 )
             }
 
@@ -258,19 +257,20 @@ fun MainScreen(
             composable(
                 route =
                     "eventDetails/{id}" +
-                            "?enableReporting={enableReporting}" +
-                            "&hideParticipateButton={hideParticipateButton}",
-                arguments = listOf(
-                    navArgument("id") { type = NavType.StringType },
-                    navArgument("enableReporting") {
-                        type = NavType.BoolType
-                        defaultValue = false
-                    },
-                    navArgument("hideParticipateButton") {
-                        type = NavType.BoolType
-                        defaultValue = false
-                    }
-                )
+                        "?enableReporting={enableReporting}" +
+                        "&hideParticipateButton={hideParticipateButton}",
+                arguments =
+                    listOf(
+                        navArgument("id") { type = NavType.StringType },
+                        navArgument("enableReporting") {
+                            type = NavType.BoolType
+                            defaultValue = false
+                        },
+                        navArgument("hideParticipateButton") {
+                            type = NavType.BoolType
+                            defaultValue = false
+                        },
+                    ),
             ) { navBackStackEntry ->
 
                 val id = navBackStackEntry.arguments?.getString("id") ?: ""
