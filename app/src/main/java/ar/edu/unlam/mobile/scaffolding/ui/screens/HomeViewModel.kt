@@ -50,7 +50,6 @@ data class HomeUIState(
     val mapProperties: MapProperties = MapProperties(),
     val helloMessageState: MessageUIState,
     val userLocation: GeoPoint? = null,
-    val isSelectingLocation: Boolean = false,
 )
 
 data class SearchUIState(
