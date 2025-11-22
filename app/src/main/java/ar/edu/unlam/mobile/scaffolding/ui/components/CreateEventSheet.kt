@@ -9,7 +9,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -99,7 +98,7 @@ import java.util.Locale
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
-fun CreateEventPopUp(
+fun CreateEventSheet(
     onDismiss: () -> Unit,
     userLocation: GeoPoint? = null,
     onConfirm: (String, String, GeoPoint, LocalDateTime, List<Uri>) -> Unit,
@@ -350,7 +349,10 @@ fun CreateEventPopUp(
                         }
                     }
 
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        thickness = 1.dp,
+                    )
 
                     // Seleccionar hora del evento
                     Row(
@@ -580,8 +582,8 @@ private fun createImageFile(context: Context): File {
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
-fun PreviewCreateEventPopUp() {
-    CreateEventPopUp(
+fun PreviewCreateEventSheet() {
+    CreateEventSheet(
         onDismiss = {},
         onConfirm = { name, description, location, dateTime, image -> },
         userLocation =
