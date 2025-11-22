@@ -10,14 +10,11 @@ class LoginUseCase
         private val authRepository: AuthRepository,
         private val sessionManager: SessionManager,
     ) {
-    suspend operator fun invoke(userSession: UserSession): Boolean {
-        val user = authRepository.login(userSession)
-
+    suspend operator fun invoke(session: UserSession): Boolean {
+        val user = authRepository.login(session)
         return if (user != null) {
-            sessionManager.saveLogin(userSession.email, user.id)
+            sessionManager.saveLogin(session.email, user.id)
             true
-        } else {
-            false
-        }
+        } else false
     }
-    }
+}

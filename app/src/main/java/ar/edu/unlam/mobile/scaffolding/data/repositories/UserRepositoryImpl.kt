@@ -43,17 +43,17 @@ class UserRepositoryImpl
         listOf(
             UserSessionEntity(
                 userId = 1,
-                email = "juan@example.com",
+                email = "juan@gmail.com",
                 password = "123",
             ),
             UserSessionEntity(
                 userId = 2,
-                email = "ana@example.com",
+                email = "ana@gmail.com",
                 password = "123",
             ),
             UserSessionEntity(
                 userId = 3,
-                email = "carlos@example.com",
+                email = "carlos@gmail.com",
                 password = "123",
             ),
         )
