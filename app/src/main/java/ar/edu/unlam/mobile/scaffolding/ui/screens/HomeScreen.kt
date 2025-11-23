@@ -36,8 +36,10 @@ import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import ar.edu.unlam.mobile.scaffolding.domain.navigation.model.Coordinates
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.ui.components.CreateEventPopUp
+import ar.edu.unlam.mobile.scaffolding.ui.components.CurrentNavigationRouteInformationCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventHomeCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventSearchBar
 import ar.edu.unlam.mobile.scaffolding.ui.components.FloatingButtons
@@ -48,6 +50,7 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.model.LatLng
+import org.osmdroid.util.GeoPoint
 
 const val HOME_SCREEN_ROUTE = "home"
 
@@ -61,6 +64,7 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
     val searchBarState by viewModel.searchUiState.collectAsStateWithLifecycle()
     val selectedEvent by viewModel.selectedEvent.collectAsState()
+    val currentRoute by viewModel.currentRouteState.collectAsState()
 
     var showCreateEventDialog by remember { mutableStateOf(false) }
     var isSessionActive by remember { mutableStateOf(false) }
@@ -137,6 +141,17 @@ fun HomeScreen(
         },
     )
 
+    // Rotar el mapa cuando el usuario esté navegando a algún evento
+    if (currentRoute != null) {
+        val props = uiState.mapProperties
+        viewModel.onMapPropertiesChanged(
+            props.copy(
+                rotationBySensor = !props.rotationBySensor,
+                rotationByGesture = !props.rotationByGesture,
+            ),
+        )
+    }
+
     // PANTALLA PRINCIPAL
     Box(modifier = modifier.fillMaxSize()) {
         when (val helloState = uiState.helloMessageState) {
@@ -153,6 +168,7 @@ fun HomeScreen(
                     modifier = Modifier.matchParentSize(),
                     lat = null,
                     lng = null,
+                    route = currentRoute?.coordinates?.map { GeoPoint(it.first, it.second) },
                     mapProperties = uiState.mapProperties,
                     onEventoClick = { evento ->
                         viewModel.fetchEventById(evento.id)
@@ -198,6 +214,20 @@ fun HomeScreen(
                                         uiState.userLocation?.latitude ?: 0.0,
                                         uiState.userLocation?.longitude ?: 0.0,
                                     ),
+                                onGetDirectionsClick = {
+                                    viewModel.getRoute(
+                                        userCoordinates = Coordinates(
+                                            lat = uiState.userLocation?.latitude ?: 0.0,
+                                            lon = uiState.userLocation?.longitude ?: 0.0
+                                        ),
+                                        eventCoordinates = Coordinates(
+                                            lat = event.lat,
+                                            lon = event.lng,
+                                        )
+                                    )
+                                    showEventCard = false
+                                    viewModel.clearSelectedEvent()
+                                },
                                 onViewEventClick = {
                                     showEventCard = false
                                     navController.navigate("eventDetails/${event.id}")
@@ -224,6 +254,7 @@ fun HomeScreen(
                         Modifier
                             .fillMaxWidth()
                             .zIndex(zIndex = 20f),
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     EventSearchBar(
                         searchUiState = searchBarState,
@@ -235,6 +266,19 @@ fun HomeScreen(
                         },
                         onActiveChange = viewModel::onActiveChange,
                     )
+
+                    if (currentRoute != null) {
+                        Spacer(modifier = Modifier.size(16.dp))
+
+                        CurrentNavigationRouteInformationCard(
+                            duration = currentRoute?.durationMillis ?: 0,
+                            distance = currentRoute?.distanceMeters ?: 0.0,
+                            onClosesClick = {
+                                viewModel.clearRoute()
+
+                            },
+                        )
+                    }
 
                     Row {
                         AnimatedVisibility(searchBarState.lastQuery.isNotEmpty()) {
@@ -257,59 +301,6 @@ fun HomeScreen(
                                 )
                             }
                         }
-
-                        Spacer(modifier = Modifier.weight(1f))
-
-                        Column {
-                            FloatingActionButton(
-                                onClick = {
-                                    val props = uiState.mapProperties
-                                    viewModel.onMapPropertiesChanged(
-                                        props.copy(
-                                            rotationBySensor = !props.rotationBySensor,
-                                            rotationByGesture = !props.rotationByGesture,
-                                        ),
-                                    )
-                                },
-                                containerColor =
-                                    if (uiState.mapProperties.rotationBySensor) {
-                                        MaterialTheme.colorScheme.secondary
-                                    } else {
-                                        MaterialTheme.colorScheme.surfaceContainer
-                                    },
-                                shape = CircleShape,
-                                modifier =
-                                    Modifier
-                                        .size(52.dp)
-                                        .padding(12.dp),
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Navigation,
-                                    contentDescription = "Cambiar modo de rotación",
-                                    modifier = Modifier.rotate(uiState.mapProperties.mapOrientation),
-                                )
-                            }
-                            FloatingActionButton(
-                                onClick = {
-                                    if (permissionState.status.isGranted) {
-                                        viewModel.onCenterRequest()
-                                    } else {
-                                        permissionState.launchPermissionRequest()
-                                    }
-                                },
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                shape = CircleShape,
-                                modifier =
-                                    Modifier
-                                        .size(52.dp)
-                                        .padding(12.dp),
-                            ) {
-                                Icon(
-                                    Icons.Default.MyLocation,
-                                    contentDescription = "Centrar en mi posición",
-                                )
-                            }
-                        }
                     }
                 }
 
@@ -321,11 +312,13 @@ fun HomeScreen(
                             .padding(8.dp),
                 ) {
                     FloatingButtons(
-                        isSessionActive = isSessionActive,
-                        onClickCamera = { },
                         onClickAddEvent = { showCreateEventDialog = true },
                         onClickCenterMap = {
-                            isSessionActive = !isSessionActive
+                            if (permissionState.status.isGranted) {
+                                viewModel.onCenterRequest()
+                            } else {
+                                permissionState.launchPermissionRequest()
+                            }
                         },
                     )
                 }

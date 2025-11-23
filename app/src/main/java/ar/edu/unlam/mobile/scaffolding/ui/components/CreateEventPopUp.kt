@@ -75,6 +75,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.FileProvider
 import ar.edu.unlam.mobile.scaffolding.utils.getAddressFromCoordinates
@@ -316,7 +317,7 @@ fun CreateEventPopUp(
                     Card(
                         modifier = Modifier.size(100.dp),
                         onClick = { showSheet = true },
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        colors = CardDefaults.cardColors(containerColor = Color.LightGray),
                         shape = RoundedCornerShape(8.dp),
                     ) {
                         Column(
@@ -376,21 +377,10 @@ fun CreateEventPopUp(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                 ) {
-                    OutlinedButton(
+                    SecondaryButton(
+                        text = "Cancelar",
                         onClick = { onDismiss() },
-                        colors =
-                            ButtonDefaults.buttonColors(
-                                containerColor = Color.White,
-                                contentColor = Color.Black,
-                            ),
-                        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
-                        shape = RoundedCornerShape(12.dp),
-                    ) {
-                        Text(
-                            text = "Cancelar",
-                            style = MaterialTheme.typography.titleLarge,
-                        )
-                    }
+                    )
                     Button(
                         enabled = name.isNotEmpty() && locationPoint != null,
                         onClick = {
@@ -400,14 +390,17 @@ fun CreateEventPopUp(
                         },
                         colors =
                             ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                containerColor = MaterialTheme.colorScheme.primary,
                                 contentColor = Color.White,
                             ),
                         shape = RoundedCornerShape(12.dp),
                     ) {
                         Text(
                             text = "Crear",
-                            style = MaterialTheme.typography.titleLarge,
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontSize = 18.sp,
+                                lineHeight = 24.sp
+                            ),
                         )
                     }
                 }

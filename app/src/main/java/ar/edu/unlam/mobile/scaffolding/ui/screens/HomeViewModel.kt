@@ -387,6 +387,7 @@ class HomeViewModel
                             when (result) {
                                 is Resource.Success -> {
                                     _currentRouteState.value = result.data
+                                    Log.d("HomeViewModel", "Ruta obtenida correctamente")
                                 }
 
                                 is Resource.Error -> {
@@ -396,6 +397,10 @@ class HomeViewModel
                         }
                 }
         }
+
+    fun clearRoute() {
+        _currentRouteState.value = null
+    }
 
         fun fetchEventById(eventId: String) {
             viewModelScope.launch {

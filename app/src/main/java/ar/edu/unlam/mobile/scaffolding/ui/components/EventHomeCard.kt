@@ -3,6 +3,7 @@ package ar.edu.unlam.mobile.scaffolding.ui.components
 import android.location.Location
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -24,6 +25,7 @@ import java.util.*
 fun EventHomeCard(
     event: EventList,
     distance: LatLng,
+    onGetDirectionsClick: () -> Unit,
     onViewEventClick: () -> Unit,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -105,12 +107,23 @@ fun EventHomeCard(
 
             Text(text = "Distancia: $distanceString km")
 
-            // --- Botón Ver Evento ---
-            Button(
-                onClick = onViewEventClick,
+            Row(
                 modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Text("Ver Evento")
+                SecondaryButton(
+                    modifier = Modifier.padding(horizontal = 4.dp),
+                    text = "¿Cómo llegar?",
+                    onClick = onGetDirectionsClick
+                )
+
+                Button(
+                    onClick = onViewEventClick,
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(horizontal = 4.dp),
+                ) {
+                    Text("Ver Evento")
+                }
             }
         }
     }

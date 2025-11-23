@@ -3,6 +3,8 @@ package ar.edu.unlam.mobile.scaffolding.ui.components
 import android.graphics.Color
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
@@ -15,9 +17,11 @@ import org.osmdroid.events.ScrollEvent
 import org.osmdroid.events.ZoomEvent
 import org.osmdroid.library.R
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.gestures.RotationGestureOverlay
 
 @Composable
@@ -26,6 +30,7 @@ fun NearbyMap(
     modifier: Modifier = Modifier,
     lat: Double? = null,
     lng: Double? = null,
+    route: List<GeoPoint>? = null,
     onEventoClick: (SuggestedEvent) -> Unit = {}, //  callback al hacer clic en un evento
     mapProperties: MapProperties,
     rotationChanged: (Float) -> Unit = {},
@@ -33,6 +38,9 @@ fun NearbyMap(
     userLocation: GeoPoint?,
 ) {
     val context = LocalContext.current
+
+    // Referencia a la ruta para borrar cuando se cancela
+    val routeOverlayRef = remember { mutableStateOf<Polyline?>(null) }
 
     AndroidView(
         modifier = modifier.fillMaxSize(),
@@ -133,6 +141,25 @@ fun NearbyMap(
                 val targetPoint = GeoPoint(lat, lng)
                 mv.controller.animateTo(targetPoint)
                 mv.controller.setZoom(15.0)
+            }
+
+            // Navegación a evento
+            if (route != null) {
+                val routePolyline = Polyline().apply {
+                    setPoints(route)
+                    outlinePaint.color = Color.BLUE
+                    outlinePaint.strokeWidth = 8f
+                }
+                val boundingBox = BoundingBox.fromGeoPoints(route)
+                routeOverlayRef.value = routePolyline
+                mv.overlayManager.add(routePolyline)
+                mv.zoomToBoundingBox(boundingBox, true)
+            } else {
+                // Borrar ruta actual cuando el usuario la cancela
+                if (routeOverlayRef.value != null) {
+                    mv.overlays.remove(routeOverlayRef.value)
+                    routeOverlayRef.value = null
+                }
             }
 
             mv.invalidate()
