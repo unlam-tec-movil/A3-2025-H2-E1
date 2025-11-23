@@ -398,9 +398,9 @@ class HomeViewModel
                 }
         }
 
-    fun clearRoute() {
-        _currentRouteState.value = null
-    }
+        fun clearRoute() {
+            _currentRouteState.value = null
+        }
 
         fun fetchEventById(eventId: String) {
             viewModelScope.launch {

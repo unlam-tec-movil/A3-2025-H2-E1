@@ -7,7 +7,6 @@ import android.os.Environment
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -49,7 +48,6 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -397,10 +395,11 @@ fun CreateEventPopUp(
                     ) {
                         Text(
                             text = "Crear",
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                fontSize = 18.sp,
-                                lineHeight = 24.sp
-                            ),
+                            style =
+                                MaterialTheme.typography.titleLarge.copy(
+                                    fontSize = 18.sp,
+                                    lineHeight = 24.sp,
+                                ),
                         )
                     }
                 }

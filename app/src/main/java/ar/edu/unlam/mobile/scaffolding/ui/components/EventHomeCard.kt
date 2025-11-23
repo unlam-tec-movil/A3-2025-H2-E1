@@ -109,18 +109,20 @@ fun EventHomeCard(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
                 SecondaryButton(
                     modifier = Modifier.padding(horizontal = 4.dp),
                     text = "¿Cómo llegar?",
-                    onClick = onGetDirectionsClick
+                    onClick = onGetDirectionsClick,
                 )
 
                 Button(
                     onClick = onViewEventClick,
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(horizontal = 4.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 4.dp),
                 ) {
                     Text("Ver Evento")
                 }

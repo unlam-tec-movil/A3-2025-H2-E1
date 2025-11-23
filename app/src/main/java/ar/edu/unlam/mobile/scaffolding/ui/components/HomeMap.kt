@@ -145,11 +145,12 @@ fun NearbyMap(
 
             // Navegación a evento
             if (route != null) {
-                val routePolyline = Polyline().apply {
-                    setPoints(route)
-                    outlinePaint.color = Color.BLUE
-                    outlinePaint.strokeWidth = 8f
-                }
+                val routePolyline =
+                    Polyline().apply {
+                        setPoints(route)
+                        outlinePaint.color = Color.BLUE
+                        outlinePaint.strokeWidth = 8f
+                    }
                 val boundingBox = BoundingBox.fromGeoPoints(route)
                 routeOverlayRef.value = routePolyline
                 mv.overlayManager.add(routePolyline)

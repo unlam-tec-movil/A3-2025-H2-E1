@@ -4,7 +4,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -24,7 +23,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import kotlin.math.roundToLong
 
 @Composable
 fun CurrentNavigationRouteInformationCard(
@@ -35,11 +33,12 @@ fun CurrentNavigationRouteInformationCard(
     val totalMinutes = duration / 1000 / 60
     val hours = totalMinutes / 60
     val minutes = totalMinutes % 60
-    val elapsedTime = if (hours > 0) {
-        "${hours}hr $minutes"
-    } else {
-        "$minutes minutos"
-    }
+    val elapsedTime =
+        if (hours > 0) {
+            "${hours}hr $minutes"
+        } else {
+            "$minutes minutos"
+        }
 
     val distanceKm = String.format("%.1f", distance / 1000)
 
@@ -95,7 +94,7 @@ fun CurrentNavigationRouteInformationCard(
                 )
             }
             Column(
-                verticalArrangement = Arrangement.Top
+                verticalArrangement = Arrangement.Top,
             ) {
                 IconButton(
                     modifier = Modifier.size(24.dp),
