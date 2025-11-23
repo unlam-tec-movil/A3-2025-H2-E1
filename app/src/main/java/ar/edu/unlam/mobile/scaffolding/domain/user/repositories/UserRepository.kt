@@ -6,4 +6,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
     suspend fun getUser(userId: Long): Flow<Resource<UserItem>>
+
+    suspend fun registerUser(nameUser: String): Long
 }

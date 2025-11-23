@@ -20,7 +20,7 @@ class UserRepositoryImpl
     UserRepository,
         AuthRepository {
         private var mockUsers =
-            listOf(
+            mutableListOf(
                 UserEntity(
                     id = 1,
                     name = "Juan Rodriguez",
@@ -42,7 +42,7 @@ class UserRepositoryImpl
             )
 
         private val mockCredentials =
-            listOf(
+            mutableListOf(
                 UserSessionEntity(
                     userId = 1,
                     email = "juan@gmail.com",
@@ -80,13 +80,32 @@ class UserRepositoryImpl
             val userEntity = mockUsers.find { it.id == credentialEntity.userId }
             return userEntity?.toUserItem()
         }
-    }
 
-data class UserDto(
-    val id: Long,
-    val name: String,
-    val email: String,
-    val password: String,
-    val avatarUrl: String,
-    val description: String,
-)
+        override suspend fun registerUser(nameUser: String): Long {
+            val newId = (mockUsers.maxOfOrNull { it.id } ?: 0) + 1
+
+            mockUsers.add(
+                UserEntity(
+                    id = newId,
+                    name = nameUser,
+                    avatarUrl = "",
+                    description = "",
+                ),
+            )
+            return newId
+        }
+
+        override suspend fun register(
+            id: Long,
+            email: String,
+            password: String,
+        ) {
+            mockCredentials.add(
+                UserSessionEntity(
+                    userId = id,
+                    email = email,
+                    password = password,
+                ),
+            )
+        }
+    }
