@@ -73,7 +73,7 @@ fun EventDetailsScreen(
     if (showParticipationSheet.value) {
         val sheetState =
             rememberModalBottomSheetState(
-                skipPartiallyExpanded = true, // 👈 clave para que abra arriba del todo
+                skipPartiallyExpanded = true,
             )
 
         ModalBottomSheet(
