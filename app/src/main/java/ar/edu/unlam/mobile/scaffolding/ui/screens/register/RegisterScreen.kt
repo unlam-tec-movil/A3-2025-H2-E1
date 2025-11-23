@@ -25,6 +25,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,6 +59,11 @@ fun RegisterScreen(
 
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
     var confirmPasswordVisible by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(uiState.isRegistered) {
+        if (uiState.isRegistered) {
+            navController.popBackStack()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -185,11 +191,7 @@ fun RegisterScreen(
                 text = "Crear cuenta",
                 width = 320.dp,
                 onClick = {
-                    viewModel.onRegister(
-                        email = uiState.emailTextField,
-                        password = uiState.passwordTextField,
-                        confirmPassword = uiState.confirmPasswordTextField,
-                    )
+                    viewModel.onRegister()
                 },
             )
 
