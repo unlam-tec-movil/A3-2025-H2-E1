@@ -1,57 +1,111 @@
 package ar.edu.unlam.mobile.scaffolding.data.repositories
 
-import ar.edu.unlam.mobile.scaffolding.data.mapper.toUser
+import ar.edu.unlam.mobile.scaffolding.data.mapper.toUserItem
 import ar.edu.unlam.mobile.scaffolding.data.model.UserEntity
-import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
+import ar.edu.unlam.mobile.scaffolding.data.model.UserSessionEntity
+import ar.edu.unlam.mobile.scaffolding.domain.user.model.UserItem
+import ar.edu.unlam.mobile.scaffolding.domain.user.model.UserSession
+import ar.edu.unlam.mobile.scaffolding.domain.user.repositories.AuthRepository
 import ar.edu.unlam.mobile.scaffolding.domain.user.repositories.UserRepository
 import ar.edu.unlam.mobile.scaffolding.utils.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class UserRepositoryImpl
     @Inject
-    constructor() : UserRepository {
+    constructor() :
+    UserRepository,
+        AuthRepository {
         private var mockUsers =
-            listOf(
+            mutableListOf(
                 UserEntity(
                     id = 1,
                     name = "Juan Rodriguez",
                     avatarUrl = "https://picsum.photos/id/1005/200",
                     description = "Desarrollador Android y entusiasta de Kotlin.",
-                    password = "123",
                 ),
                 UserEntity(
                     id = 2,
                     name = "Ana García",
                     avatarUrl = "https://picsum.photos/id/1011/200",
                     description = "Diseñadora UX/UI.",
-                    password = "123",
                 ),
                 UserEntity(
                     id = 3,
                     name = "Carlos Martinez",
                     avatarUrl = "https://picsum.photos/id/1012/200",
                     description = "Project Manager.",
+                ),
+            )
+
+        private val mockCredentials =
+            mutableListOf(
+                UserSessionEntity(
+                    userId = 1,
+                    email = "juan@gmail.com",
+                    password = "123",
+                ),
+                UserSessionEntity(
+                    userId = 2,
+                    email = "ana@gmail.com",
+                    password = "123",
+                ),
+                UserSessionEntity(
+                    userId = 3,
+                    email = "carlos@gmail.com",
                     password = "123",
                 ),
             )
 
-        override suspend fun getUser(userId: Long): Flow<Resource<User>> =
+        override suspend fun getUser(userId: Long): Flow<Resource<UserItem>> =
             flow {
                 val userEntity = mockUsers.find { it.id == userId }
                 if (userEntity != null) {
-                    emit(Resource.Success(data = userEntity.toUser()))
+                    emit(Resource.Success(data = userEntity.toUserItem()))
                 } else {
                     emit(Resource.Error(message = "Usuario con ID $userId no encontrado."))
                 }
             }
 
-        fun getUserByNameAndPassword(
-            name: String,
+        override suspend fun login(userSession: UserSession): UserItem? {
+            val credentialEntity =
+                mockCredentials.find {
+                    it.email.equals(userSession.email, ignoreCase = true) &&
+                        it.password == userSession.password
+                } ?: return null
+
+            val userEntity = mockUsers.find { it.id == credentialEntity.userId }
+            return userEntity?.toUserItem()
+        }
+
+        override suspend fun registerUser(nameUser: String): Long {
+            val newId = (mockUsers.maxOfOrNull { it.id } ?: 0) + 1
+
+            mockUsers.add(
+                UserEntity(
+                    id = newId,
+                    name = nameUser,
+                    avatarUrl = "",
+                    description = "",
+                ),
+            )
+            return newId
+        }
+
+        override suspend fun register(
+            id: Long,
+            email: String,
             password: String,
-        ): UserEntity? =
-            mockUsers.find {
-                it.name.equals(name, ignoreCase = true) && it.password == password
-            }
+        ) {
+            mockCredentials.add(
+                UserSessionEntity(
+                    userId = id,
+                    email = email,
+                    password = password,
+                ),
+            )
+        }
     }

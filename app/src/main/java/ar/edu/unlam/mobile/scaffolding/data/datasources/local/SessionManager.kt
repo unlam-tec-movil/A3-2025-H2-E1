@@ -12,10 +12,14 @@ class SessionManager
     ) {
         private val prefs = context.getSharedPreferences("session_prefs", Context.MODE_PRIVATE)
 
-        fun saveLogin(email: String) {
+        fun saveLogin(
+            email: String,
+            id: Long,
+        ) {
             prefs.edit {
                 putBoolean("is_logged_in", true)
                 putString("email", email)
+                putLong("user_id", id)
             }
         }
 
@@ -32,4 +36,8 @@ class SessionManager
         }
 
         fun isLoggedIn(): Boolean = prefs.getBoolean("is_logged_in", false)
+
+        fun getLoggedEmail(): String? = prefs.getString("email", null)
+
+        fun getLoggedUserId(): Long = prefs.getLong("user_id", -1L)
     }

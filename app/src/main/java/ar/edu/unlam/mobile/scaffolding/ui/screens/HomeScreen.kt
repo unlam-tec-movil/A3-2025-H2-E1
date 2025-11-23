@@ -15,14 +15,14 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -33,7 +33,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import ar.edu.unlam.mobile.scaffolding.domain.navigation.model.Coordinates
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
-import ar.edu.unlam.mobile.scaffolding.ui.components.CreateEventPopUp
+import ar.edu.unlam.mobile.scaffolding.ui.components.AlertMessageBar
+import ar.edu.unlam.mobile.scaffolding.ui.components.CreateEventSheet
 import ar.edu.unlam.mobile.scaffolding.ui.components.CurrentNavigationRouteInformationCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventHomeCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventSearchBar
@@ -63,6 +64,7 @@ fun HomeScreen(
 
     var showCreateEventDialog by remember { mutableStateOf(false) }
     var isSessionActive by remember { mutableStateOf(false) }
+    var showAlert by remember { mutableStateOf(false) }
     SystemBarStyle(searchBarState.isExpanded)
 
     val context = LocalContext.current
@@ -97,7 +99,7 @@ fun HomeScreen(
             val locationCallback =
                 object : LocationCallback() {
                     override fun onLocationResult(result: LocationResult) {
-                        result.lastLocation?.let { viewModel.setUserLocation(it) }
+                        result.lastLocation?.let { viewModel::setUserLocation }
                     }
                 }
 
@@ -168,8 +170,8 @@ fun HomeScreen(
                     onEventoClick = { evento ->
                         viewModel.fetchEventById(evento.id)
                     },
+                    onLongPress = viewModel::onMapLongPress,
                     rotationChanged = viewModel::mapRotation,
-                    onMapStateChanged = viewModel::onMapStateChanged,
                     userLocation = uiState.userLocation,
                 )
 
@@ -246,73 +248,131 @@ fun HomeScreen(
                 }
 
                 // --- Búsqueda ---
-                Column(
+                EventSearchBar(
+                    searchUiState = searchBarState,
+                    onSearchQueryChange = viewModel::onSearchQueryChange,
+                    onSearch = viewModel::onSearch,
+                    onSuggestionSelected = { event ->
+                        viewModel.onEventSelected(event)
+                    },
+                    onActiveChange = viewModel::onActiveChange,
+                )
+
+                // Cantidad de resultados de búsqueda
+                Box(
                     modifier =
                         Modifier
                             .fillMaxWidth()
-                            .zIndex(zIndex = 20f),
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                            .padding(top = 90.dp)
+                            .align(Alignment.TopStart),
                 ) {
-                    EventSearchBar(
-                        searchUiState = searchBarState,
-                        onSearchQueryChange = viewModel::onSearchQueryChange,
-                        onSearch = viewModel::onSearch,
-                        onSuggestionSelected = { event ->
-                            viewModel.onEventSelected(event)
-                            viewModel.fetchEventById(event.id)
-                        },
-                        onActiveChange = viewModel::onActiveChange,
-                    )
-
-                    if (currentRoute != null) {
-                        Spacer(modifier = Modifier.size(16.dp))
-
-                        CurrentNavigationRouteInformationCard(
-                            duration = currentRoute?.durationMillis ?: 0,
-                            distance = currentRoute?.distanceMeters ?: 0.0,
-                            onClosesClick = {
-                                val props = uiState.mapProperties
-                                viewModel.onMapPropertiesChanged(
-                                    props.copy(
-                                        rotationBySensor = false,
-                                        rotationByGesture = true,
-                                    ),
-                                )
-
-                                viewModel.clearRoute()
-                            },
-                        )
-                    }
-
-                    Row {
-                        AnimatedVisibility(searchBarState.lastQuery.isNotEmpty()) {
-                            Card(
-                                colors =
-                                    CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.surface,
-                                    ),
-                                shape = MaterialTheme.shapes.medium,
-                                modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
-                            ) {
-                                Text(
-                                    text =
-                                        if (uiState.eventList.size > 1) {
-                                            "Resultados de búsqueda: ${uiState.eventList.size}"
-                                        } else {
-                                            "Resultado de búsqueda"
-                                        },
-                                    modifier = Modifier.padding(horizontal = 6.dp),
-                                )
-                            }
+                    AnimatedVisibility(searchBarState.lastQuery.isNotEmpty()) {
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            shape = MaterialTheme.shapes.medium,
+                            modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
+                        ) {
+                            Text(
+                                text =
+                                    if (uiState.eventList.size > 1) {
+                                        "Resultados de búsqueda: ${uiState.eventList.size}"
+                                    } else {
+                                        "Resultado de búsqueda"
+                                    },
+                                modifier = Modifier.padding(horizontal = 6.dp),
+                            )
                         }
                     }
                 }
 
-                // --- Botones Flotantes ---
+                if (currentRoute != null) {
+                    Spacer(modifier = Modifier.size(16.dp))
+
+                    CurrentNavigationRouteInformationCard(
+                        duration = currentRoute?.durationMillis ?: 0,
+                        distance = currentRoute?.distanceMeters ?: 0.0,
+                        onClosesClick = {
+                            val props = uiState.mapProperties
+                            viewModel.onMapPropertiesChanged(
+                                props.copy(
+                                    rotationBySensor = false,
+                                    rotationByGesture = true,
+                                ),
+                            )
+
+                            viewModel.clearRoute()
+                        },
+                    )
+                }
+
+                // Botones de acción para el mapa
                 Column(
                     modifier =
                         Modifier
-                            .align(Alignment.BottomEnd)
+                            .align(Alignment.TopEnd)
+                            .padding(top = 90.dp),
+                    horizontalAlignment = Alignment.End,
+                ) {
+                    FloatingActionButton(
+                        onClick = {
+                            val props = uiState.mapProperties
+                            viewModel.onMapPropertiesChanged(
+                                props.copy(
+                                    rotationBySensor = !props.rotationBySensor,
+                                    rotationByGesture = !props.rotationByGesture,
+                                ),
+                            )
+                        },
+                        containerColor =
+                            if (uiState.mapProperties.rotationBySensor) {
+                                MaterialTheme.colorScheme.secondary
+                            } else {
+                                MaterialTheme.colorScheme.surfaceContainer
+                            },
+                        shape = CircleShape,
+                        modifier =
+                            Modifier
+                                .size(52.dp)
+                                .padding(12.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Navigation,
+                            contentDescription = "Cambiar modo de rotación",
+                            modifier = Modifier.rotate(uiState.mapProperties.mapOrientation),
+                        )
+                    }
+                    FloatingActionButton(
+                        onClick = {
+                            if (permissionState.status.isGranted) {
+                                uiState.userLocation?.let { currentLocation ->
+                                    viewModel.setTargetLocation(currentLocation)
+                                } ?: run {
+                                    showAlert = true
+                                }
+                            } else {
+                                permissionState.launchPermissionRequest()
+                            }
+                        },
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        shape = CircleShape,
+                        modifier =
+                            Modifier
+                                .size(52.dp)
+                                .padding(12.dp),
+                    ) {
+                        Icon(
+                            Icons.Default.MyLocation,
+                            contentDescription = "Centrar en mi posición",
+                        )
+                    }
+                }
+
+                // Botones para crear evento y camara
+                Box(
+                    contentAlignment = Alignment.BottomEnd,
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
                             .padding(8.dp),
                 ) {
                     FloatingButtons(
@@ -329,16 +389,22 @@ fun HomeScreen(
 
                 // --- Crear Evento ---
                 if (showCreateEventDialog) {
-                    CreateEventPopUp(
+                    CreateEventSheet(
                         onDismiss = { showCreateEventDialog = false },
-                        userLocation = uiState.userLocation,
-                        onConfirm = { name, location, dateTime, imageUri ->
-                            viewModel.createEvent(name, location, dateTime, imageUri)
+                        userLocation = uiState.mapProperties.longPressPoint ?: uiState.userLocation,
+                        onConfirm = { name, description, location, dateTime, imageUri ->
+                            viewModel.createEvent(name, description, location, dateTime, imageUri)
                             showCreateEventDialog = false
                             viewModel.fetchEvents()
                         },
                     )
                 }
+
+                AlertMessageBar(
+                    message = "Ubicación no disponible. GPS desactivado.",
+                    showAlert = showAlert,
+                    changeShowAlert = { showAlert = false },
+                )
             }
 
             is MessageUIState.Error -> {

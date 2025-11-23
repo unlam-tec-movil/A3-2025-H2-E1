@@ -48,7 +48,7 @@ android {
 
     buildTypes {
         getByName("debug") {
-            buildConfigField("boolean", "AUTO_LOGIN", "true")
+            buildConfigField("boolean", "AUTO_LOGIN", "false")
             buildConfigField("String", "DEV_TOKEN", "\"dev_token_123\"")
         }
         getByName("release") {
@@ -133,4 +133,7 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation("com.google.code.gson:gson:2.11.0")
+
+    // OnBoarding
+    implementation(libs.foundation.pager)
 }

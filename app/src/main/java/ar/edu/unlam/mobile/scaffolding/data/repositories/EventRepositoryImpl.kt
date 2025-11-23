@@ -2,14 +2,14 @@ package ar.edu.unlam.mobile.scaffolding.data.repositories
 
 import ar.edu.unlam.mobile.scaffolding.data.mapper.toEntity
 import ar.edu.unlam.mobile.scaffolding.data.mapper.toEvent
-import ar.edu.unlam.mobile.scaffolding.data.mapper.toEventList
-import ar.edu.unlam.mobile.scaffolding.data.mapper.toEventListEntity
+import ar.edu.unlam.mobile.scaffolding.data.mapper.toEventItem
+import ar.edu.unlam.mobile.scaffolding.data.mapper.toEventItemEntity
 import ar.edu.unlam.mobile.scaffolding.data.mapper.toSuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.data.model.EventEntity
 import ar.edu.unlam.mobile.scaffolding.data.model.SuggestedEventEntity
 import ar.edu.unlam.mobile.scaffolding.data.model.UserEntity
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
-import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
+import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventItem
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.domain.event.repositories.EventRepository
 import ar.edu.unlam.mobile.scaffolding.utils.Resource
@@ -29,63 +29,54 @@ class EventRepositoryImpl
                     name = "Juan Rodriguez",
                     avatarUrl = "https://picsum.photos/id/1005/200",
                     description = "Desarrollador Android y entusiasta de Kotlin.",
-                    password = "123",
                 ),
                 UserEntity(
                     id = 2,
                     name = "Ana García",
                     avatarUrl = "https://picsum.photos/id/1011/200",
                     description = "Diseñadora UX/UI.",
-                    password = "123",
                 ),
                 UserEntity(
                     id = 3,
                     name = "Carlos Martinez",
                     avatarUrl = "https://picsum.photos/id/1012/200",
                     description = "Project Manager.",
-                    password = "123",
                 ),
                 UserEntity(
                     id = 4,
                     name = "Sofía López",
                     avatarUrl = "https://picsum.photos/id/1013/200",
                     description = "Especialista en QA.",
-                    password = "123",
                 ),
                 UserEntity(
                     id = 5,
                     name = "David Gómez",
                     avatarUrl = "https://picsum.photos/id/1014/200",
                     description = "Analista de datos.",
-                    password = "123",
                 ),
                 UserEntity(
                     6,
                     "Juan Pérez",
                     "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg",
                     "Desarrollador Android.",
-                    password = "123",
                 ),
                 UserEntity(
                     7,
                     "María García",
                     "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
                     "Diseñadora UX/UI.",
-                    password = "123",
                 ),
                 UserEntity(
                     8,
                     "Carlos Rodríguez",
                     "https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg",
                     "Project Manager.",
-                    password = "123",
                 ),
                 UserEntity(
                     9,
                     "Pepe Papa",
                     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBwr_zZjgvmu4BccwDNIHic8K5dyehw7cSYA&s",
                     null,
-                    password = "123",
                 ),
             )
 
@@ -365,10 +356,10 @@ class EventRepositoryImpl
             sort: String?,
             order: String?,
             size: Int?,
-        ): Flow<Resource<List<EventList>>> =
+        ): Flow<Resource<List<EventItem>>> =
             flow {
                 val eventListEntity =
-                    mockEvents.map { it.toEventListEntity() }
+                    mockEvents.map { it.toEventItemEntity() }
                 // Esto podria mejorarse con un when() para poner mas tipos de ordenados.
                 val sortedEvents =
                     if (sort == "date") {
@@ -381,7 +372,7 @@ class EventRepositoryImpl
                         eventListEntity
                     }
 
-                val eventList = sortedEvents.map { it.toEventList() }
+                val eventList = sortedEvents.map { it.toEventItem() }
                 emit(Resource.Success(eventList))
             }
 
@@ -390,13 +381,13 @@ class EventRepositoryImpl
             sort: String?,
             order: String?,
             userId: Long,
-        ): Flow<Resource<List<EventList>>> =
+        ): Flow<Resource<List<EventItem>>> =
             flow {
                 val filteredEvents =
                     mockEvents
                         .filter { eventEntity ->
                             eventEntity.members.any { member -> member.id == userId }
-                        }.map { it.toEventListEntity() }
+                        }.map { it.toEventItemEntity() }
 
                 val sortedEvents =
                     if (sort == "date") {
@@ -409,14 +400,14 @@ class EventRepositoryImpl
                         filteredEvents
                     }
 
-                val eventList = sortedEvents.map { it.toEventList() }
+                val eventList = sortedEvents.map { it.toEventItem() }
                 emit(Resource.Success(eventList))
             }
 
-        override suspend fun getEventList(id: String): Flow<Resource<EventList>> =
+        override suspend fun getEventList(id: String): Flow<Resource<EventItem>> =
             flow {
                 mockEvents.find { it.eventId == id }?.let { eventEntity ->
-                    val eventList = eventEntity.toEventList()
+                    val eventList = eventEntity.toEventItem()
                     emit(Resource.Success(eventList))
                 }
             }

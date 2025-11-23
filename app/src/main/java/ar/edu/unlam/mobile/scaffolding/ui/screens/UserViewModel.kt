@@ -6,7 +6,7 @@ import android.location.Location
 import android.location.LocationManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventList
+import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventItem
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetJoinedEventsListUseCase
 import ar.edu.unlam.mobile.scaffolding.domain.user.usercase.GetUserUseCase
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
@@ -24,8 +24,8 @@ data class UserUIState(
     val avatar: String? = "",
     val description: String? = "",
     val currentLocation: LatLng? = null,
-    val joinedEvents: List<EventList> = emptyList(),
-    val pastEvents: List<EventList> = emptyList(),
+    val joinedEvents: List<EventItem> = emptyList(),
+    val pastEvents: List<EventItem> = emptyList(),
     val showPastEvents: Boolean = false,
     val userUiState: MessageUIState = MessageUIState.Loading,
 )

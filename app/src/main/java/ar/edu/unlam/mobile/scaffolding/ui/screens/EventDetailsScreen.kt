@@ -25,7 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
+import ar.edu.unlam.mobile.scaffolding.domain.user.model.UserItem
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventParticipant
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventPicturesCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.ParticipantInfoPopUp
@@ -57,7 +57,7 @@ fun EventDetailsScreen(
     val event = state.value.event ?: return
     val scrollState = rememberScrollState()
     val showPopup = remember { mutableStateOf(false) }
-    val selectedUser = remember { mutableStateOf<User?>(null) }
+    val selectedUser = remember { mutableStateOf<UserItem?>(null) }
     SystemBarStyle()
 
     Scaffold(

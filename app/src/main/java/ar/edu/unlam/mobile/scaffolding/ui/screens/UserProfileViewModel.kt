@@ -30,7 +30,19 @@ class UserProfileViewModel
         private val _uiState = MutableStateFlow(UserProfileUIState())
         val uiState = _uiState.asStateFlow()
 
-        fun loadUserData(userId: Long) {
+        init {
+            loadUserData()
+        }
+
+        fun loadUserData() {
+            val userId = sessionManager.getLoggedUserId()
+
+            if (userId == -1L) {
+                _uiState.update {
+                    it.copy(profileUiState = MessageUIState.Error("Sesión inválida"))
+                }
+                return
+            }
             viewModelScope.launch {
                 _uiState.update { it.copy(profileUiState = MessageUIState.Loading) }
 

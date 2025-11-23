@@ -9,7 +9,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import org.osmdroid.config.Configuration
+import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.events.MapListener
 import org.osmdroid.events.ScrollEvent
 import org.osmdroid.events.ZoomEvent
@@ -18,10 +20,12 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.gestures.RotationGestureOverlay
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun NearbyMap(
     nearbyEvents: List<SuggestedEvent>,
@@ -30,9 +34,9 @@ fun NearbyMap(
     lng: Double? = null,
     route: List<GeoPoint>? = null,
     onEventoClick: (SuggestedEvent) -> Unit = {}, //  callback al hacer clic en un evento
+    onLongPress: (GeoPoint?) -> Unit = {},
     mapProperties: MapProperties,
     rotationChanged: (Float) -> Unit = {},
-    onMapStateChanged: (GeoPoint, Double) -> Unit = { _, _ -> },
     userLocation: GeoPoint?,
 ) {
     val context = LocalContext.current
@@ -48,7 +52,7 @@ fun NearbyMap(
                 setTileSource(TileSourceFactory.MAPNIK)
                 setMultiTouchControls(true)
                 controller.setZoom(mapProperties.zoom)
-                controller.setCenter(mapProperties.center)
+                controller.setCenter(userLocation ?: GeoPoint(-34.6037, -58.3816))
 
                 // Esto se usa para rotar la brujula (por gestos) enviando la orientacion actual del mapa
                 addMapListener(
@@ -72,11 +76,30 @@ fun NearbyMap(
                 val rotationGesture = RotationGestureOverlay(this)
                 overlays.add(rotationGesture)
 
-                tag = rotationGesture
+                // Eventos con click
+                val eventsReceiver =
+                    object : MapEventsReceiver {
+                        override fun singleTapConfirmedHelper(p: GeoPoint?): Boolean = false
+
+                        override fun longPressHelper(p: GeoPoint?): Boolean {
+                            p?.let(onLongPress)
+                            return true
+                        }
+                    }
+                val eventsOverlay = MapEventsOverlay(eventsReceiver)
+                overlays.add(eventsOverlay)
+
+                tag =
+                    mapOf(
+                        "gesture" to rotationGesture,
+                        "events" to eventsOverlay,
+                    )
             }
         },
         update = { mv ->
-            val rotationGestureOverlay = mv.tag as RotationGestureOverlay
+            val tagMap = mv.tag as Map<*, *>
+            val rotationGestureOverlay = tagMap["gesture"] as RotationGestureOverlay
+            val eventsOverlay = tagMap["events"] as MapEventsOverlay
 
             // Habilita la rotación por gestos
             rotationGestureOverlay.isEnabled = mapProperties.rotationByGesture
@@ -87,11 +110,32 @@ fun NearbyMap(
                 mv.mapOrientation = mapProperties.mapOrientation
             }
 
-            if (mapProperties.centerRequest && userLocation != null) {
-                mv.controller.animateTo(userLocation)
+            if (mapProperties.enableLongPress) {
+                if (!mv.overlays.contains(eventsOverlay)) {
+                    mv.overlays.add(eventsOverlay)
+                }
+            } else {
+                mv.overlays.remove(eventsOverlay)
             }
 
             mv.overlays.removeAll { it is Marker }
+
+            mapProperties.longPressPoint?.let { point ->
+                val longPressMarker =
+                    Marker(mv).apply {
+                        position = GeoPoint(point.latitude, point.longitude)
+                        title = "Punto seleccionado"
+                        setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                        icon = ContextCompat.getDrawable(context, R.drawable.marker_default)
+                        icon?.setTint(Color.GREEN)
+
+                        setOnMarkerClickListener { _, _ ->
+                            onLongPress(null)
+                            true
+                        }
+                    }
+                mv.overlays.add(longPressMarker)
+            }
 
             //  Tu ubicación
             userLocation?.let {
@@ -102,6 +146,18 @@ fun NearbyMap(
                         setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                         icon = ContextCompat.getDrawable(context, R.drawable.marker_default)
                         icon?.setTint(Color.BLUE)
+
+                        // Esto lo puse para simular que si tocas tu posicion el punto verde desaparezca
+                        // y asi fuera como que seleccionaste tu ubicacion
+                        setOnMarkerClickListener { _, _ ->
+                            onLongPress(null)
+                            if (this.isInfoWindowShown) {
+                                this.closeInfoWindow()
+                            } else {
+                                this.showInfoWindow()
+                            }
+                            true
+                        }
                     }
                 mv.overlays.add(myMarker)
             }
@@ -118,10 +174,6 @@ fun NearbyMap(
 
                         // Acción al hacer clic
                         setOnMarkerClickListener { _, _ ->
-                            onMapStateChanged(
-                                mv.mapCenter as GeoPoint,
-                                mv.zoomLevelDouble,
-                            )
                             onEventoClick(evento)
                             true // devuelve true para indicar que el evento fue manejado
                         }
@@ -131,11 +183,9 @@ fun NearbyMap(
 
             print("Dibujando ${nearbyEvents.size} eventos en el mapa.")
 
-            if (lat != null && lng != null) {
-                print("Centrándose en coordenadas: $lat, $lng")
-                val targetPoint = GeoPoint(lat, lng)
+            if (mapProperties.targetLocation != null) {
+                val targetPoint = mapProperties.targetLocation
                 mv.controller.animateTo(targetPoint)
-                mv.controller.setZoom(15.0)
             }
 
             // Remove any existing polylines (routes) from the map.
@@ -163,10 +213,12 @@ fun NearbyMap(
 }
 
 data class MapProperties(
-    val center: GeoPoint = GeoPoint(-34.6037, -58.3816),
+    val center: GeoPoint? = null,
+    val targetLocation: GeoPoint? = null,
     val zoom: Double = 15.0,
     val mapOrientation: Float = 0f,
     val rotationByGesture: Boolean = true,
     val rotationBySensor: Boolean = false,
-    val centerRequest: Boolean = false,
+    val longPressPoint: GeoPoint? = null,
+    val enableLongPress: Boolean = true,
 )

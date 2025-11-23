@@ -6,7 +6,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -14,21 +13,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -39,14 +30,13 @@ import androidx.navigation.navArgument
 import ar.edu.unlam.mobile.scaffolding.data.datasources.local.SessionManager
 import ar.edu.unlam.mobile.scaffolding.ui.components.BottomBar
 import ar.edu.unlam.mobile.scaffolding.ui.components.NavigationItem
-import ar.edu.unlam.mobile.scaffolding.ui.components.SnackbarVisualsWithError
 import ar.edu.unlam.mobile.scaffolding.ui.screens.ConfirmParticipationScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.EventDetailsScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.EventListScreen
-import ar.edu.unlam.mobile.scaffolding.ui.screens.FormScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.HOME_SCREEN_ROUTE
 import ar.edu.unlam.mobile.scaffolding.ui.screens.HomeScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.HomeViewModel
+import ar.edu.unlam.mobile.scaffolding.ui.screens.OnBoardingScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.SplashScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.UserProfileScreen
 import ar.edu.unlam.mobile.scaffolding.ui.screens.UserScreen
@@ -55,6 +45,7 @@ import ar.edu.unlam.mobile.scaffolding.ui.screens.register.RegisterScreen
 import ar.edu.unlam.mobile.scaffolding.ui.theme.ScaffoldingV2Theme
 import dagger.hilt.android.AndroidEntryPoint
 import jakarta.inject.Inject
+import org.osmdroid.util.GeoPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -80,7 +71,7 @@ class MainActivity : ComponentActivity() {
                     if (BuildConfig.AUTO_LOGIN) {
                         sessionManager.saveToken(BuildConfig.DEV_TOKEN)
                     }
-                    MainScreen()
+                    MainScreen(sessionManager)
                 }
             }
         }
@@ -88,7 +79,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainScreen() {
+fun MainScreen(sessionManager: SessionManager) {
     // Controller es el elemento que nos permite navegar entre pantallas. Tiene las acciones
     // para navegar como naviegate y también la información de en dónde se "encuentra" el usuario
     // a través del back stack
@@ -97,9 +88,8 @@ fun MainScreen() {
     val currentRoute = navBackStackEntry?.destination?.route
 
     // id del usuario logeado, de momento es hardcodeado hasta que se pueda logear
-    val idLogUser = 1L
+    val loggedUserId = sessionManager.getLoggedUserId()
 
-    val snackBarHostState = remember { SnackbarHostState() }
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
@@ -120,7 +110,7 @@ fun MainScreen() {
                             ),
                             NavigationItem(
                                 navRoute = "user/{id}",
-                                navRouteWithArgs = "user/$idLogUser",
+                                navRouteWithArgs = "user/$loggedUserId",
                                 icon = Icons.Default.AccountCircle,
                                 label = "User",
                             ),
@@ -128,46 +118,35 @@ fun MainScreen() {
                 )
             }
         },
-        snackbarHost = {
-            SnackbarHost(snackBarHostState) { data ->
-                // custom snackbar with the custom action button color and border
-                val isError = (data.visuals as? SnackbarVisualsWithError)?.isError ?: false
-                val buttonColor =
-                    if (isError) {
-                        ButtonDefaults.textButtonColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer,
-                            contentColor = MaterialTheme.colorScheme.error,
-                        )
-                    } else {
-                        ButtonDefaults.textButtonColors(
-                            contentColor = MaterialTheme.colorScheme.inversePrimary,
-                        )
-                    }
-
-                Snackbar(
-                    modifier =
-                        Modifier
-                            .border(2.dp, MaterialTheme.colorScheme.secondary)
-                            .padding(12.dp),
-                    action = {
-                        TextButton(
-                            onClick = { if (isError) data.dismiss() else data.performAction() },
-                            colors = buttonColor,
-                        ) {
-                            Text(data.visuals.actionLabel ?: "")
-                        }
-                    },
-                ) {
-                    Text(data.visuals.message)
-                }
-            }
-        },
     ) { paddingValue ->
         // NavHost es el componente que funciona como contenedor de los otros componentes que
         // podrán ser destinos de navegación.
-        NavHost(navController = controller, startDestination = "splash") {
+        NavHost(navController = controller, startDestination = "onboarding") {
             // composable es el componente que se usa para definir un destino de navegación.
             // Por parámetro recibe la ruta que se utilizará para navegar a dicho destino.
+
+            // Home es el componente en sí que es el destino de navegación.
+            composable("splash") {
+                SplashScreen(navController = controller)
+            }
+
+            // LOGIN
+            composable("login") {
+                LoginScreen(navController = controller)
+            }
+
+            // REGISTER
+            composable("register") {
+                RegisterScreen(navController = controller)
+            }
+
+            // Pantalla principal
+            composable(HOME_SCREEN_ROUTE) {
+                HomeScreen(
+                    modifier = Modifier.padding(paddingValue),
+                    navController = controller,
+                )
+            }
 
             composable(
                 route = "$HOME_SCREEN_ROUTE/{lat}/{lng}",
@@ -182,23 +161,11 @@ fun MainScreen() {
                 val lng = backStackEntry.arguments?.getString("lng")?.toDoubleOrNull()
 
                 LaunchedEffect(lat, lng) {
-                    homeViewModel.setTargetLocation(lat, lng)
+                    homeViewModel.setTargetLocation(GeoPoint(lat ?: 0.0, lng ?: 0.0))
                 }
 
                 HomeScreen(
                     viewModel = homeViewModel,
-                    modifier = Modifier.padding(paddingValue),
-                    navController = controller,
-                )
-            }
-
-            // Home es el componente en sí que es el destino de navegación.
-            composable("splash") {
-                SplashScreen(navController = controller)
-            }
-
-            composable(HOME_SCREEN_ROUTE) {
-                HomeScreen(
                     modifier = Modifier.padding(paddingValue),
                     navController = controller,
                 )
@@ -212,7 +179,7 @@ fun MainScreen() {
                 )
             }
 
-            // PERFIL DE USUARIO
+            // Lista de eventos del usuario
             composable(
                 route = "user/{id}",
                 arguments = listOf(navArgument("id") { type = NavType.LongType }),
@@ -228,21 +195,18 @@ fun MainScreen() {
             // USER PROFILE
             composable(
                 route = "userProfile/{id}",
-                arguments = listOf(navArgument("id") { type = NavType.LongType }),
-            ) {
-                val id = navBackStackEntry?.arguments?.getLong("id") ?: 1L
+                arguments =
+                    listOf(
+                        navArgument("id") { type = NavType.LongType },
+                    ),
+            ) { navBackStackEntry ->
+
+                val id = navBackStackEntry.arguments?.getLong("id") ?: 1L
+
                 UserProfileScreen(
                     userId = id,
                     modifier = Modifier.fillMaxSize(),
                     navController = controller,
-                )
-            }
-
-            // FORMULARIO
-            composable("form") {
-                FormScreen(
-                    modifier = Modifier.padding(paddingValue),
-                    snackbarHostState = snackBarHostState,
                 )
             }
 
@@ -267,7 +231,7 @@ fun MainScreen() {
                     ),
             ) { navBackStackEntry ->
 
-                val id = navBackStackEntry.arguments?.getInt("id") ?: 1
+                val id = navBackStackEntry.arguments?.getString("id") ?: ""
                 val enableReporting = navBackStackEntry.arguments?.getBoolean("enableReporting") ?: false
                 val hideParticipate = navBackStackEntry.arguments?.getBoolean("hideParticipateButton") ?: false
 
@@ -278,16 +242,6 @@ fun MainScreen() {
                     enableReporting = enableReporting,
                     hideParticipateButton = hideParticipate,
                 )
-            }
-
-            // LOGIN
-            composable("login") {
-                LoginScreen(navController = controller)
-            }
-
-            // REGISTER
-            composable("register") {
-                RegisterScreen(navController = controller)
             }
 
             // CONFIRM PARTICIPATION
@@ -312,6 +266,13 @@ fun MainScreen() {
                     onBackClick = { controller.popBackStack() },
                     onAddToCalendarClick = { /* TODO */ },
                     onParticipateClick = { /* TODO */ },
+                )
+            }
+
+            composable("onboarding") {
+                OnBoardingScreen(
+                    navController = controller,
+                    modifier = Modifier.padding(paddingValue),
                 )
             }
         }

@@ -25,6 +25,7 @@ testCore = "1.6.1"
 animation = "1.9.4"
 runtime = "1.9.4"
 foundationLayout = "1.9.4"
+pagerVersion = "1.7.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -45,6 +46,7 @@ androidx-material-icon = { group = "androidx.compose.material", name = "material
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "androidXHilt" }
 coil = { module = "io.coil-kt:coil-compose", version.ref = "coil_version" }
+foundation-pager = { group = "androidx.compose.foundation" , name = "foundation" , version.ref = "pagerVersion" }
 
 google-dagger-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "dagger" }
 google-dagger-hilt-android-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "dagger" }

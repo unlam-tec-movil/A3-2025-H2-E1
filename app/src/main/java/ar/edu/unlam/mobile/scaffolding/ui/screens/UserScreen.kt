@@ -229,7 +229,7 @@ fun UserScreen(
                                     )
                                 }
 
-                                // Este DropdownMenu podria adaptarse para estar dentro de EventFilterButton,
+// Este DropdownMenu podria adaptarse para estar dentro de EventFilterButton,
                                 // ya que cumple con la función de ser mas claro mostrando lo que hace.
                                 DropdownMenu(
                                     expanded = showMenu,

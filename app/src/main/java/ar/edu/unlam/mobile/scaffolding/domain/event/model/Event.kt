@@ -1,6 +1,6 @@
 package ar.edu.unlam.mobile.scaffolding.domain.event.model
 
-import ar.edu.unlam.mobile.scaffolding.domain.user.model.User
+import ar.edu.unlam.mobile.scaffolding.domain.user.model.UserItem
 
 data class Event(
     val id: String,
@@ -12,8 +12,8 @@ data class Event(
     val image: String?,
     val beforeImage: List<String>,
     val afterImage: List<String>?,
-    val members: List<User>,
-    val creator: User,
+    val members: List<UserItem>,
+    val creator: UserItem,
     val saved: Boolean,
     val participating: Boolean,
 )

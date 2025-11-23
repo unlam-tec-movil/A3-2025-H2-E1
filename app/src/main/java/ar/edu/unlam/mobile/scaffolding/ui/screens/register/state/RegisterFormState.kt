@@ -6,4 +6,5 @@ data class RegisterFormState(
     val passwordTextField: String = "",
     val confirmPasswordTextField: String = "",
     val errorMessage: String? = null,
+    val isRegistered: Boolean = false,
 )
