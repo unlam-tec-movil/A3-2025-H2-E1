@@ -271,6 +271,14 @@ fun HomeScreen(
                             duration = currentRoute?.durationMillis ?: 0,
                             distance = currentRoute?.distanceMeters ?: 0.0,
                             onClosesClick = {
+                                val props = uiState.mapProperties
+                                viewModel.onMapPropertiesChanged(
+                                    props.copy(
+                                        rotationBySensor = false,
+                                        rotationByGesture = true,
+                                    ),
+                                )
+
                                 viewModel.clearRoute()
                             },
                         )

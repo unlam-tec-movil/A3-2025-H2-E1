@@ -139,7 +139,6 @@ fun EventDetailsScreen(
             if (!hideParticipateButton && !enableReporting) {
                 PrimaryButton(
                     "Participar",
-                    width = 200.dp,
                     modifier =
                         Modifier
                             .navigationBarsPadding()

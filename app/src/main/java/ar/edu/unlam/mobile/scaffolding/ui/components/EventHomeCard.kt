@@ -117,15 +117,11 @@ fun EventHomeCard(
                     onClick = onGetDirectionsClick,
                 )
 
-                Button(
+                PrimaryButton(
+                    modifier = Modifier.padding(horizontal = 4.dp),
+                    text = "Ver Evento",
                     onClick = onViewEventClick,
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 4.dp),
-                ) {
-                    Text("Ver Evento")
-                }
+                )
             }
         }
     }
