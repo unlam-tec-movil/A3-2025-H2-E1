@@ -90,13 +90,8 @@ fun EventDetailsScreen(
             sheetState = sheetState,
         ) {
             ConfirmParticipationComponent(
+                event = event,
                 eventName = event.title,
-                eventDate =
-                    SimpleDateFormat(
-                        "EEEE d 'de' MMMM, HH:mm 'hs'",
-                        Locale("es", "AR"),
-                    ).format(Date(event.dateTime)),
-                eventPlace = "Ubicación: ${event.lat}, ${event.lng}",
                 onBackClick = { showParticipationSheet.value = false },
                 onAddToCalendarClick = { /* tu lógica */ },
                 onParticipateClick = {
@@ -185,7 +180,6 @@ fun EventDetailsScreen(
             if (!hideParticipateButton && !enableReporting && !state.value.isParticipating) {
                 PrimaryButton(
                     "Participar",
-                    width = 200.dp,
                     modifier =
                         Modifier
                             .navigationBarsPadding()

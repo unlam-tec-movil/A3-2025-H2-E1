@@ -189,7 +189,6 @@ fun RegisterScreen(
 
             PrimaryButton(
                 text = "Crear cuenta",
-                width = 320.dp,
                 onClick = {
                     viewModel.onRegister()
                 },

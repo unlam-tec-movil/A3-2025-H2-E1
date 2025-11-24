@@ -135,7 +135,6 @@ fun OnBoardingScreen(
 
         PrimaryButton(
             text = if (!isLastPage) "Siguiente" else "Terminar",
-            width = 160.dp,
             onClick = {
                 if (!isLastPage) {
                     val nextPage = pagerState.currentPage + 1
