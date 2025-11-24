@@ -1,14 +1,35 @@
-package ar.edu.unlam.mobile.scaffolding.ui.screens
+package ar.edu.unlam.mobile.scaffolding.ui.components
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Place
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,7 +43,7 @@ import ar.edu.unlam.mobile.scaffolding.ui.theme.ScaffoldingV2Theme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConfirmParticipationScreen(
+fun ConfirmParticipationComponent(
     eventName: String = "sin informacion",
     eventDate: String = "sin informacion",
     eventPlace: String = "sin informacion",
@@ -37,12 +58,16 @@ fun ConfirmParticipationScreen(
                 title = { Text("Confirmar participación") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver",
+                        )
                     }
                 },
             )
         },
     ) { innerPadding ->
+
         Column(
             modifier =
                 Modifier
@@ -54,7 +79,6 @@ fun ConfirmParticipationScreen(
         ) {
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Ícono de confirmación
             Icon(
                 imageVector = Icons.Default.CheckCircle,
                 contentDescription = "Confirmación",
@@ -62,7 +86,6 @@ fun ConfirmParticipationScreen(
                 modifier = Modifier.size(96.dp),
             )
 
-            // descripcion
             Text(
                 text =
                     "Compruebe los detalles del evento para confirmar su participación. " +
@@ -80,7 +103,6 @@ fun ConfirmParticipationScreen(
                 color = Color.Black,
             )
 
-            //  Card con fecha y lugar
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
@@ -112,7 +134,6 @@ fun ConfirmParticipationScreen(
                 }
             }
 
-            // Botones
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -149,9 +170,9 @@ fun ConfirmParticipationScreen(
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 640)
 @Composable
-fun ConfirmParticipationScreenPreview() {
+fun ConfirmParticipationComponentPreview() {
     ScaffoldingV2Theme {
-        ConfirmParticipationScreen(
+        ConfirmParticipationComponent(
             eventName = "Jornada de Limpieza en la Playa",
             eventDate = "Domingo 27 de Octubre, 10:00 hs",
             eventPlace = "Playa Grande, Mar del Plata",
