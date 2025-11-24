@@ -112,7 +112,6 @@ fun LoginScreen(
 
         PrimaryButton(
             text = "Ingresar",
-            width = 320.dp,
             onClick = { viewModel.onLoginClicked() },
         )
 

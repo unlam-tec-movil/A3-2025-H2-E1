@@ -23,10 +23,12 @@ import org.osmdroid.events.ScrollEvent
 import org.osmdroid.events.ZoomEvent
 import org.osmdroid.library.R
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.gestures.RotationGestureOverlay
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -34,6 +36,7 @@ import org.osmdroid.views.overlay.gestures.RotationGestureOverlay
 fun NearbyMap(
     nearbyEvents: List<SuggestedEvent>,
     modifier: Modifier = Modifier,
+    route: List<GeoPoint>? = null,
     onEventoClick: (SuggestedEvent) -> Unit = {}, //  callback al hacer clic en un evento
     onLongPress: (GeoPoint?) -> Unit = {},
     mapProperties: MapProperties,
@@ -194,6 +197,22 @@ fun NearbyMap(
                 if (mapProperties.targetLocation != null) {
                     val targetPoint = mapProperties.targetLocation
                     mv.controller.animateTo(targetPoint)
+                }
+
+                // Borrar rutas anteriores
+                mv.overlays.removeAll { it is Polyline }
+
+                // Navegación a evento
+                if (route != null) {
+                    val routePolyline =
+                        Polyline().apply {
+                            setPoints(route)
+                            outlinePaint.color = Color.BLUE
+                            outlinePaint.strokeWidth = 8f
+                        }
+                    val boundingBox = BoundingBox.fromGeoPoints(route)
+                    mv.overlayManager.add(routePolyline)
+                    mv.zoomToBoundingBox(boundingBox, true)
                 }
 
                 mv.invalidate()

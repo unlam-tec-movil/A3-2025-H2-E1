@@ -3,6 +3,7 @@ package ar.edu.unlam.mobile.scaffolding.data.datasources.network.response
 import ar.edu.unlam.mobile.scaffolding.domain.navigation.model.Route
 
 data class GetRouteResponse(
+    val type: String,
     val paths: List<RoutePath>,
 )
 

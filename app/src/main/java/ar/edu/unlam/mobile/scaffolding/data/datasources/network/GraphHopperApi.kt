@@ -8,11 +8,12 @@ import retrofit2.http.Query
 
 interface GraphHopperApi {
     @GET("route")
-    fun getRoute(
+    suspend fun getRoute(
         @Query("point") points: List<String>,
-        @Query("vehicle") vehicle: String = "foot",
-        @Query("locale") locale: String = "en",
         @Query("instructions") instructions: Boolean = false,
+        @Query("points_encoded") encoded: Boolean = false,
+        @Query("elevation") elevation: Boolean = false,
+        @Query("simplify") simplify: Boolean = false,
         @Query("key") apiKey: String = API_KEY,
     ): Response<GetRouteResponse>
 

@@ -6,8 +6,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
@@ -20,10 +25,23 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun CurrentCleanUpSessionInfoCard(
-    elapsedTime: String,
-    steps: Int,
+fun CurrentNavigationRouteInformationCard(
+    duration: Long,
+    distance: Double,
+    onClosesClick: () -> Unit = {},
 ) {
+    val totalMinutes = duration / 1000 / 60
+    val hours = totalMinutes / 60
+    val minutes = totalMinutes % 60
+    val elapsedTime =
+        if (hours > 0) {
+            "${hours}hr $minutes"
+        } else {
+            "$minutes minutos"
+        }
+
+    val distanceKm = String.format("%.1f", distance / 1000)
+
     OutlinedCard(
         modifier =
             Modifier
@@ -40,9 +58,9 @@ fun CurrentCleanUpSessionInfoCard(
         Row(
             modifier =
                 Modifier
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = 20.dp, vertical = 4.dp)
                     .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceAround,
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -62,12 +80,12 @@ fun CurrentCleanUpSessionInfoCard(
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    "Pasos",
+                    "Distancia",
                     style = MaterialTheme.typography.labelMedium,
                     color = Color.Black.copy(alpha = 0.7f),
                 )
                 Text(
-                    steps.toString(),
+                    "$distanceKm km",
                     style =
                         MaterialTheme.typography.headlineSmall.copy(
                             fontWeight = FontWeight.Bold,
@@ -75,12 +93,22 @@ fun CurrentCleanUpSessionInfoCard(
                         ),
                 )
             }
+            Column(
+                verticalArrangement = Arrangement.Top,
+            ) {
+                IconButton(
+                    modifier = Modifier.size(24.dp),
+                    onClick = onClosesClick,
+                ) {
+                    Icon(Icons.Default.Close, contentDescription = "Cerrar")
+                }
+            }
         }
     }
 }
 
 @Preview
 @Composable
-fun PreviewCurrentCleanUpSessionInfoCard() {
-    CurrentCleanUpSessionInfoCard("00:12:25", 526)
+fun PreviewCurrentNavigationRouteInformationCard() {
+    CurrentNavigationRouteInformationCard(1200000, 526.0)
 }

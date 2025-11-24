@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -36,9 +35,11 @@ import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import ar.edu.unlam.mobile.scaffolding.domain.navigation.model.Coordinates
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.ui.components.AlertMessageBar
 import ar.edu.unlam.mobile.scaffolding.ui.components.CreateEventSheet
+import ar.edu.unlam.mobile.scaffolding.ui.components.CurrentNavigationRouteInformationCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventHomeCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventSearchBar
 import ar.edu.unlam.mobile.scaffolding.ui.components.FloatingButtons
@@ -49,6 +50,7 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.model.LatLng
+import org.osmdroid.util.GeoPoint
 
 const val HOME_SCREEN_ROUTE = "home"
 
@@ -61,6 +63,7 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val searchBarState by viewModel.searchUiState.collectAsStateWithLifecycle()
+    val currentRoute by viewModel.currentRouteState.collectAsState()
 
     var showCreateEventDialog by remember { mutableStateOf(false) }
     var isSessionActive by remember { mutableStateOf(false) }
@@ -152,6 +155,7 @@ fun HomeScreen(
                 NearbyMap(
                     nearbyEvents = uiState.eventList,
                     modifier = Modifier.matchParentSize(),
+                    route = currentRoute?.coordinates?.map { GeoPoint(it.first, it.second) },
                     mapProperties = uiState.mapProperties,
                     onEventoClick = { evento ->
                         viewModel.fetchEventById(evento.id)
@@ -197,6 +201,26 @@ fun HomeScreen(
                                         uiState.userLocation?.latitude ?: 0.0,
                                         uiState.userLocation?.longitude ?: 0.0,
                                     ),
+                                onGetDirectionsClick = {
+                                    if (permissionState.status.isGranted) {
+                                        viewModel.getRoute(
+                                            userCoordinates =
+                                                Coordinates(
+                                                    lat = uiState.userLocation?.latitude ?: 0.0,
+                                                    lon = uiState.userLocation?.longitude ?: 0.0,
+                                                ),
+                                            eventCoordinates =
+                                                Coordinates(
+                                                    lat = event.lat,
+                                                    lon = event.lng,
+                                                ),
+                                        )
+                                        showEventCard = false
+                                        viewModel.clearSelectedEvent()
+                                    } else {
+                                        permissionState.launchPermissionRequest()
+                                    }
+                                },
                                 onViewEventClick = {
                                     showEventCard = false
                                     navController.navigate("eventDetails/${event.id}")
@@ -217,16 +241,30 @@ fun HomeScreen(
                     }
                 }
 
-                // --- Búsqueda ---
-                EventSearchBar(
-                    searchUiState = searchBarState,
-                    onSearchQueryChange = viewModel::onSearchQueryChange,
-                    onSearch = viewModel::onSearch,
-                    onSuggestionSelected = { event ->
-                        viewModel.onEventSelected(event)
-                    },
-                    onActiveChange = viewModel::onActiveChange,
-                )
+                Column {
+                    // --- Búsqueda ---
+                    EventSearchBar(
+                        searchUiState = searchBarState,
+                        onSearchQueryChange = viewModel::onSearchQueryChange,
+                        onSearch = viewModel::onSearch,
+                        onSuggestionSelected = { event ->
+                            viewModel.onEventSelected(event)
+                        },
+                        onActiveChange = viewModel::onActiveChange,
+                    )
+
+                    if (currentRoute != null) {
+                        Spacer(modifier = Modifier.size(16.dp))
+
+                        CurrentNavigationRouteInformationCard(
+                            duration = currentRoute?.durationMillis ?: 0,
+                            distance = currentRoute?.distanceMeters ?: 0.0,
+                            onClosesClick = {
+                                viewModel.clearRoute()
+                            },
+                        )
+                    }
+                }
 
                 // Cantidad de resultados de búsqueda
                 Box(
@@ -291,30 +329,6 @@ fun HomeScreen(
                             modifier = Modifier.rotate(uiState.mapProperties.mapOrientation),
                         )
                     }
-                    FloatingActionButton(
-                        onClick = {
-                            if (permissionState.status.isGranted) {
-                                uiState.userLocation?.let { currentLocation ->
-                                    viewModel.setTargetLocation(currentLocation)
-                                } ?: run {
-                                    showAlert = true
-                                }
-                            } else {
-                                permissionState.launchPermissionRequest()
-                            }
-                        },
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        shape = CircleShape,
-                        modifier =
-                            Modifier
-                                .size(52.dp)
-                                .padding(12.dp),
-                    ) {
-                        Icon(
-                            Icons.Default.MyLocation,
-                            contentDescription = "Centrar en mi posición",
-                        )
-                    }
                 }
 
                 // Botones para crear evento y camara
@@ -326,11 +340,17 @@ fun HomeScreen(
                             .padding(8.dp),
                 ) {
                     FloatingButtons(
-                        isSessionActive = isSessionActive,
-                        onClickCamera = { },
                         onClickAddEvent = { showCreateEventDialog = true },
                         onClickCenterMap = {
-                            isSessionActive = !isSessionActive
+                            if (permissionState.status.isGranted) {
+                                uiState.userLocation?.let { currentLocation ->
+                                    viewModel.setTargetLocation(currentLocation)
+                                } ?: run {
+                                    showAlert = true
+                                }
+                            } else {
+                                permissionState.launchPermissionRequest()
+                            }
                         },
                     )
                 }
