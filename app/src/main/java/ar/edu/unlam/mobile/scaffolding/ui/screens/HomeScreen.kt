@@ -242,7 +242,7 @@ fun HomeScreen(
                     }
                 }
 
-                Column() {
+                Column {
                     // --- Búsqueda ---
                     EventSearchBar(
                         searchUiState = searchBarState,
@@ -266,7 +266,6 @@ fun HomeScreen(
                         )
                     }
                 }
-
 
                 // Cantidad de resultados de búsqueda
                 Box(
