@@ -19,12 +19,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -138,17 +142,6 @@ fun HomeScreen(
         },
     )
 
-    // Rotar el mapa cuando el usuario esté navegando a algún evento
-    if (currentRoute != null) {
-        val props = uiState.mapProperties
-        viewModel.onMapPropertiesChanged(
-            props.copy(
-                rotationBySensor = !props.rotationBySensor,
-                rotationByGesture = !props.rotationByGesture,
-            ),
-        )
-    }
-
     // PANTALLA PRINCIPAL
     Box(modifier = modifier.fillMaxSize()) {
         when (val helloState = uiState.helloMessageState) {
@@ -163,8 +156,6 @@ fun HomeScreen(
                 NearbyMap(
                     nearbyEvents = uiState.eventList,
                     modifier = Modifier.matchParentSize(),
-                    lat = null,
-                    lng = null,
                     route = currentRoute?.coordinates?.map { GeoPoint(it.first, it.second) },
                     mapProperties = uiState.mapProperties,
                     onEventoClick = { evento ->
@@ -212,20 +203,24 @@ fun HomeScreen(
                                         uiState.userLocation?.longitude ?: 0.0,
                                     ),
                                 onGetDirectionsClick = {
-                                    viewModel.getRoute(
-                                        userCoordinates =
-                                            Coordinates(
-                                                lat = uiState.userLocation?.latitude ?: 0.0,
-                                                lon = uiState.userLocation?.longitude ?: 0.0,
-                                            ),
-                                        eventCoordinates =
-                                            Coordinates(
-                                                lat = event.lat,
-                                                lon = event.lng,
-                                            ),
-                                    )
-                                    showEventCard = false
-                                    viewModel.clearSelectedEvent()
+                                    if (permissionState.status.isGranted) {
+                                        viewModel.getRoute(
+                                            userCoordinates =
+                                                Coordinates(
+                                                    lat = uiState.userLocation?.latitude ?: 0.0,
+                                                    lon = uiState.userLocation?.longitude ?: 0.0,
+                                                ),
+                                            eventCoordinates =
+                                                Coordinates(
+                                                    lat = event.lat,
+                                                    lon = event.lng,
+                                                ),
+                                        )
+                                        showEventCard = false
+                                        viewModel.clearSelectedEvent()
+                                    } else {
+                                        permissionState.launchPermissionRequest()
+                                    }
                                 },
                                 onViewEventClick = {
                                     showEventCard = false
@@ -247,16 +242,31 @@ fun HomeScreen(
                     }
                 }
 
-                // --- Búsqueda ---
-                EventSearchBar(
-                    searchUiState = searchBarState,
-                    onSearchQueryChange = viewModel::onSearchQueryChange,
-                    onSearch = viewModel::onSearch,
-                    onSuggestionSelected = { event ->
-                        viewModel.onEventSelected(event)
-                    },
-                    onActiveChange = viewModel::onActiveChange,
-                )
+                Column() {
+                    // --- Búsqueda ---
+                    EventSearchBar(
+                        searchUiState = searchBarState,
+                        onSearchQueryChange = viewModel::onSearchQueryChange,
+                        onSearch = viewModel::onSearch,
+                        onSuggestionSelected = { event ->
+                            viewModel.onEventSelected(event)
+                        },
+                        onActiveChange = viewModel::onActiveChange,
+                    )
+
+                    if (currentRoute != null) {
+                        Spacer(modifier = Modifier.size(16.dp))
+
+                        CurrentNavigationRouteInformationCard(
+                            duration = currentRoute?.durationMillis ?: 0,
+                            distance = currentRoute?.distanceMeters ?: 0.0,
+                            onClosesClick = {
+                                viewModel.clearRoute()
+                            },
+                        )
+                    }
+                }
+
 
                 // Cantidad de resultados de búsqueda
                 Box(
@@ -283,26 +293,6 @@ fun HomeScreen(
                             )
                         }
                     }
-                }
-
-                if (currentRoute != null) {
-                    Spacer(modifier = Modifier.size(16.dp))
-
-                    CurrentNavigationRouteInformationCard(
-                        duration = currentRoute?.durationMillis ?: 0,
-                        distance = currentRoute?.distanceMeters ?: 0.0,
-                        onClosesClick = {
-                            val props = uiState.mapProperties
-                            viewModel.onMapPropertiesChanged(
-                                props.copy(
-                                    rotationBySensor = false,
-                                    rotationByGesture = true,
-                                ),
-                            )
-
-                            viewModel.clearRoute()
-                        },
-                    )
                 }
 
                 // Botones de acción para el mapa
@@ -341,30 +331,6 @@ fun HomeScreen(
                             modifier = Modifier.rotate(uiState.mapProperties.mapOrientation),
                         )
                     }
-                    FloatingActionButton(
-                        onClick = {
-                            if (permissionState.status.isGranted) {
-                                uiState.userLocation?.let { currentLocation ->
-                                    viewModel.setTargetLocation(currentLocation)
-                                } ?: run {
-                                    showAlert = true
-                                }
-                            } else {
-                                permissionState.launchPermissionRequest()
-                            }
-                        },
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        shape = CircleShape,
-                        modifier =
-                            Modifier
-                                .size(52.dp)
-                                .padding(12.dp),
-                    ) {
-                        Icon(
-                            Icons.Default.MyLocation,
-                            contentDescription = "Centrar en mi posición",
-                        )
-                    }
                 }
 
                 // Botones para crear evento y camara
@@ -379,7 +345,11 @@ fun HomeScreen(
                         onClickAddEvent = { showCreateEventDialog = true },
                         onClickCenterMap = {
                             if (permissionState.status.isGranted) {
-                                viewModel.onCenterRequest()
+                                uiState.userLocation?.let { currentLocation ->
+                                    viewModel.setTargetLocation(currentLocation)
+                                } ?: run {
+                                    showAlert = true
+                                }
                             } else {
                                 permissionState.launchPermissionRequest()
                             }

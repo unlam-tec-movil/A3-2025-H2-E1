@@ -30,8 +30,6 @@ import org.osmdroid.views.overlay.gestures.RotationGestureOverlay
 fun NearbyMap(
     nearbyEvents: List<SuggestedEvent>,
     modifier: Modifier = Modifier,
-    lat: Double? = null,
-    lng: Double? = null,
     route: List<GeoPoint>? = null,
     onEventoClick: (SuggestedEvent) -> Unit = {}, //  callback al hacer clic en un evento
     onLongPress: (GeoPoint?) -> Unit = {},
@@ -188,7 +186,7 @@ fun NearbyMap(
                 mv.controller.animateTo(targetPoint)
             }
 
-            // Remove any existing polylines (routes) from the map.
+            // Borrar rutas anteriores
             mv.overlays.removeAll { it is Polyline }
 
             // Navegación a evento

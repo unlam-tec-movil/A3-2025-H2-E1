@@ -58,7 +58,7 @@ fun CurrentNavigationRouteInformationCard(
         Row(
             modifier =
                 Modifier
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = 20.dp, vertical = 4.dp)
                     .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
