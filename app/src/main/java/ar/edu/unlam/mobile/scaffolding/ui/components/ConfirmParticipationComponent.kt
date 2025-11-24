@@ -113,14 +113,12 @@ fun ConfirmParticipationComponent(
                 ) {
                     SecondaryButton(
                         text = "Agregar al calendario",
-                        width = (0.7f * 460).dp,
                         onClick = onAddToCalendarClick,
                     )
                 }
 
                 PrimaryButton(
                     text = "Participar",
-                    width = (0.7f * 360).dp,
                     onClick = onParticipateClick,
                 )
             }

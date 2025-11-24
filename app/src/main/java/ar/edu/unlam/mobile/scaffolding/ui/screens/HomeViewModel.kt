@@ -367,11 +367,14 @@ class HomeViewModel
                             startLat = userCoordinates.lat,
                             endLat = eventCoordinates.lat,
                             startLon = userCoordinates.lon,
-                            endLon = userCoordinates.lon,
+                            endLon = eventCoordinates.lon,
                         ).collectLatest { result ->
                             when (result) {
                                 is Resource.Success -> {
                                     _currentRouteState.value = result.data
+                                    Log.d("ROUTE_DEBUG", "cantidad de puntos = ${result.data.coordinates.size}")
+                                    Log.d("ROUTE_DEBUG", "primeros 5 puntos = ${result.data.coordinates.take(5)}")
+                                    Log.d("ROUTE_DEBUG", "${result.data.distanceMeters} metros, ${result.data.durationMillis} ms")
                                 }
 
                                 is Resource.Error -> {
@@ -380,6 +383,10 @@ class HomeViewModel
                             }
                         }
                 }
+        }
+
+        fun clearRoute() {
+            _currentRouteState.value = null
         }
 
         fun fetchEventById(eventId: String) {
