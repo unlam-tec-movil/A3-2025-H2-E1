@@ -23,16 +23,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.DirectionsRun
-import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.WrongLocation
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -62,6 +57,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventCard
+import ar.edu.unlam.mobile.scaffolding.ui.components.EventFilterButton
 import ar.edu.unlam.mobile.scaffolding.ui.components.SystemBarStyle
 import coil.compose.AsyncImage
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -82,13 +78,10 @@ fun UserScreen(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(topAppBarState)
     SystemBarStyle()
 
-    var showMenu by remember { mutableStateOf(false) }
     var isDistanceFilter by remember { mutableStateOf(false) }
-    var activeSort by remember { mutableStateOf("date") }
 
     val context = LocalContext.current
     val permissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
-    var showingPast by remember { mutableStateOf(false) }
 
     LaunchedEffect(key1 = userId) {
         viewModel.getUser(userId)
@@ -221,64 +214,16 @@ fun UserScreen(
                             }
                         },
                         actions = {
-                            Box {
-                                IconButton(onClick = { showMenu = true }) {
-                                    Icon(
-                                        imageVector = Icons.Default.FilterList,
-                                        contentDescription = "Ordenar eventos",
-                                    )
-                                }
-
-// Este DropdownMenu podria adaptarse para estar dentro de EventFilterButton,
-                                // ya que cumple con la función de ser mas claro mostrando lo que hace.
-                                DropdownMenu(
-                                    expanded = showMenu,
-                                    onDismissRequest = { showMenu = false },
-                                ) {
-                                    DropdownMenuItem(
-                                        text = { Text("Más recientes") },
-                                        onClick = {
-                                            viewModel.getEvents(userId, sortBy = "date", order = "asc")
-                                            activeSort = "date"
-                                            showMenu = false
-                                            isDistanceFilter = false
-                                        },
-                                        leadingIcon = {
-                                            Icon(
-                                                imageVector = Icons.Filled.AccessTime,
-                                                contentDescription = "Ordenar por fecha",
-                                                tint =
-                                                    if (activeSort == "date") {
-                                                        MaterialTheme.colorScheme.secondary
-                                                    } else {
-                                                        MaterialTheme.colorScheme.onSurfaceVariant
-                                                    },
-                                            )
-                                        },
-                                    )
-                                    DropdownMenuItem(
-                                        text = { Text("Más cercanos") },
-                                        onClick = {
-                                            viewModel.getEvents(userId, sortBy = "distance", order = "asc")
-                                            activeSort = "distance"
-                                            showMenu = false
-                                            isDistanceFilter = true
-                                        },
-                                        leadingIcon = {
-                                            Icon(
-                                                imageVector = Icons.AutoMirrored.Filled.DirectionsRun,
-                                                contentDescription = "Ordenar por distancia",
-                                                tint =
-                                                    if (activeSort == "distance") {
-                                                        MaterialTheme.colorScheme.secondary
-                                                    } else {
-                                                        MaterialTheme.colorScheme.onSurfaceVariant
-                                                    },
-                                            )
-                                        },
-                                    )
-                                }
-                            }
+                            EventFilterButton(
+                                onDateFilter = {
+                                    viewModel.getEvents(userId, sortBy = "date", order = "asc")
+                                    isDistanceFilter = false
+                                },
+                                onDistanceFilter = {
+                                    viewModel.getEvents(userId, sortBy = "distance", order = "asc")
+                                    isDistanceFilter = true
+                                },
+                            )
                         },
                         modifier = Modifier.consumeWindowInsets(WindowInsets.systemBars),
                     )
