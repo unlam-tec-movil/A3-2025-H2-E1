@@ -30,12 +30,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
+import ar.edu.unlam.mobile.scaffolding.domain.user.model.UserItem
 import ar.edu.unlam.mobile.scaffolding.ui.theme.ScaffoldingV2Theme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConfirmParticipationComponent(
-    event: Event? = null,
+    event: Event,
     eventName: String = "sin informacion",
     onBackClick: () -> Unit = {},
     onAddToCalendarClick: () -> Unit = {},
@@ -56,7 +57,7 @@ fun ConfirmParticipationComponent(
                 Modifier
                     .padding(innerPadding)
                     .fillMaxSize()
-                    .padding(horizontal = 24.dp),
+                    .padding(horizontal = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
         ) {
@@ -65,7 +66,7 @@ fun ConfirmParticipationComponent(
             Icon(
                 imageVector = Icons.Default.CheckCircle,
                 contentDescription = "Confirmación",
-                tint = MaterialTheme.colorScheme.secondary,
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(96.dp),
             )
 
@@ -83,43 +84,46 @@ fun ConfirmParticipationComponent(
                 text = eventName,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onBackground,
             )
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF7F7F7)),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             ) {
-                event?.let {
-                    TimePlaceEventCard(
-                        event = it,
-                        onLocationClick = { lat, lng ->
-                            // acción al tocar la ubicación
-                        },
-                    )
-                }
+                TimePlaceEventCard(
+                    event = event,
+                    onLocationClick = { _, _ -> },
+                    modifier = Modifier.padding(6.dp),
+                )
             }
+
+            Spacer(modifier = Modifier.weight(1f))
 
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth(),
+                modifier =
+                    Modifier
+                        .padding(bottom = 22.dp)
+                        .fillMaxWidth(),
             ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    SecondaryButton(
-                        text = "Agregar al calendario",
-                        onClick = onAddToCalendarClick,
-                    )
-                }
-
+                SecondaryButton(
+                    text = "Agregar al calendario",
+                    onClick = onAddToCalendarClick,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 22.dp),
+                )
                 PrimaryButton(
                     text = "Participar",
                     onClick = onParticipateClick,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 22.dp),
                 )
             }
         }
@@ -131,6 +135,28 @@ fun ConfirmParticipationComponent(
 fun ConfirmParticipationComponentPreview() {
     ScaffoldingV2Theme {
         ConfirmParticipationComponent(
+            event =
+                Event(
+                    id = "1",
+                    title = "Evento de prueba",
+                    description = "Lugar de prueba",
+                    dateTime = System.currentTimeMillis(),
+                    lat = -34.622681,
+                    lng = -58.611251,
+                    image = null,
+                    beforeImage = listOf(),
+                    afterImage = null,
+                    members = emptyList(),
+                    creator =
+                        UserItem(
+                            id = 1,
+                            name = "Pepe Papa",
+                            avatarUrl = null,
+                            description = null,
+                        ),
+                    saved = false,
+                    participating = false,
+                ),
             eventName = "Jornada de Limpieza en la Playa",
             onBackClick = {},
             onAddToCalendarClick = {},

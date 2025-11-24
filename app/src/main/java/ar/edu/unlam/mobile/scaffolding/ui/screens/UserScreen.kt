@@ -93,9 +93,6 @@ fun UserScreen(
             viewModel.getCurrentLocation(context = context)
         }
         Log.d("UserScreen", "Permiso de ubicación otorgado")
-    } else {
-        // TODO: Volver a pedir permiso de ubicación
-        Log.e("UserScreen", "No se otorgó permiso de ubicación")
     }
 
     Box(
@@ -181,7 +178,6 @@ fun UserScreen(
                         scrollBehavior = scrollBehavior,
                     )
 
-                    // Agregue esta topBar hasta que este el componente C15: DropDownMenu
                     TopAppBar(
                         title = {
                             Button(
@@ -220,9 +216,14 @@ fun UserScreen(
                                     isDistanceFilter = false
                                 },
                                 onDistanceFilter = {
-                                    viewModel.getEvents(userId, sortBy = "distance", order = "asc")
-                                    isDistanceFilter = true
+                                    if (permissionState.status.isGranted) {
+                                        viewModel.getEvents(userId, sortBy = "distance", order = "asc")
+                                        isDistanceFilter = true
+                                    } else {
+                                        permissionState.launchPermissionRequest()
+                                    }
                                 },
+                                selectedOption = if (isDistanceFilter) 1 else 0,
                             )
                         },
                         modifier = Modifier.consumeWindowInsets(WindowInsets.systemBars),
@@ -245,7 +246,8 @@ fun UserScreen(
                                             .padding(vertical = 4.dp)
                                             .animateItem(tween(durationMillis = 500))
                                             .clickable {
-                                                val isPast = uiState.showPastEvents // true si es evento pasado
+                                                val isPast =
+                                                    uiState.showPastEvents // true si es evento pasado
                                                 navController.navigate(
                                                     "eventDetails/${event.id}?enableReporting=$isPast&hideParticipateButton=true",
                                                 )

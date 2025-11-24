@@ -23,11 +23,10 @@ import androidx.compose.ui.tooling.preview.Preview
 @Composable
 fun EventFilterButton(
     modifier: Modifier = Modifier,
+    selectedOption: Int = 0,
     onDistanceFilter: () -> Unit,
     onDateFilter: () -> Unit,
 ) {
-    var selectedOption: Int by remember { mutableStateOf(0) }
-
     val options: List<EventFilterOption> =
         listOf(
             EventFilterOption(
@@ -35,7 +34,6 @@ fun EventFilterButton(
                 title = "Más recientes",
                 onSelect = {
                     onDateFilter()
-                    selectedOption = 0
                 },
             ),
             EventFilterOption(
@@ -43,7 +41,6 @@ fun EventFilterButton(
                 title = "Más cercanos",
                 onSelect = {
                     onDistanceFilter()
-                    selectedOption = 1
                 },
             ),
         )
@@ -72,7 +69,7 @@ fun EventFilterButton(
                             contentDescription = option.title,
                             tint =
                                 if (selectedOption == index) {
-                                    MaterialTheme.colorScheme.secondary
+                                    MaterialTheme.colorScheme.primary
                                 } else {
                                     MaterialTheme.colorScheme.onSurfaceVariant
                                 },

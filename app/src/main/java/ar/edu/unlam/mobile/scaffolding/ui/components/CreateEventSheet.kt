@@ -7,7 +7,6 @@ import android.os.Environment
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -39,8 +38,6 @@ import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
@@ -52,7 +49,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -106,7 +102,7 @@ fun CreateEventSheet(
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var locationPoint by remember { mutableStateOf(userLocation) }
-    var locationString by remember { mutableStateOf("") }
+    var locationString by remember { mutableStateOf<String?>(null) }
     var date by remember { mutableStateOf<LocalDate?>(null) }
     var hour by remember { mutableStateOf<Int?>(null) }
     var minute by remember { mutableStateOf<Int?>(null) }
@@ -289,10 +285,19 @@ fun CreateEventSheet(
                     )
                     // Ubicación del evento
                     OutlinedTextField(
-                        value = locationString,
+                        value = locationString ?: "No se encuentra ubicación...",
                         onValueChange = { locationString = it },
                         readOnly = true,
-                        textStyle = MaterialTheme.typography.bodyLarge,
+                        textStyle =
+                            MaterialTheme.typography.bodyLarge.copy(
+                                color =
+                                    if (locationPoint == null) {
+                                        MaterialTheme.colorScheme.error
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurface
+                                    },
+                                fontWeight = FontWeight.Bold,
+                            ),
                         colors =
                             TextFieldDefaults.colors(
                                 focusedContainerColor = Color.Transparent,
@@ -476,42 +481,21 @@ fun CreateEventSheet(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                OutlinedButton(
+                SecondaryButton(
+                    text = "Cancelar",
                     onClick = { onDismiss() },
-                    colors =
-                        ButtonDefaults.buttonColors(
-                            containerColor = Color.Transparent,
-                            contentColor = MaterialTheme.colorScheme.onSurface,
-                        ),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary),
-                    shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.weight(1f),
-                ) {
-                    Text(
-                        text = "Cancelar",
-                        style = MaterialTheme.typography.titleLarge,
-                    )
-                }
-                Button(
+                )
+                PrimaryButton(
+                    text = "Crear",
                     enabled = name.isNotEmpty() && locationPoint != null && date != null && hour != null && minute != null,
                     onClick = {
                         val dateTime = date!!.atTime(hour!!, minute!!)
                         onConfirm(name, description, locationPoint!!, dateTime, selectedImagesUri)
                         onDismiss()
                     },
-                    colors =
-                        ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = Color.White,
-                        ),
-                    shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.weight(1f),
-                ) {
-                    Text(
-                        text = "Crear",
-                        style = MaterialTheme.typography.titleLarge,
-                    )
-                }
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
