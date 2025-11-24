@@ -81,14 +81,8 @@ fun EventDetailsScreen(
             sheetState = sheetState,
         ) {
             ConfirmParticipationComponent(
+                event = event,
                 eventName = event.title,
-                eventDate =
-                    java.text
-                        .SimpleDateFormat(
-                            "EEEE d 'de' MMMM, HH:mm 'hs'",
-                            java.util.Locale("es", "AR"),
-                        ).format(java.util.Date(event.dateTime)),
-                eventPlace = "Ubicación: ${event.lat}, ${event.lng}",
                 onBackClick = { showParticipationSheet.value = false },
                 onAddToCalendarClick = { /* tu lógica */ },
                 onParticipateClick = { /* tu lógica */ },
