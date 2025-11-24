@@ -72,9 +72,11 @@ fun EventListScreen(
                 title = "Próximos eventos",
                 actions = {
                     EventFilterButton(
-                        isDistance = state.isDistance,
-                        onClick = {
-                            viewModel.updateFilter(it)
+                        onDateFilter = {
+                            viewModel.updateFilter(isDistance = false)
+                        },
+                        onDistanceFilter = {
+                            viewModel.updateFilter(isDistance = true)
                         },
                     )
                 },

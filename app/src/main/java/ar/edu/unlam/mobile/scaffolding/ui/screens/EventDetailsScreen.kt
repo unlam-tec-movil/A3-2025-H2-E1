@@ -12,8 +12,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
@@ -26,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import ar.edu.unlam.mobile.scaffolding.domain.user.model.UserItem
+import ar.edu.unlam.mobile.scaffolding.ui.components.ConfirmParticipationComponent
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventParticipant
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventPicturesCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.ParticipantInfoPopUp
@@ -35,6 +39,7 @@ import ar.edu.unlam.mobile.scaffolding.ui.components.TimePlaceEventCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.TopBar
 import coil.compose.AsyncImage
 
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun EventDetailsScreen(
@@ -45,6 +50,7 @@ fun EventDetailsScreen(
     navController: NavController? = null,
 ) {
     val state = viewModel.uiState.collectAsState()
+
     if (state.value.isLoading || state.value.event == null) {
         androidx.compose.foundation.layout.Box(
             modifier = Modifier.fillMaxSize(),
@@ -54,11 +60,35 @@ fun EventDetailsScreen(
         }
         return
     }
+
     val event = state.value.event ?: return
     val scrollState = rememberScrollState()
     val showPopup = remember { mutableStateOf(false) }
     val selectedUser = remember { mutableStateOf<UserItem?>(null) }
+    val showParticipationSheet = remember { mutableStateOf(false) }
+
     SystemBarStyle()
+
+    // mostrar el componente Participation
+    if (showParticipationSheet.value) {
+        val sheetState =
+            rememberModalBottomSheetState(
+                skipPartiallyExpanded = true,
+            )
+
+        ModalBottomSheet(
+            onDismissRequest = { showParticipationSheet.value = false },
+            sheetState = sheetState,
+        ) {
+            ConfirmParticipationComponent(
+                event = event,
+                eventName = event.title,
+                onBackClick = { showParticipationSheet.value = false },
+                onAddToCalendarClick = { /* tu lógica */ },
+                onParticipateClick = { /* tu lógica */ },
+            )
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -68,6 +98,7 @@ fun EventDetailsScreen(
             )
         },
     ) { paddingValues ->
+
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier =
@@ -88,14 +119,11 @@ fun EventDetailsScreen(
                 )
             }
 
-            // ✔ Popup dentro de item
             if (showPopup.value && selectedUser.value != null) {
                 ParticipantInfoPopUp(
                     user = selectedUser.value!!,
                     onDismiss = { showPopup.value = false },
-                    onReportClick = {
-                        showPopup.value = false
-                    },
+                    onReportClick = { showPopup.value = false },
                     enableReporting = enableReporting,
                 )
             }
@@ -107,9 +135,7 @@ fun EventDetailsScreen(
                 },
             )
 
-            Text(
-                text = event.description,
-            )
+            Text(text = event.description)
 
             EventParticipant(
                 user = event.creator,
@@ -136,6 +162,7 @@ fun EventDetailsScreen(
                     .padding(16.dp),
         ) {
             Spacer(modifier = Modifier.weight(1f))
+
             if (!hideParticipateButton && !enableReporting) {
                 PrimaryButton(
                     "Participar",
@@ -144,22 +171,8 @@ fun EventDetailsScreen(
                             .navigationBarsPadding()
                             .padding(bottom = 16.dp),
                     onClick = {
-                        val eventDateFormatted =
-                            java.text
-                                .SimpleDateFormat(
-                                    "EEEE d 'de' MMMM, HH:mm 'hs'",
-                                    java.util.Locale("es", "AR"),
-                                ).format(java.util.Date(event.dateTime))
-
-                        val eventPlace = "Ubicación: ${event.lat}, ${event.lng}"
-
-                        val encodedName = java.net.URLEncoder.encode(event.title, "UTF-8")
-                        val encodedDate = java.net.URLEncoder.encode(eventDateFormatted, "UTF-8")
-                        val encodedPlace = java.net.URLEncoder.encode(eventPlace, "UTF-8")
-
-                        navController?.navigate(
-                            "confirmParticipation/${event.id}/$encodedName/$encodedDate/$encodedPlace",
-                        )
+                        //  mostramos ConfirmParticipationComponent
+                        showParticipationSheet.value = true
                     },
                 )
             }

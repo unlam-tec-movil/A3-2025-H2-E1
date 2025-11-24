@@ -47,6 +47,7 @@ import javax.inject.Inject
 
 data class HomeUIState(
     val eventList: List<SuggestedEvent> = emptyList(),
+    val selectedEvent: EventItem? = null,
     val mapProperties: MapProperties = MapProperties(),
     val helloMessageState: MessageUIState,
     val userLocation: GeoPoint? = null,
@@ -92,8 +93,7 @@ class HomeViewModel
         private var mapEventJob: Job? = null
         private var searchEventJob: Job? = null
         private var navigationJob: Job? = null
-        private val _selectedEvent = MutableStateFlow<EventItem?>(null)
-        val selectedEvent = _selectedEvent.asStateFlow()
+        private var locationTimeoutJob: Job? = null
 
         init {
             _uiState.value = HomeUIState(helloMessageState = MessageUIState.Success("2b"))
@@ -121,11 +121,16 @@ class HomeViewModel
         // Esto deberia hacer si tienes los permisos te coloque al iniciar en tu posicion en el mapa,
         // de momento no lo hace, estoy en eso.
         fun setUserLocation(location: Location) {
+            locationTimeoutJob?.cancel()
+            locationTimeoutJob =
+                viewModelScope.launch {
+                    delay(6000L)
+                    _uiState.update { it.copy(userLocation = null) }
+                }
             val userLocation = GeoPoint(location.latitude, location.longitude)
             _uiState.update {
                 it.copy(
                     userLocation = userLocation,
-                    mapProperties = it.mapProperties.copy(center = userLocation),
                 )
             }
         }
@@ -386,12 +391,16 @@ class HomeViewModel
                 getEventByIdUseCase(eventId).collect { resource ->
                     when (resource) {
                         is Resource.Success -> {
-                            _selectedEvent.value = resource.data
+                            _uiState.update { currentState ->
+                                currentState.copy(selectedEvent = resource.data)
+                            }
                             setTargetLocation(GeoPoint(resource.data.lat, resource.data.lng))
                         }
                         is Resource.Error -> {
                             Log.e("HomeViewModel", "Evento no encontrado: ${resource.message}")
-                            _selectedEvent.value = null
+                            _uiState.update { currentState ->
+                                currentState.copy(selectedEvent = null)
+                            }
                         }
                     }
                 }
@@ -399,6 +408,8 @@ class HomeViewModel
         }
 
         fun clearSelectedEvent() {
-            _selectedEvent.value = null
+            _uiState.update { currentState ->
+                currentState.copy(selectedEvent = null)
+            }
         }
     }

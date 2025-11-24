@@ -63,7 +63,6 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val searchBarState by viewModel.searchUiState.collectAsStateWithLifecycle()
-    val selectedEvent by viewModel.selectedEvent.collectAsState()
     val currentRoute by viewModel.currentRouteState.collectAsState()
 
     var showCreateEventDialog by remember { mutableStateOf(false) }
@@ -103,7 +102,7 @@ fun HomeScreen(
             val locationCallback =
                 object : LocationCallback() {
                     override fun onLocationResult(result: LocationResult) {
-                        result.lastLocation?.let { viewModel::setUserLocation }
+                        result.lastLocation?.let { viewModel.setUserLocation(it) }
                     }
                 }
 
@@ -169,11 +168,11 @@ fun HomeScreen(
                 // Estado para animar tarjeta del evento seleccionado
                 var showEventCard by remember { mutableStateOf(false) }
 
-                LaunchedEffect(selectedEvent) {
-                    showEventCard = selectedEvent != null
+                LaunchedEffect(uiState.selectedEvent) {
+                    showEventCard = uiState.selectedEvent != null
                 }
 
-                selectedEvent?.let { event ->
+                uiState.selectedEvent?.let { event ->
                     Column(
                         modifier =
                             Modifier
