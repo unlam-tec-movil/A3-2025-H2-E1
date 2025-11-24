@@ -8,10 +8,10 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -161,35 +161,28 @@ fun HomeScreen(
                     userLocation = uiState.userLocation,
                 )
 
-                // Estado para animar tarjeta del evento seleccionado
-                var showEventCard by remember { mutableStateOf(false) }
-
-                LaunchedEffect(uiState.selectedEvent) {
-                    showEventCard = uiState.selectedEvent != null
-                }
-
-                uiState.selectedEvent?.let { event ->
-                    Column(
-                        modifier =
-                            Modifier
-                                .fillMaxSize()
-                                .zIndex(15f),
-                        verticalArrangement = Arrangement.Bottom,
-                        horizontalAlignment = Alignment.CenterHorizontally,
+                Column(
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .zIndex(15f),
+                    verticalArrangement = Arrangement.Bottom,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    AnimatedVisibility(
+                        visible = uiState.showEventCard,
+                        enter =
+                            slideInVertically(
+                                initialOffsetY = { it }, // entra desde abajo
+                                animationSpec = tween(durationMillis = viewModel.animationTime),
+                            ) + fadeIn(animationSpec = tween(durationMillis = viewModel.animationTime)),
+                        exit =
+                            slideOutVertically(
+                                targetOffsetY = { it },
+                                animationSpec = tween(durationMillis = viewModel.animationTime),
+                            ) + fadeOut(animationSpec = tween(durationMillis = viewModel.animationTime)),
                     ) {
-                        AnimatedVisibility(
-                            visible = showEventCard,
-                            enter =
-                                expandVertically(
-                                    expandFrom = Alignment.Bottom,
-                                    animationSpec = tween(durationMillis = 1000),
-                                ) + fadeIn(animationSpec = tween(durationMillis = 1000)),
-                            exit =
-                                shrinkVertically(
-                                    shrinkTowards = Alignment.Bottom,
-                                    animationSpec = tween(durationMillis = 1000),
-                                ) + fadeOut(animationSpec = tween(durationMillis = 1000)),
-                        ) {
+                        uiState.selectedEvent?.let { event ->
                             EventHomeCard(
                                 event = event,
                                 distance =
@@ -198,13 +191,10 @@ fun HomeScreen(
                                         uiState.userLocation?.longitude ?: 0.0,
                                     ),
                                 onViewEventClick = {
-                                    showEventCard = false
                                     navController.navigate("eventDetails/${event.id}")
                                     viewModel.clearSelectedEvent()
                                 },
                                 onCloseClick = {
-                                    // Oculta la tarjeta
-                                    showEventCard = false
                                     // Limpia el evento seleccionado
                                     viewModel.clearSelectedEvent()
                                 },

@@ -51,6 +51,7 @@ data class HomeUIState(
     val mapProperties: MapProperties = MapProperties(),
     val helloMessageState: MessageUIState,
     val userLocation: GeoPoint? = null,
+    val showEventCard: Boolean = false,
 )
 
 data class SearchUIState(
@@ -94,6 +95,8 @@ class HomeViewModel
         private var searchEventJob: Job? = null
         private var navigationJob: Job? = null
         private var locationTimeoutJob: Job? = null
+
+        val animationTime = 400
 
         init {
             _uiState.value = HomeUIState(helloMessageState = MessageUIState.Success("2b"))
@@ -384,9 +387,7 @@ class HomeViewModel
                 getEventByIdUseCase(eventId).collect { resource ->
                     when (resource) {
                         is Resource.Success -> {
-                            _uiState.update { currentState ->
-                                currentState.copy(selectedEvent = resource.data)
-                            }
+                            setSelectedEvent(resource.data)
                             setTargetLocation(GeoPoint(resource.data.lat, resource.data.lng))
                         }
                         is Resource.Error -> {
@@ -401,8 +402,32 @@ class HomeViewModel
         }
 
         fun clearSelectedEvent() {
+            // 1. Ocultar la tarjeta
             _uiState.update { currentState ->
-                currentState.copy(selectedEvent = null)
+                currentState.copy(showEventCard = false)
+            }
+
+            // 2. Después de un tiempo, limpiar selectedEvent
+            viewModelScope.launch {
+                delay(animationTime.toLong())
+                _uiState.update { currentState ->
+                    currentState.copy(selectedEvent = null)
+                }
+            }
+        }
+
+        fun setSelectedEvent(event: EventItem) {
+            // 1. Asignar el evento
+            _uiState.update { currentState ->
+                currentState.copy(selectedEvent = event)
+            }
+
+            // 2. Después de un tiempo, mostrar la tarjeta
+            viewModelScope.launch {
+                delay(100L)
+                _uiState.update { currentState ->
+                    currentState.copy(showEventCard = true)
+                }
             }
         }
     }
