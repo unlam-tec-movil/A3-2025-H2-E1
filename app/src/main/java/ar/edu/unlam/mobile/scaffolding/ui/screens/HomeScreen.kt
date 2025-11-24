@@ -208,7 +208,6 @@ fun HomeScreen(
                                                     lon = event.lng,
                                                 ),
                                         )
-                                        showEventCard = false
                                         viewModel.clearSelectedEvent()
                                     } else {
                                         permissionState.launchPermissionRequest()
