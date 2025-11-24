@@ -96,6 +96,7 @@ dependencies {
     implementation(libs.androidx.compose.animation)
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.compose.foundation.layout)
+    implementation(libs.androidx.compose.ui.test.junit4)
 
     // Testing
     testImplementation(libs.junit)
@@ -136,4 +137,6 @@ dependencies {
 
     // OnBoarding
     implementation(libs.foundation.pager)
+    testImplementation("io.mockk:mockk:1.13.10")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
 }
