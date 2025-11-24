@@ -1,7 +1,9 @@
 package ar.edu.unlam.mobile.scaffolding.ui.screens
 
 import android.annotation.SuppressLint
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,11 +21,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -38,6 +42,9 @@ import ar.edu.unlam.mobile.scaffolding.ui.components.SystemBarStyle
 import ar.edu.unlam.mobile.scaffolding.ui.components.TimePlaceEventCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.TopBar
 import coil.compose.AsyncImage
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -52,7 +59,7 @@ fun EventDetailsScreen(
     val state = viewModel.uiState.collectAsState()
 
     if (state.value.isLoading || state.value.event == null) {
-        androidx.compose.foundation.layout.Box(
+        Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
         ) {
@@ -66,6 +73,8 @@ fun EventDetailsScreen(
     val showPopup = remember { mutableStateOf(false) }
     val selectedUser = remember { mutableStateOf<UserItem?>(null) }
     val showParticipationSheet = remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val userId by viewModel.userId.collectAsState()
 
     SystemBarStyle()
 
@@ -83,16 +92,19 @@ fun EventDetailsScreen(
             ConfirmParticipationComponent(
                 eventName = event.title,
                 eventDate =
-                    java.text
-                        .SimpleDateFormat(
-                            "EEEE d 'de' MMMM, HH:mm 'hs'",
-                            java.util.Locale("es", "AR"),
-                        ).format(java.util.Date(event.dateTime)),
+                    SimpleDateFormat(
+                        "EEEE d 'de' MMMM, HH:mm 'hs'",
+                        Locale("es", "AR"),
+                    ).format(Date(event.dateTime)),
                 eventPlace = "Ubicación: ${event.lat}, ${event.lng}",
                 onBackClick = { showParticipationSheet.value = false },
                 onAddToCalendarClick = { /* tu lógica */ },
-                onParticipateClick = { viewModel.joinEvent()
-                    showParticipationSheet.value = false },
+                onParticipateClick = {
+                    viewModel.joinEvent()
+                    Toast.makeText(context, "Evento agregado exitosamente", Toast.LENGTH_LONG).show()
+                    navController?.navigate("user/$userId")
+                    showParticipationSheet.value = false
+                },
             )
         }
     }

@@ -30,12 +30,15 @@ class EventDetailsViewModel
     @Inject
     constructor(
         private val eventRepository: EventRepository,
-        private val sessionManager: SessionManager,
+        val sessionManager: SessionManager,
         savedStateHandle: SavedStateHandle,
     ) : ViewModel() {
         private val eventId: String = checkNotNull(savedStateHandle["id"])
         private val _uiState = MutableStateFlow(EventDetailsUiState(isLoading = true))
         val uiState: StateFlow<EventDetailsUiState> = _uiState.asStateFlow()
+
+        private val _userId = MutableStateFlow(sessionManager.getLoggedUserId())
+        val userId: MutableStateFlow<Long> = _userId
 
         init {
             loadEventDetails()
@@ -58,7 +61,7 @@ class EventDetailsViewModel
                                 currentState.copy(
                                     event = result.data,
                                     isLoading = false,
-                                    isParticipating = result.data?.participating ?: false
+                                    isParticipating = result.data?.participating ?: false,
                                 )
                             }
                         }
@@ -116,27 +119,28 @@ class EventDetailsViewModel
                 }
             }
         }
-    fun joinEvent() {
-        val userId = sessionManager.getLoggedUserId()
 
-        if (userId == -1L) {
-            _uiState.update { it.copy(error = "Sesión no válida") }
-            return
-        }
+        fun joinEvent() {
+            val userId = sessionManager.getLoggedUserId()
 
-        viewModelScope.launch {
-            eventRepository.joinEvent(eventId, userId).collect { result ->
-                when (result) {
-                    is Resource.Success -> {
-                        _uiState.update { it.copy(isParticipating = true) }
-                        loadEventDetails()
-                    }
+            if (userId == -1L) {
+                _uiState.update { it.copy(error = "Sesión no válida") }
+                return
+            }
 
-                    is Resource.Error -> {
-                        _uiState.update { it.copy(error = result.message) }
+            viewModelScope.launch {
+                eventRepository.joinEvent(eventId, userId).collect { result ->
+                    when (result) {
+                        is Resource.Success -> {
+                            _uiState.update { it.copy(isParticipating = true) }
+                            loadEventDetails()
+                        }
+
+                        is Resource.Error -> {
+                            _uiState.update { it.copy(error = result.message) }
+                        }
                     }
                 }
             }
         }
-    }
     }

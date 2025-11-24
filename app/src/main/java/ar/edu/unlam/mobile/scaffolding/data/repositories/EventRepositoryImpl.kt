@@ -442,25 +442,31 @@ class EventRepositoryImpl
             } catch (e: Exception) {
                 Resource.Error(message = e.message ?: "Error al crear el evento")
             }
-    override suspend fun joinEvent(eventId: String, userId: Long): Flow<Resource<Unit>> = flow {
-        val user = mockUsers.find { it.id == userId }
-        val eventIndex = mockEvents.indexOfFirst { it.eventId == eventId }
 
-        if (eventIndex == -1 || user == null) {
-            emit(Resource.Error<Unit>(data = null, message = "Evento no encontrado"))
-            return@flow
-        }
+        override suspend fun joinEvent(
+            eventId: String,
+            userId: Long,
+        ): Flow<Resource<Unit>> =
+            flow {
+                val user = mockUsers.find { it.id == userId }
+                val eventIndex = mockEvents.indexOfFirst { it.eventId == eventId }
 
-        val event = mockEvents[eventIndex]
+                if (eventIndex == -1 || user == null) {
+                    emit(Resource.Error<Unit>(data = null, message = "Evento no encontrado"))
+                    return@flow
+                }
 
-        if (!event.members.any { it.id == userId }) {
-            val updatedEvent = event.copy(
-                members = event.members + user
-            )
-            mockEvents[eventIndex] = updatedEvent
-            _eventsFlow.value = mockEvents.toList()
-        }
+                val event = mockEvents[eventIndex]
 
-        emit(Resource.Success(Unit))
-    }
+                if (!event.members.any { it.id == userId }) {
+                    val updatedEvent =
+                        event.copy(
+                            members = event.members + user,
+                        )
+                    mockEvents[eventIndex] = updatedEvent
+                    _eventsFlow.value = mockEvents.toList()
+                }
+
+                emit(Resource.Success(Unit))
+            }
     }

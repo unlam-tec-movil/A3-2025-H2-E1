@@ -40,4 +40,8 @@ class SessionManager
         fun getLoggedEmail(): String? = prefs.getString("email", null)
 
         fun getLoggedUserId(): Long = prefs.getLong("user_id", -1L)
+
+        fun setLoggedUserId(userId: Long) {
+            prefs.edit { putLong("user_id", userId) }
+        }
     }
