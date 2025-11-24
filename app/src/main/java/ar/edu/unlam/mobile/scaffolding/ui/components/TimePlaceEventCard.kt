@@ -50,7 +50,7 @@ fun TimePlaceEventCard(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier =
-                modifier
+                Modifier
                     .clickable {
                         onLocationClick(event.lat, event.lng)
                     },
@@ -78,6 +78,7 @@ fun TimePlaceEventCard(
                     modifier
                         .padding(4.dp),
                 text = "$dateString - $timeString",
+                fontWeight = FontWeight.Bold,
             )
         }
     }

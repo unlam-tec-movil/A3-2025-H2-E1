@@ -21,7 +21,7 @@ import javax.inject.Inject
 data class EventListUiState(
     val events: List<EventItem> = emptyList(),
     val currentState: MessageUIState = MessageUIState.Loading,
-    val isDistance: Boolean = true,
+    val isDistance: Boolean = false,
 )
 
 @HiltViewModel
@@ -53,7 +53,7 @@ class EventListViewModel
                 locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
                     ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
 
-            userLocation = location?.let { LatLng(it.latitude, it.longitude) } ?: LatLng(-34.6037, -58.3816)
+            userLocation = location?.let { LatLng(it.latitude, it.longitude) }
 
             if (_uiState.value.isDistance) sortEventsByDistance()
         }

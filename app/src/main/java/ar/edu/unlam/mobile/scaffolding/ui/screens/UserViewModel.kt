@@ -46,12 +46,7 @@ class UserViewModel
             val location =
                 locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
                     ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
-            val userLocation =
-                if (location != null) {
-                    LatLng(location.latitude, location.longitude)
-                } else {
-                    LatLng(-34.6037, -58.3816) // Fallback: Obelisco
-                }
+            val userLocation = if (location != null) LatLng(location.latitude, location.longitude) else null
             _userUiState.update {
                 it.copy(currentLocation = userLocation)
             }
