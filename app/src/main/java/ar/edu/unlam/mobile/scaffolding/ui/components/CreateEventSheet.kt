@@ -35,7 +35,6 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.PhotoCamera
@@ -246,19 +245,10 @@ fun CreateEventSheet(
                 onValueChange = { name = it },
                 textStyle = MaterialTheme.typography.bodyLarge,
                 label = { Text("Nombre del evento") },
-                placeholder = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Create,
-                            contentDescription = "Nombre del evento",
-                            tint = MaterialTheme.colorScheme.secondary,
-                        )
-                        Text("Nombre del evento")
-                    }
-                },
                 modifier = Modifier.fillMaxWidth(),
                 colors =
                     TextFieldDefaults.colors(
+                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
                         focusedContainerColor = Color.Transparent,
                         unfocusedContainerColor = Color.Transparent,
                     ),
@@ -271,6 +261,12 @@ fun CreateEventSheet(
                 textStyle = MaterialTheme.typography.bodyLarge,
                 label = { Text("Descripción") },
                 modifier = Modifier.fillMaxWidth(),
+                colors =
+                    TextFieldDefaults.colors(
+                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                    ),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             )
 
