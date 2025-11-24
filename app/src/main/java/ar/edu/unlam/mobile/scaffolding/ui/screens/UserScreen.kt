@@ -210,7 +210,6 @@ fun UserScreen(
                             }
                         },
                         actions = {
-
                             EventFilterButton(
                                 onDateFilter = {
                                     viewModel.getEvents(userId, sortBy = "date", order = "asc")

@@ -71,7 +71,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -286,17 +285,19 @@ fun CreateEventSheet(
                     )
                     // Ubicación del evento
                     OutlinedTextField(
-                        value = locationString?: "No se encuentra ubicación...",
+                        value = locationString ?: "No se encuentra ubicación...",
                         onValueChange = { locationString = it },
                         readOnly = true,
-                        textStyle = MaterialTheme.typography.bodyLarge.copy(
-                            color = if (locationPoint == null) {
-                                MaterialTheme.colorScheme.error
-                            } else {
-                                MaterialTheme.colorScheme.onSurface
-                            },
-                            fontWeight = FontWeight.Bold,
-                        ),
+                        textStyle =
+                            MaterialTheme.typography.bodyLarge.copy(
+                                color =
+                                    if (locationPoint == null) {
+                                        MaterialTheme.colorScheme.error
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurface
+                                    },
+                                fontWeight = FontWeight.Bold,
+                            ),
                         colors =
                             TextFieldDefaults.colors(
                                 focusedContainerColor = Color.Transparent,
