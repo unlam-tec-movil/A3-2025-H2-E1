@@ -31,4 +31,5 @@ interface EventRepository {
     ): Flow<Resource<Event>>
 
     suspend fun createEvent(event: Event): Resource<Unit>
+    suspend fun joinEvent(eventId: String, userId: Long): Flow<Resource<Unit>>
 }

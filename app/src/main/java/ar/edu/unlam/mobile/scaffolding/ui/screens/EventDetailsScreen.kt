@@ -91,7 +91,8 @@ fun EventDetailsScreen(
                 eventPlace = "Ubicación: ${event.lat}, ${event.lng}",
                 onBackClick = { showParticipationSheet.value = false },
                 onAddToCalendarClick = { /* tu lógica */ },
-                onParticipateClick = { /* tu lógica */ },
+                onParticipateClick = { viewModel.joinEvent()
+                    showParticipationSheet.value = false },
             )
         }
     }
@@ -169,7 +170,7 @@ fun EventDetailsScreen(
         ) {
             Spacer(modifier = Modifier.weight(1f))
 
-            if (!hideParticipateButton && !enableReporting) {
+            if (!hideParticipateButton && !enableReporting && !state.value.isParticipating) {
                 PrimaryButton(
                     "Participar",
                     width = 200.dp,

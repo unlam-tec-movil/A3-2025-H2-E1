@@ -58,7 +58,7 @@ class EventDetailsViewModel
                                 currentState.copy(
                                     event = result.data,
                                     isLoading = false,
-                                    isParticipating = false,
+                                    isParticipating = result.data?.participating ?: false
                                 )
                             }
                         }
@@ -116,4 +116,27 @@ class EventDetailsViewModel
                 }
             }
         }
+    fun joinEvent() {
+        val userId = sessionManager.getLoggedUserId()
+
+        if (userId == -1L) {
+            _uiState.update { it.copy(error = "Sesión no válida") }
+            return
+        }
+
+        viewModelScope.launch {
+            eventRepository.joinEvent(eventId, userId).collect { result ->
+                when (result) {
+                    is Resource.Success -> {
+                        _uiState.update { it.copy(isParticipating = true) }
+                        loadEventDetails()
+                    }
+
+                    is Resource.Error -> {
+                        _uiState.update { it.copy(error = result.message) }
+                    }
+                }
+            }
+        }
+    }
     }
