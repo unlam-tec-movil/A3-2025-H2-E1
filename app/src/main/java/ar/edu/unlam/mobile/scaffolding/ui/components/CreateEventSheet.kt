@@ -76,6 +76,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import ar.edu.unlam.mobile.scaffolding.ui.screens.EventDraft
 import ar.edu.unlam.mobile.scaffolding.utils.getAddressFromCoordinates
 import coil.compose.AsyncImage
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -84,7 +85,6 @@ import com.google.accompanist.permissions.rememberPermissionState
 import org.osmdroid.util.GeoPoint
 import java.io.File
 import java.text.SimpleDateFormat
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Date
@@ -95,18 +95,18 @@ import java.util.Locale
 @Composable
 fun CreateEventSheet(
     onDismiss: () -> Unit,
-    userLocation: GeoPoint? = null,
-    onConfirm: (String, String, GeoPoint, LocalDateTime, List<Uri>) -> Unit,
+    onConfirm: () -> Unit,
+    eventLocation: GeoPoint? = null,
+    onSelectEventPosition: () -> Unit,
+    eventDraft: EventDraft,
+    onDraftChange: (EventDraft) -> Unit,
 ) {
     // Estados del evento
-    var name by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var locationPoint by remember { mutableStateOf(userLocation) }
+    var locationPoint by remember { mutableStateOf(eventLocation) }
     var locationString by remember { mutableStateOf<String?>(null) }
-    var date by remember { mutableStateOf<LocalDate?>(null) }
-    var hour by remember { mutableStateOf<Int?>(null) }
-    var minute by remember { mutableStateOf<Int?>(null) }
-    var selectedImagesUri by remember { mutableStateOf<List<Uri>>(emptyList()) }
+    var date by remember { mutableStateOf(eventDraft.dateTime?.toLocalDate()) }
+    var hour by remember { mutableStateOf(eventDraft.hour) }
+    var minute by remember { mutableStateOf(eventDraft.minute) }
 
     // Estados diálogos
     val openDateDialog = remember { mutableStateOf(false) }
@@ -125,14 +125,17 @@ fun CreateEventSheet(
     val cameraImageUri = remember { mutableStateOf<Uri?>(null) }
 
     // Launchers
-    if (locationPoint != null) {
-        LaunchedEffect(Unit) {
+    LaunchedEffect(locationPoint) {
+        if (locationPoint != null) {
             locationString = getAddressFromCoordinates(context, locationPoint!!.latitude, locationPoint!!.longitude)
+            onDraftChange(eventDraft.copy(location = locationPoint))
+        } else {
+            onDraftChange(eventDraft.copy(location = null))
         }
     }
     val imagePickerLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
-            selectedImagesUri = selectedImagesUri + uris
+            onDraftChange(eventDraft.copy(imagesUri = eventDraft.imagesUri + uris))
         }
     val cameraLauncher =
         rememberLauncherForActivityResult(
@@ -140,7 +143,7 @@ fun CreateEventSheet(
         ) { success ->
             if (success) {
                 cameraImageUri.value?.let { uri ->
-                    selectedImagesUri = selectedImagesUri + uri
+                    onDraftChange(eventDraft.copy(imagesUri = eventDraft.imagesUri + uri))
                 }
             }
         }
@@ -161,6 +164,7 @@ fun CreateEventSheet(
                 TextButton(
                     onClick = {
                         date = datePickerState.getSelectedDate()
+                        onDraftChange(eventDraft.copy(dateTime = date?.atStartOfDay()))
                         openDateDialog.value = false
                     },
                     enabled = confirmEnabled.value,
@@ -196,6 +200,7 @@ fun CreateEventSheet(
                     onClick = {
                         hour = timePickerState.hour
                         minute = timePickerState.minute
+                        onDraftChange(eventDraft.copy(hour = hour, minute = minute))
                         openTimeDialog.value = false
                     },
                     enabled = confirmEnabled.value,
@@ -237,8 +242,8 @@ fun CreateEventSheet(
 
             // Nombre del evento
             OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
+                value = eventDraft.title,
+                onValueChange = { onDraftChange(eventDraft.copy(title = it)) },
                 textStyle = MaterialTheme.typography.bodyLarge,
                 label = { Text("Nombre del evento") },
                 modifier = Modifier.fillMaxWidth(),
@@ -252,8 +257,8 @@ fun CreateEventSheet(
             )
 
             OutlinedTextField(
-                value = description,
-                onValueChange = { description = it },
+                value = eventDraft.description,
+                onValueChange = { onDraftChange(eventDraft.copy(description = it)) },
                 textStyle = MaterialTheme.typography.bodyLarge,
                 label = { Text("Descripción") },
                 modifier = Modifier.fillMaxWidth(),
@@ -267,15 +272,13 @@ fun CreateEventSheet(
             )
 
             Text("Ubicación del evento")
-            Card(
-                modifier =
-                    Modifier
-                        .fillMaxWidth(),
-            ) {
+            Card(modifier = Modifier.fillMaxWidth()) {
                 Row(
                     modifier =
                         Modifier
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                            .fillMaxWidth()
+                            .clickable { onSelectEventPosition() }
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
@@ -283,12 +286,13 @@ fun CreateEventSheet(
                         contentDescription = "Ubicación del evento",
                         tint = MaterialTheme.colorScheme.primary,
                     )
-                    // Ubicación del evento
-                    OutlinedTextField(
-                        value = locationString ?: "No se encuentra ubicación...",
-                        onValueChange = { locationString = it },
-                        readOnly = true,
-                        textStyle =
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Text(
+                        text = locationString ?: "No se seleccionó ubicación...",
+                        modifier = Modifier.weight(1f),
+                        style =
                             MaterialTheme.typography.bodyLarge.copy(
                                 color =
                                     if (locationPoint == null) {
@@ -297,14 +301,6 @@ fun CreateEventSheet(
                                         MaterialTheme.colorScheme.onSurface
                                     },
                                 fontWeight = FontWeight.Bold,
-                            ),
-                        colors =
-                            TextFieldDefaults.colors(
-                                focusedContainerColor = Color.Transparent,
-                                unfocusedContainerColor = Color.Transparent,
-                                disabledContainerColor = Color.Transparent,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent,
                             ),
                     )
                 }
@@ -440,7 +436,7 @@ fun CreateEventSheet(
                                 }
                             }
                         }
-                        items(selectedImagesUri) { uri ->
+                        items(eventDraft.imagesUri) { uri ->
                             Box(modifier = Modifier.padding(4.dp)) {
                                 AsyncImage(
                                     model = uri,
@@ -453,7 +449,7 @@ fun CreateEventSheet(
                                 )
                                 IconButton(
                                     onClick = {
-                                        selectedImagesUri = selectedImagesUri - uri
+                                        onDraftChange(eventDraft.copy(imagesUri = eventDraft.imagesUri - uri))
                                     },
                                     modifier =
                                         Modifier
@@ -488,10 +484,14 @@ fun CreateEventSheet(
                 )
                 PrimaryButton(
                     text = "Crear",
-                    enabled = name.isNotEmpty() && locationPoint != null && date != null && hour != null && minute != null,
+                    enabled =
+                        eventDraft.title.isNotEmpty() &&
+                            eventDraft.location != null &&
+                            eventDraft.dateTime != null &&
+                            eventDraft.hour != null &&
+                            eventDraft.minute != null,
                     onClick = {
-                        val dateTime = date!!.atTime(hour!!, minute!!)
-                        onConfirm(name, description, locationPoint!!, dateTime, selectedImagesUri)
+                        onConfirm()
                         onDismiss()
                     },
                     modifier = Modifier.weight(1f),
@@ -565,11 +565,19 @@ private fun createImageFile(context: Context): File {
 fun PreviewCreateEventSheet() {
     CreateEventSheet(
         onDismiss = {},
-        onConfirm = { name, description, location, dateTime, image -> },
-        userLocation =
-            GeoPoint(
-                -34.603738,
-                -58.345,
+        onConfirm = {},
+        eventLocation = GeoPoint(-34.603738, -58.345),
+        onSelectEventPosition = {},
+        eventDraft =
+            EventDraft(
+                title = "Evento de prueba",
+                description = "Descripción del evento de prueba",
+                location = GeoPoint(-34.603738, -58.345),
+                dateTime = LocalDateTime.now(),
+                hour = 12,
+                minute = 0,
+                imagesUri = emptyList(),
             ),
+        onDraftChange = {},
     )
 }

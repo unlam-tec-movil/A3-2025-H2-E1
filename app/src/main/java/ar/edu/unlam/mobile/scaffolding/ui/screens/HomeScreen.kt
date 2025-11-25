@@ -13,6 +13,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -44,6 +45,7 @@ import ar.edu.unlam.mobile.scaffolding.ui.components.EventHomeCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.EventSearchBar
 import ar.edu.unlam.mobile.scaffolding.ui.components.FloatingButtons
 import ar.edu.unlam.mobile.scaffolding.ui.components.NearbyMap
+import ar.edu.unlam.mobile.scaffolding.ui.components.SelectEventPositionBar
 import ar.edu.unlam.mobile.scaffolding.ui.components.SystemBarStyle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -66,7 +68,6 @@ fun HomeScreen(
     val currentRoute by viewModel.currentRouteState.collectAsState()
 
     var showCreateEventDialog by remember { mutableStateOf(false) }
-    var isSessionActive by remember { mutableStateOf(false) }
     var showAlert by remember { mutableStateOf(false) }
     SystemBarStyle(searchBarState.isExpanded)
 
@@ -230,8 +231,8 @@ fun HomeScreen(
                     }
                 }
 
-                Column {
-                    // --- Búsqueda ---
+                Column(modifier = Modifier.zIndex(20f)) {
+                    // Barra de busqueda
                     EventSearchBar(
                         searchUiState = searchBarState,
                         onSearchQueryChange = viewModel::onSearchQueryChange,
@@ -242,6 +243,7 @@ fun HomeScreen(
                         onActiveChange = viewModel::onActiveChange,
                     )
 
+                    // Informacion de la ruta seguida
                     if (currentRoute != null) {
                         Spacer(modifier = Modifier.size(16.dp))
 
@@ -253,70 +255,69 @@ fun HomeScreen(
                             },
                         )
                     }
-                }
 
-                // Cantidad de resultados de búsqueda
-                Box(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(top = 90.dp)
-                            .align(Alignment.TopStart),
-                ) {
-                    AnimatedVisibility(searchBarState.lastQuery.isNotEmpty()) {
-                        Card(
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                            shape = MaterialTheme.shapes.medium,
-                            modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
-                        ) {
-                            Text(
-                                text =
-                                    if (uiState.eventList.size > 1) {
-                                        "Resultados de búsqueda: ${uiState.eventList.size}"
-                                    } else {
-                                        "Resultado de búsqueda"
-                                    },
-                                modifier = Modifier.padding(horizontal = 6.dp),
-                            )
-                        }
-                    }
-                }
+                    // Ubicación seleccionada para crear evento
+                    if (uiState.mapProperties.enableLongPress) {
+                        Spacer(modifier = Modifier.size(16.dp))
 
-                // Botones de acción para el mapa
-                Column(
-                    modifier =
-                        Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(top = 90.dp),
-                    horizontalAlignment = Alignment.End,
-                ) {
-                    FloatingActionButton(
-                        onClick = {
-                            val props = uiState.mapProperties
-                            viewModel.onMapPropertiesChanged(
-                                props.copy(
-                                    rotationBySensor = !props.rotationBySensor,
-                                    rotationByGesture = !props.rotationByGesture,
-                                ),
-                            )
-                        },
-                        containerColor =
-                            if (uiState.mapProperties.rotationBySensor) {
-                                MaterialTheme.colorScheme.secondary
-                            } else {
-                                MaterialTheme.colorScheme.surfaceContainer
-                            },
-                        shape = CircleShape,
-                        modifier =
-                            Modifier
-                                .size(52.dp)
-                                .padding(12.dp),
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Navigation,
-                            contentDescription = "Cambiar modo de rotación",
-                            modifier = Modifier.rotate(uiState.mapProperties.mapOrientation),
+                        SelectEventPositionBar(
+                            currentLocation = uiState.mapProperties.longPressPoint ?: uiState.userLocation,
                         )
+                    }
+
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        Row(horizontalArrangement = Arrangement.Start) {
+                            // Cantidad de resultados de búsqueda
+                            AnimatedVisibility(searchBarState.lastQuery.isNotEmpty()) {
+                                Card(
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                    shape = MaterialTheme.shapes.medium,
+                                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
+                                ) {
+                                    Text(
+                                        text =
+                                            if (uiState.eventList.size > 1) {
+                                                "Resultados de búsqueda: ${uiState.eventList.size}"
+                                            } else {
+                                                "Resultado de búsqueda"
+                                            },
+                                        modifier = Modifier.padding(horizontal = 6.dp),
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.weight(1f))
+
+                            // Brujula/rotacion actual del mapa
+                            FloatingActionButton(
+                                onClick = {
+                                    val props = uiState.mapProperties
+                                    viewModel.onMapPropertiesChanged(
+                                        props.copy(
+                                            rotationBySensor = !props.rotationBySensor,
+                                            rotationByGesture = !props.rotationByGesture,
+                                        ),
+                                    )
+                                },
+                                containerColor =
+                                    if (uiState.mapProperties.rotationBySensor) {
+                                        MaterialTheme.colorScheme.secondary
+                                    } else {
+                                        MaterialTheme.colorScheme.surfaceContainer
+                                    },
+                                shape = CircleShape,
+                                modifier =
+                                    Modifier
+                                        .size(52.dp)
+                                        .padding(12.dp),
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Navigation,
+                                    contentDescription = "Cambiar modo de rotación",
+                                    modifier = Modifier.rotate(uiState.mapProperties.mapOrientation),
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -329,7 +330,12 @@ fun HomeScreen(
                             .padding(8.dp),
                 ) {
                     FloatingButtons(
-                        onClickAddEvent = { showCreateEventDialog = true },
+                        onClickAddEvent = {
+                            showCreateEventDialog = true
+                            viewModel.onMapPropertiesChanged(
+                                newProperties = uiState.mapProperties.copy(enableLongPress = false),
+                            )
+                        },
                         onClickCenterMap = {
                             if (permissionState.status.isGranted) {
                                 uiState.userLocation?.let { currentLocation ->
@@ -341,19 +347,31 @@ fun HomeScreen(
                                 permissionState.launchPermissionRequest()
                             }
                         },
+                        isSelectingLocation = uiState.mapProperties.enableLongPress,
                     )
                 }
 
                 // --- Crear Evento ---
                 if (showCreateEventDialog) {
                     CreateEventSheet(
-                        onDismiss = { showCreateEventDialog = false },
-                        userLocation = uiState.mapProperties.longPressPoint ?: uiState.userLocation,
-                        onConfirm = { name, description, location, dateTime, imageUri ->
-                            viewModel.createEvent(name, description, location, dateTime, imageUri)
+                        onDismiss = {
+                            viewModel.clearDraft()
+                            showCreateEventDialog = false
+                        },
+                        onConfirm = {
+                            viewModel.createEvent()
                             showCreateEventDialog = false
                             viewModel.fetchEvents()
                         },
+                        eventLocation = uiState.mapProperties.longPressPoint ?: uiState.userLocation,
+                        onSelectEventPosition = {
+                            viewModel.onMapPropertiesChanged(
+                                uiState.mapProperties.copy(enableLongPress = true),
+                            )
+                            showCreateEventDialog = false
+                        },
+                        eventDraft = uiState.eventDraft,
+                        onDraftChange = viewModel::onDraftChange,
                     )
                 }
 
