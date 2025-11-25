@@ -231,5 +231,5 @@ data class MapProperties(
     val rotationByGesture: Boolean = true,
     val rotationBySensor: Boolean = false,
     val longPressPoint: GeoPoint? = null,
-    val enableLongPress: Boolean = true,
+    val enableLongPress: Boolean = false,
 )

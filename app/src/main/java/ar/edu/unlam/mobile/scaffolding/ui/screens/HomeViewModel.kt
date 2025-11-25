@@ -48,10 +48,11 @@ import javax.inject.Inject
 data class HomeUIState(
     val eventList: List<SuggestedEvent> = emptyList(),
     val selectedEvent: EventItem? = null,
+    val eventDraft: EventDraft = EventDraft(),
     val mapProperties: MapProperties = MapProperties(),
-    val helloMessageState: MessageUIState,
     val userLocation: GeoPoint? = null,
     val showEventCard: Boolean = false,
+    val helloMessageState: MessageUIState,
 )
 
 data class SearchUIState(
@@ -60,6 +61,16 @@ data class SearchUIState(
     val lastQuery: String = "",
     val isExpanded: Boolean = false,
     val searchState: EventSearchState = EventSearchState.Idle,
+)
+
+data class EventDraft(
+    val title: String = "",
+    val description: String = "",
+    val location: GeoPoint? = null,
+    val dateTime: LocalDateTime? = null,
+    val hour: Int? = null,
+    val minute: Int? = null,
+    val imagesUri: List<Uri> = emptyList(),
 )
 
 @HiltViewModel
@@ -150,17 +161,6 @@ class HomeViewModel
                 }
                 delay(timeMillis = 300)
                 _uiState.update { it.copy(mapProperties = it.mapProperties.copy(targetLocation = null)) }
-            }
-        }
-
-        fun onMapLongPress(location: GeoPoint?) {
-            _uiState.update {
-                it.copy(
-                    mapProperties =
-                        it.mapProperties.copy(
-                            longPressPoint = location,
-                        ),
-                )
             }
         }
 
@@ -315,25 +315,38 @@ class HomeViewModel
             fetchEventById(eventId = event.id)
         }
 
-        fun createEvent(
-            title: String,
-            description: String,
-            location: GeoPoint,
-            dateTime: LocalDateTime,
-            imageUri: List<Uri>,
-        ) {
+        fun onDraftChange(draft: EventDraft) {
+            _uiState.update { it.copy(eventDraft = draft) }
+        }
+
+        fun onMapLongPress(location: GeoPoint?) {
+            _uiState.update {
+                it.copy(mapProperties = it.mapProperties.copy(longPressPoint = location))
+            }
+        }
+
+        fun clearDraft() {
+            _uiState.update { it.copy(eventDraft = EventDraft()) }
+        }
+
+        fun createEvent() {
+            val draft = _uiState.value.eventDraft
             viewModelScope.launch {
-                val timestamp = dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                val imageString = imageUri.firstOrNull()?.toString()
+                val timestamp =
+                    draft.dateTime!!
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant()
+                        .toEpochMilli()
+                val imageString = draft.imagesUri.firstOrNull()?.toString()
 
                 val newEvent =
                     Event(
                         id = UUID.randomUUID().toString(),
-                        title = title,
-                        description = description,
+                        title = draft.title,
+                        description = draft.description,
                         dateTime = timestamp,
-                        lat = location.latitude,
-                        lng = location.longitude,
+                        lat = draft.location!!.latitude,
+                        lng = draft.location.longitude,
                         image = imageString,
                         beforeImage = emptyList(),
                         afterImage = null,
