@@ -37,9 +37,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import ar.edu.unlam.mobile.scaffolding.data.model.OnboardingModel
 import ar.edu.unlam.mobile.scaffolding.ui.components.OnBoardItem
 import ar.edu.unlam.mobile.scaffolding.ui.components.PrimaryButton
+import ar.edu.unlam.mobile.scaffolding.ui.model.OnboardingModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)

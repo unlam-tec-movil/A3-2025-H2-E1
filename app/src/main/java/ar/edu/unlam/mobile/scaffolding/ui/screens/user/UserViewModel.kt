@@ -1,4 +1,4 @@
-package ar.edu.unlam.mobile.scaffolding.ui.screens
+package ar.edu.unlam.mobile.scaffolding.ui.screens.user
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -6,10 +6,10 @@ import android.location.Location
 import android.location.LocationManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventItem
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetJoinedEventsListUseCase
 import ar.edu.unlam.mobile.scaffolding.domain.user.usercase.GetUserUseCase
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
+import ar.edu.unlam.mobile.scaffolding.ui.screens.user.state.UserUIState
 import ar.edu.unlam.mobile.scaffolding.utils.Resource
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,17 +18,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-data class UserUIState(
-    val name: String = "",
-    val avatar: String? = "",
-    val description: String? = "",
-    val currentLocation: LatLng? = null,
-    val joinedEvents: List<EventItem> = emptyList(),
-    val pastEvents: List<EventItem> = emptyList(),
-    val showPastEvents: Boolean = false,
-    val userUiState: MessageUIState = MessageUIState.Loading,
-)
 
 @HiltViewModel
 class UserViewModel

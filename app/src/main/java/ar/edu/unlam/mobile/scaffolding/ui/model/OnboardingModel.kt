@@ -1,4 +1,4 @@
-package ar.edu.unlam.mobile.scaffolding.data.model
+package ar.edu.unlam.mobile.scaffolding.ui.model
 
 import androidx.compose.ui.graphics.vector.ImageVector
 

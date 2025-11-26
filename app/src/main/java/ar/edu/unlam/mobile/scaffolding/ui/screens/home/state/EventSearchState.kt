@@ -1,4 +1,4 @@
-package ar.edu.unlam.mobile.scaffolding.ui.common
+package ar.edu.unlam.mobile.scaffolding.ui.screens.home.state
 
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 

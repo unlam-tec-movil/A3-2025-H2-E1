@@ -1,10 +1,9 @@
-package ar.edu.unlam.mobile.scaffolding.ui.screens
+package ar.edu.unlam.mobile.scaffolding.ui.screens.home
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.location.Location
 import android.location.LocationManager
-import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -19,9 +18,12 @@ import ar.edu.unlam.mobile.scaffolding.domain.navigation.model.Coordinates
 import ar.edu.unlam.mobile.scaffolding.domain.navigation.model.Route
 import ar.edu.unlam.mobile.scaffolding.domain.navigation.repositories.NavigationRepository
 import ar.edu.unlam.mobile.scaffolding.domain.user.model.UserItem
-import ar.edu.unlam.mobile.scaffolding.ui.common.EventSearchState
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.ui.components.MapProperties
+import ar.edu.unlam.mobile.scaffolding.ui.model.EventDraft
+import ar.edu.unlam.mobile.scaffolding.ui.screens.home.state.EventSearchState
+import ar.edu.unlam.mobile.scaffolding.ui.screens.home.state.HomeUIState
+import ar.edu.unlam.mobile.scaffolding.ui.screens.home.state.SearchUIState
 import ar.edu.unlam.mobile.scaffolding.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -40,38 +42,9 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.osmdroid.util.GeoPoint
-import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.UUID
 import javax.inject.Inject
-
-data class HomeUIState(
-    val eventList: List<SuggestedEvent> = emptyList(),
-    val selectedEvent: EventItem? = null,
-    val eventDraft: EventDraft = EventDraft(),
-    val mapProperties: MapProperties = MapProperties(),
-    val userLocation: GeoPoint? = null,
-    val showEventCard: Boolean = false,
-    val helloMessageState: MessageUIState,
-)
-
-data class SearchUIState(
-    val eventList: List<SuggestedEvent> = emptyList(),
-    val currentQuery: String = "",
-    val lastQuery: String = "",
-    val isExpanded: Boolean = false,
-    val searchState: EventSearchState = EventSearchState.Idle,
-)
-
-data class EventDraft(
-    val title: String = "",
-    val description: String = "",
-    val location: GeoPoint? = null,
-    val dateTime: LocalDateTime? = null,
-    val hour: Int? = null,
-    val minute: Int? = null,
-    val imagesUri: List<Uri> = emptyList(),
-)
 
 @HiltViewModel
 class HomeViewModel
@@ -326,7 +299,12 @@ class HomeViewModel
         }
 
         fun clearDraft() {
-            _uiState.update { it.copy(eventDraft = EventDraft()) }
+            _uiState.update {
+                it.copy(
+                    eventDraft = EventDraft(),
+                    mapProperties = it.mapProperties.copy(longPressPoint = null),
+                )
+            }
         }
 
         fun createEvent() {

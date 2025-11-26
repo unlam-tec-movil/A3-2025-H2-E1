@@ -1,4 +1,4 @@
-package ar.edu.unlam.mobile.scaffolding.ui.screens
+package ar.edu.unlam.mobile.scaffolding.ui.screens.user
 
 import android.Manifest
 import android.util.Log
@@ -184,7 +184,7 @@ fun UserScreen(
                                 onClick = { viewModel.togglePastEvents() },
                                 colors =
                                     ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.secondary,
+                                        containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f),
                                     ),
                                 shape = MaterialTheme.shapes.medium,
                                 contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp),
@@ -226,6 +226,11 @@ fun UserScreen(
                                 selectedOption = if (isDistanceFilter) 1 else 0,
                             )
                         },
+                        colors =
+                            TopAppBarDefaults.topAppBarColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                scrolledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            ),
                         modifier = Modifier.consumeWindowInsets(WindowInsets.systemBars),
                     )
 
