@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -75,6 +76,11 @@ fun EventFilterButton(
                                 },
                         )
                     },
+                    modifier =
+                        Modifier
+                            .testTag(
+                                if (selectedOption == index) "filter_${option.title}_selected" else "filter_${option.title}",
+                            ),
                 )
             }
         }
