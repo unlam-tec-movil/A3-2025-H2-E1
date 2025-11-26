@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 @HiltViewModel
-class EventSearchViewModel
+class SearchViewModel
     @Inject
     constructor(
         private val getAutocompleteEvent: GetSuggestedEventsUseCase,

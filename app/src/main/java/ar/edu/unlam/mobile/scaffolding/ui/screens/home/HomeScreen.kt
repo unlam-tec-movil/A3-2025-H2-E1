@@ -57,7 +57,7 @@ const val HOME_SCREEN_ROUTE = "home"
 fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
-    searchViewModel: EventSearchViewModel = hiltViewModel(),
+    searchViewModel: SearchViewModel = hiltViewModel(),
     navController: NavHostController,
 ) {
     val uiState by viewModel.uiState.collectAsState()
