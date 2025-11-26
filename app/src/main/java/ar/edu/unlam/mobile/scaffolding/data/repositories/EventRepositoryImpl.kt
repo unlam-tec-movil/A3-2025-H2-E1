@@ -85,7 +85,9 @@ class EventRepositoryImpl
                 EventEntity(
                     eventId = "1",
                     title = "Limpieza de la Plaza San Martín",
-                    description = "Nos juntamos a limpiar la plaza principal de la ciudad. Traer bolsas y guantes.",
+                    description =
+                        "Nos organizamos para hacer una limpieza general en la plaza. Estaremos" +
+                            " repartiendo bolsas y guantes para quienes se sumen. ¡Toda ayuda es bienvenida!",
                     dateTime = System.currentTimeMillis() + 86400000, // En 23 horas
                     lat = -34.6415,
                     lng = -58.5714,
@@ -103,7 +105,9 @@ class EventRepositoryImpl
                 EventEntity(
                     eventId = "2",
                     title = "Recolección de plásticos en la costa",
-                    description = "Campaña para limpiar la costa del río de plásticos y otros residuos.",
+                    description =
+                        "Vamos a recorrer un tramo de la costa del Río de la Plata para juntar plásticos " +
+                            "y otros residuos. Una buena oportunidad para colaborar con el medio ambiente.",
                     dateTime = System.currentTimeMillis() + 86400000 * 2, // En 2 días
                     lat = -34.5425,
                     lng = -58.4555,
@@ -117,7 +121,9 @@ class EventRepositoryImpl
                 EventEntity(
                     eventId = "3",
                     title = "Jornada de reforestación en el parque",
-                    description = "Plantaremos 50 árboles nativos en el parque ecológico de la ciudad.",
+                    description =
+                        "Tenemos el objetivo de plantar 50 árboles de especies nativas en el parque." +
+                            " No hace falta experiencia, solo ganas de ayudar a crear un espacio más verde.",
                     dateTime = System.currentTimeMillis() + 86400000 * 7, // En una semana
                     lat = -34.6707,
                     lng = -58.5627,
@@ -131,7 +137,9 @@ class EventRepositoryImpl
                 EventEntity(
                     eventId = "4",
                     title = "Concierto de Rock",
-                    description = "Limpieza post concierto de rock con bandas locales e internacionales.",
+                    description =
+                        "Después del festival, nos quedamos un rato para ayudar a despejar el predio." +
+                            " La idea es dejar el lugar tan bien como lo encontramos. Cualquier mano suma.",
                     dateTime = System.currentTimeMillis(),
                     imageUrl = "https://cdn.pixabay.com/photo/2014/07/09/12/17/live-concert-388160_1280.jpg",
                     lat = -34.550773663334006,
@@ -145,7 +153,9 @@ class EventRepositoryImpl
                 EventEntity(
                     eventId = "5",
                     title = "Mantenimiento en el Rosedal de Palermo",
-                    description = "Jornada de cuidado de los rosales y limpieza de los caminos del Rosedal.",
+                    description =
+                        "Convocamos a quienes quieran colaborar con tareas de jardinería ligera en" +
+                            " el Rosedal, como poda de rosales y limpieza de los caminos.",
                     dateTime = System.currentTimeMillis() + 86400000 * 3, // En 3 días
                     lat = -34.5701,
                     lng = -58.4115,
@@ -159,7 +169,9 @@ class EventRepositoryImpl
                 EventEntity(
                     eventId = "6",
                     title = "Limpieza en el Jardín Japonés",
-                    description = "Ayudemos a mantener la belleza del Jardín Japonés, recogiendo hojas y basura menor.",
+                    description =
+                        "Una jornada tranquila para ayudar con el mantenimiento del Jardín Japonés." +
+                            " Las tareas son simples y es una buena forma de disfrutar del lugar mientras se colabora.",
                     dateTime = System.currentTimeMillis() + 86400000 * 5, // En 5 días
                     lat = -34.5752,
                     lng = -58.4124,
@@ -173,7 +185,9 @@ class EventRepositoryImpl
                 EventEntity(
                     eventId = "7",
                     title = "Clasificación de residuos en la Reserva Ecológica",
-                    description = "Evento educativo para aprender y practicar la clasificación de residuos en la Costanera Sur.",
+                    description =
+                        "Vamos a dar un taller práctico en la Reserva Ecológica para aprender a clasificar" +
+                            " residuos correctamente. Es un evento familiar y educativo.",
                     dateTime = System.currentTimeMillis() + 86400000 * 10, // En 10 días
                     lat = -34.6175,
                     lng = -58.3533,
@@ -187,7 +201,9 @@ class EventRepositoryImpl
                 EventEntity(
                     eventId = "8",
                     title = "Decoración y limpieza del Barrio Chino",
-                    description = "Preparativos para el festival de la luna, decorando y limpiando las calles principales.",
+                    description =
+                        "Necesitamos ayuda para decorar las calles principales del Barrio Chino y hacer una" +
+                            " limpieza general antes del próximo festival. ¡Vení a dar una mano!",
                     dateTime = System.currentTimeMillis() + 86400000 * 4, // En 4 días
                     lat = -34.5458,
                     lng = -58.4552,
@@ -204,7 +220,9 @@ class EventRepositoryImpl
                 EventEntity(
                     eventId = "9",
                     title = "Cuidado del césped en el Planetario",
-                    description = "Ayudemos a mantener el campo verde alrededor del Planetario Galileo Galilei.",
+                    description =
+                        "Nos juntamos para hacer mantenimiento en las áreas verdes que rodean" +
+                            " al Planetario. La idea es cuidar el césped y mantener el espacio prolijo.",
                     dateTime = System.currentTimeMillis() + 86400000 * 6, // En 6 días
                     lat = -34.5732,
                     lng = -58.4116,
@@ -222,7 +240,9 @@ class EventRepositoryImpl
                 EventEntity(
                     eventId = "10",
                     title = "Limpieza en el Parque Centenario",
-                    description = "Jornada de limpieza general realizada en el Parque Centenario.",
+                    description =
+                        "Jornada de limpieza general realizada en el Parque Centenario." +
+                            " Toda participación y ayuda para mejorar el espacio se agradece",
                     dateTime = System.currentTimeMillis() - 86400000,
                     lat = -34.6050,
                     lng = -58.4410,
@@ -244,7 +264,9 @@ class EventRepositoryImpl
                 EventEntity(
                     eventId = "11",
                     title = "Clasificación de residuos en Puerto Madero",
-                    description = "Actividad de concientización y reciclaje completada en Puerto Madero.",
+                    description =
+                        "Actividad de concientización y reciclaje en Puerto Madero para" +
+                            " clasificar material, gracias de antemano a los voluntarios",
                     dateTime = System.currentTimeMillis() - 86400000 * 3,
                     lat = -34.6083,
                     lng = -58.3625,
@@ -285,10 +307,12 @@ class EventRepositoryImpl
                 EventEntity(
                     eventId = "13",
                     title = "Limpieza del Jardín Botánico",
-                    description = "Evento finalizado de mantenimiento de senderos y retiro de basura.",
-                    dateTime = System.currentTimeMillis() - 86400000 * 30,
-                    lat = -34.5882,
-                    lng = -58.4210,
+                    description =
+                        "Una jornada para colaborar con el mantenimiento de los senderos y" +
+                            " el cuidado general de las distintas áreas del Jardín Botánico Carlos Thays.",
+                    dateTime = System.currentTimeMillis() + 86400000L * 15,
+                    lat = -34.5852,
+                    lng = -58.4192,
                     imageUrl =
                         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSrKY2d8aVTga5e" +
                             "G61roNLm6kd7Zv8yfNutkQ&s",
@@ -303,6 +327,32 @@ class EventRepositoryImpl
                     members = listOf(mockUsers[5], mockUsers[7], mockUsers[8]),
                     creator = mockUsers[4],
                     saved = listOf(2L),
+                ),
+                EventEntity(
+                    eventId = "14",
+                    title = "Voluntariado en el Parque de la Ciudad",
+                    description =
+                        "Únete a la Sociedad Ornitológica del Plata en un evento único. " +
+                            "Por la mañana, ayudaremos a realizar un censo de aves urbanas en la " +
+                            "zona de los lagos del parque. Por la tarde, colaboraremos con el " +
+                            "mantenimiento y la limpieza de los senderos cercanos. No se requiere " +
+                            "experiencia, solo ganas de aprender y disfrutar de la naturaleza en la ciudad.",
+                    dateTime = System.currentTimeMillis() + 86400000L * 8, // En 8 días
+                    lat = -34.6645,
+                    lng = -58.4610,
+                    imageUrl = "https://bafreetour.com/wp-content/uploads/2022/10/parque-ciudad-2.jpg",
+                    beforeImageUrl =
+                        listOf(
+                            "https://aguiarbuenosaires.com/wp-content/uploads/2015/11/10_parque_centenario.jpg",
+                            "https://donadoholmberg.com.ar/wp-content/uploads/2023/04/ecoparque-1000x600.jpeg",
+                            "https://i.ytimg.com/vi/jFHS5jpaPxM/maxresdefault.jpg",
+                            "https://buenosaires.gob.ar/sites/default/files/" +
+                                "media/image/2021/01/04/5f0c13451d79cc9f83e0d78cf08dbccd814f2841.jpg",
+                        ),
+                    afterImageUrl = null,
+                    members = listOf(mockUsers[1], mockUsers[4], mockUsers[5]),
+                    creator = mockUsers[6],
+                    saved = listOf(),
                 ),
             )
         private val _eventsFlow = MutableStateFlow(mockEvents.toList())
@@ -334,10 +384,7 @@ class EventRepositoryImpl
                 val suggestedEvents =
                     mockEvents
                         .filter { eventEntity ->
-                            eventEntity.title.contains(query, ignoreCase = true)
-                        }.filter { eventEntity ->
-                            //  Solo eventos futuros
-                            eventEntity.dateTime > now
+                            eventEntity.dateTime > now && eventEntity.title.contains(query, ignoreCase = true)
                         }.map { values ->
                             SuggestedEventEntity(
                                 id = values.eventId,
