@@ -41,8 +41,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
-import ar.edu.unlam.mobile.scaffolding.ui.common.EventSearchState
-import ar.edu.unlam.mobile.scaffolding.ui.screens.SearchUIState
+import ar.edu.unlam.mobile.scaffolding.ui.screens.home.state.EventSearchState
+import ar.edu.unlam.mobile.scaffolding.ui.screens.home.state.SearchUIState
 import ar.edu.unlam.mobile.scaffolding.ui.theme.ScaffoldingV2Theme
 
 @OptIn(ExperimentalMaterial3Api::class)

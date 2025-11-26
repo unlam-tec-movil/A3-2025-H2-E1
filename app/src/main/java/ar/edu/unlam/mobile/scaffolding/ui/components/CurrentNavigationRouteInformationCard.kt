@@ -46,11 +46,12 @@ fun CurrentNavigationRouteInformationCard(
         modifier =
             Modifier
                 .padding(16.dp)
-                .fillMaxWidth(0.9f),
+                .fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors =
             CardDefaults.outlinedCardColors(
                 containerColor = Color.White.copy(alpha = 0.75f),
+                contentColor = Color.Black,
             ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),

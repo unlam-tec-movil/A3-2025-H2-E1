@@ -76,7 +76,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
-import ar.edu.unlam.mobile.scaffolding.ui.screens.EventDraft
+import ar.edu.unlam.mobile.scaffolding.ui.model.EventDraft
 import ar.edu.unlam.mobile.scaffolding.utils.getAddressFromCoordinates
 import coil.compose.AsyncImage
 import com.google.accompanist.permissions.ExperimentalPermissionsApi

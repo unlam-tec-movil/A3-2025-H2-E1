@@ -41,6 +41,7 @@ import ar.edu.unlam.mobile.scaffolding.ui.components.PrimaryButton
 import ar.edu.unlam.mobile.scaffolding.ui.components.SystemBarStyle
 import ar.edu.unlam.mobile.scaffolding.ui.components.TimePlaceEventCard
 import ar.edu.unlam.mobile.scaffolding.ui.components.TopBar
+import ar.edu.unlam.mobile.scaffolding.ui.screens.home.HOME_SCREEN_ROUTE
 import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -142,7 +143,7 @@ fun EventDetailsScreen(
             TimePlaceEventCard(
                 event = event,
                 onLocationClick = { lat, lng ->
-                    navController?.navigate("$HOME_SCREEN_ROUTE/$lat/$lng")
+                    navController?.navigate("${HOME_SCREEN_ROUTE}/$lat/$lng")
                 },
             )
 

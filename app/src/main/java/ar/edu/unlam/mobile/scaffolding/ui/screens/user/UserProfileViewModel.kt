@@ -1,10 +1,11 @@
-package ar.edu.unlam.mobile.scaffolding.ui.screens
+package ar.edu.unlam.mobile.scaffolding.ui.screens.user
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ar.edu.unlam.mobile.scaffolding.data.datasources.local.SessionManager
 import ar.edu.unlam.mobile.scaffolding.domain.user.usercase.GetUserUseCase
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
+import ar.edu.unlam.mobile.scaffolding.ui.screens.user.state.UserProfileUIState
 import ar.edu.unlam.mobile.scaffolding.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,13 +13,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-data class UserProfileUIState(
-    val name: String = "",
-    val avatar: String? = "",
-    val description: String? = "",
-    val profileUiState: MessageUIState = MessageUIState.Loading,
-)
 
 @HiltViewModel
 class UserProfileViewModel

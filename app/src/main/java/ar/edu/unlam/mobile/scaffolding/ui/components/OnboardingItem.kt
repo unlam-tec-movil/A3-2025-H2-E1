@@ -19,7 +19,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import ar.edu.unlam.mobile.scaffolding.data.model.OnboardingModel
+import ar.edu.unlam.mobile.scaffolding.ui.model.OnboardingModel
 
 @Composable
 fun OnBoardItem(page: OnboardingModel) {

@@ -2,8 +2,8 @@ package ar.edu.unlam.mobile.scaffolding.viewmodels
 
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.*
 import ar.edu.unlam.mobile.scaffolding.domain.navigation.repositories.NavigationRepository
-import ar.edu.unlam.mobile.scaffolding.ui.common.EventSearchState
-import ar.edu.unlam.mobile.scaffolding.ui.screens.HomeViewModel
+import ar.edu.unlam.mobile.scaffolding.ui.screens.home.HomeViewModel
+import ar.edu.unlam.mobile.scaffolding.ui.screens.home.state.EventSearchState
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.StandardTestDispatcher
