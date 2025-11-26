@@ -78,20 +78,20 @@ class EventListViewModel
             }
         }
 
-        private fun sortEventsByDate() {
-            val now = System.currentTimeMillis()
+        private fun sortEventsByDate(order: String = "asc") {
             _uiState.update { state ->
                 state.copy(
                     events =
-                        state.events.sortedBy { event ->
-                            val remaining = event.dateTime - now
-                            if (remaining > 0) remaining else Long.MAX_VALUE
+                        if (order == "asc") {
+                            state.events.sortedBy { it.dateTime }
+                        } else {
+                            state.events.sortedByDescending { it.dateTime }
                         },
                 )
             }
         }
 
-        fun getEvents() {
+        fun getEvents(order: String = "asc") {
             viewModelScope.launch {
                 _uiState.update { it.copy(currentState = MessageUIState.Loading) }
 
@@ -99,7 +99,7 @@ class EventListViewModel
                     repository
                         .getEventsList(
                             sort = if (_uiState.value.isDistance) null else "date",
-                            order = "asc",
+                            order = order,
                             size = null,
                         ).collect { resource ->
                             when (resource) {
@@ -119,7 +119,7 @@ class EventListViewModel
                                     if (_uiState.value.isDistance) {
                                         sortEventsByDistance()
                                     } else {
-                                        sortEventsByDate()
+                                        sortEventsByDate(order = order)
                                     }
                                 }
 

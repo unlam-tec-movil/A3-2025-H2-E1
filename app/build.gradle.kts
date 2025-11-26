@@ -164,4 +164,5 @@ dependencies {
 
     // Framework Android Test Helpers
     debugImplementation(libs.androidx.test.core)
+    testImplementation(kotlin("test"))
 }

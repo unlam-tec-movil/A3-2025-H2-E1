@@ -61,7 +61,7 @@ class EventDetailsViewModel
                                 currentState.copy(
                                     event = result.data,
                                     isLoading = false,
-                                    isParticipating = result.data?.participating ?: false,
+                                    isParticipating = result.data.participating,
                                 )
                             }
                         }
