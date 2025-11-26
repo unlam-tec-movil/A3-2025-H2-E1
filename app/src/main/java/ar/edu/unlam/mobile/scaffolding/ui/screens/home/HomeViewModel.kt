@@ -1,44 +1,32 @@
 package ar.edu.unlam.mobile.scaffolding.ui.screens.home
 
-import android.annotation.SuppressLint
-import android.content.Context
 import android.location.Location
-import android.location.LocationManager
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ar.edu.unlam.mobile.scaffolding.data.datasources.local.SessionManager
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.Event
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventItem
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.CreateEventUseCase
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetEventByIdUseCase
 import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetMapEventsUseCase
-import ar.edu.unlam.mobile.scaffolding.domain.event.usecases.GetSuggestedEventsUseCase
 import ar.edu.unlam.mobile.scaffolding.domain.navigation.model.Coordinates
 import ar.edu.unlam.mobile.scaffolding.domain.navigation.model.Route
 import ar.edu.unlam.mobile.scaffolding.domain.navigation.repositories.NavigationRepository
-import ar.edu.unlam.mobile.scaffolding.domain.user.model.UserItem
+import ar.edu.unlam.mobile.scaffolding.domain.user.usercase.GetUserUseCase
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.ui.components.MapProperties
 import ar.edu.unlam.mobile.scaffolding.ui.model.EventDraft
-import ar.edu.unlam.mobile.scaffolding.ui.screens.home.state.EventSearchState
 import ar.edu.unlam.mobile.scaffolding.ui.screens.home.state.HomeUIState
 import ar.edu.unlam.mobile.scaffolding.ui.screens.home.state.SearchUIState
 import ar.edu.unlam.mobile.scaffolding.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.osmdroid.util.GeoPoint
@@ -51,10 +39,11 @@ class HomeViewModel
     @Inject
     constructor(
         private val getMapEvent: GetMapEventsUseCase,
-        private val getAutocompleteEvent: GetSuggestedEventsUseCase,
         private val createEventUseCase: CreateEventUseCase,
         private val navigationRepository: NavigationRepository,
         private val getEventByIdUseCase: GetEventByIdUseCase,
+        private val sessionManager: SessionManager,
+        private val getUserUseCase: GetUserUseCase,
     ) : ViewModel() {
         // Mutable State Flow contiene un objeto de estado mutable. Simplifica la operación de
         // actualización de información y de manejo de estados de una aplicación: Cargando, Error, Éxito
@@ -76,7 +65,6 @@ class HomeViewModel
         val currentRouteState = _currentRouteState.asStateFlow()
 
         private var mapEventJob: Job? = null
-        private var searchEventJob: Job? = null
         private var navigationJob: Job? = null
         private var locationTimeoutJob: Job? = null
 
@@ -85,28 +73,26 @@ class HomeViewModel
         init {
             _uiState.value = HomeUIState(helloMessageState = MessageUIState.Success("2b"))
             fetchEvents()
+            loadLoggedUser()
         }
 
-        // Entre un cambio y otro esto al final no lo use, pero lo dejo por si alguien si lo usa, sino se borra
-        @SuppressLint("MissingPermission")
-        fun getCurrentLocation(context: Context) {
-            val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            val location =
-                locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-                    ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
-            val userLocation =
-                if (location != null) {
-                    GeoPoint(location.latitude, location.longitude)
-                } else {
-                    GeoPoint(-34.6037, -58.3816) // Fallback: Obelisco
+        private fun loadLoggedUser() {
+            val userId = sessionManager.getLoggedUserId()
+            if (userId == -1L) {
+                _uiState.update {
+                    it.copy(helloMessageState = MessageUIState.Error("Sesión inválida"))
                 }
-            _uiState.update {
-                it.copy(userLocation = userLocation)
+                return
+            }
+            viewModelScope.launch {
+                getUserUseCase(userId).collect { resource ->
+                    if (resource is Resource.Success) {
+                        _uiState.update { it.copy(loggedUser = resource.data) }
+                    }
+                }
             }
         }
 
-        // Esto deberia hacer si tienes los permisos te coloque al iniciar en tu posicion en el mapa,
-        // de momento no lo hace, estoy en eso.
         fun setUserLocation(location: Location) {
             locationTimeoutJob?.cancel()
             locationTimeoutJob =
@@ -176,112 +162,13 @@ class HomeViewModel
                 }
         }
 
-        fun onSearchQueryChange(newQuery: String) {
-            _searchUiState.update { currentState ->
-                currentState.copy(currentQuery = newQuery)
-            }
-            if (newQuery.isEmpty()) {
-                _searchUiState.update { currentState ->
-                    currentState.copy(searchState = EventSearchState.Idle)
-                }
-            }
-        }
-
-        @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-        private fun onSearchQueryObserve() {
-            if (searchEventJob?.isActive == true) return
-            searchEventJob =
-                _searchUiState
-                    .map { it.currentQuery }
-                    .distinctUntilChanged()
-                    .debounce(timeoutMillis = 500L)
-                    .filter { query -> query.isNotBlank() && query.length > 1 }
-                    .mapLatest { query ->
-                        Log.d("HomeViewModel", "getSuggestionSearch: $query")
-                        _searchUiState.update { it.copy(searchState = EventSearchState.Loading) }
-
-                        getAutocompleteEvent(query).collect { result ->
-                            when (result) {
-                                is Resource.Success -> {
-                                    _searchUiState.update {
-                                        it.copy(
-                                            searchState =
-                                                EventSearchState.Success(
-                                                    // Para usar en el componente EventSearchBar
-                                                    currentQuery = query,
-                                                    events = result.data,
-                                                ),
-                                            // Para usar en HomeScreen (en el mapa para ser mas exactos) o vm
-                                            currentQuery = query,
-                                            eventList = result.data,
-                                        )
-                                    }
-                                }
-
-                                is Resource.Error -> {
-                                    _searchUiState.update {
-                                        it.copy(searchState = EventSearchState.Error(result.message))
-                                    }
-                                    Log.e(
-                                        "HomeViewModel",
-                                        "Error al obtener sugerencias: ${result.message}",
-                                    )
-                                }
-                            }
-                        }
-                    }.launchIn(viewModelScope)
-        }
-
-        fun onActiveChange(isActive: Boolean) {
-            _searchUiState.update { it.copy(isExpanded = isActive) }
-            when (isActive) {
-                true -> onSearchQueryObserve()
-                false -> {
-                    if (_searchUiState.value.eventList.isEmpty()) {
-                        _searchUiState.update { currentState ->
-                            currentState.copy(
-                                searchState = EventSearchState.Idle,
-                                lastQuery = "",
-                                currentQuery = "",
-                            )
-                        }
-                        Log.d("HomeViewModel", "onActiveChange: eventList is empty")
-                    }
-                    searchEventJob?.cancel()
-                }
-            }
-        }
-
-        fun onSearch(searchQuery: String) {
-            searchEventJob?.cancel()
-            _searchUiState.update { currentState ->
-                currentState.copy(
-                    isExpanded = false,
-                    lastQuery = searchQuery,
-                )
-            }
-            if (searchQuery.isNotBlank()) {
-                _uiState.update { currentState ->
-                    currentState.copy(eventList = _searchUiState.value.eventList)
-                }
-                Log.d(
-                    "HomeViewModel",
-                    "onSearch: Mostrando ${_uiState.value.eventList.size} eventos en el mapa.",
-                )
-            } else {
-                fetchEvents()
+        fun onSearch(searchResults: List<SuggestedEvent>) {
+            _uiState.update {
+                it.copy(eventList = searchResults)
             }
         }
 
         fun onEventSelected(event: SuggestedEvent) {
-            searchEventJob?.cancel()
-            _searchUiState.update { currentState ->
-                currentState.copy(
-                    lastQuery = event.title,
-                    currentQuery = event.title,
-                    isExpanded = false,
-                )
-            }
             _uiState.update { currentState ->
                 currentState.copy(eventList = listOf(event))
             }
@@ -329,7 +216,7 @@ class HomeViewModel
                         beforeImage = emptyList(),
                         afterImage = null,
                         members = emptyList(),
-                        creator = UserItem(0L, "Usuario", null, null),
+                        creator = _uiState.value.loggedUser!!,
                         saved = false,
                         participating = false,
                     )

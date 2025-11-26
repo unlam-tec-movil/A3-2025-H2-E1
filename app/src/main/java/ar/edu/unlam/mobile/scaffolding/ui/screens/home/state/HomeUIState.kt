@@ -2,6 +2,7 @@ package ar.edu.unlam.mobile.scaffolding.ui.screens.home.state
 
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.EventItem
 import ar.edu.unlam.mobile.scaffolding.domain.event.model.SuggestedEvent
+import ar.edu.unlam.mobile.scaffolding.domain.user.model.UserItem
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
 import ar.edu.unlam.mobile.scaffolding.ui.components.MapProperties
 import ar.edu.unlam.mobile.scaffolding.ui.model.EventDraft
@@ -12,6 +13,7 @@ data class HomeUIState(
     val selectedEvent: EventItem? = null,
     val eventDraft: EventDraft = EventDraft(),
     val mapProperties: MapProperties = MapProperties(),
+    val loggedUser: UserItem? = null,
     val userLocation: GeoPoint? = null,
     val showEventCard: Boolean = false,
     val helloMessageState: MessageUIState,

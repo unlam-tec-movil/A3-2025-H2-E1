@@ -31,7 +31,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import ar.edu.unlam.mobile.scaffolding.domain.navigation.model.Coordinates
 import ar.edu.unlam.mobile.scaffolding.ui.common.MessageUIState
@@ -58,10 +57,11 @@ const val HOME_SCREEN_ROUTE = "home"
 fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
+    searchViewModel: EventSearchViewModel = hiltViewModel(),
     navController: NavHostController,
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val searchBarState by viewModel.searchUiState.collectAsStateWithLifecycle()
+    val searchBarState by searchViewModel.searchUiState.collectAsState()
     val currentRoute by viewModel.currentRouteState.collectAsState()
 
     var showCreateEventDialog by remember { mutableStateOf(false) }
@@ -232,12 +232,19 @@ fun HomeScreen(
                     // Barra de busqueda
                     EventSearchBar(
                         searchUiState = searchBarState,
-                        onSearchQueryChange = viewModel::onSearchQueryChange,
-                        onSearch = viewModel::onSearch,
+                        onSearchQueryChange = searchViewModel::onSearchQueryChange,
+                        onSearch = { query ->
+                            searchViewModel.onSearch(query)
+                            viewModel.onSearch(searchBarState.eventList)
+                            if (query.isBlank()) {
+                                viewModel.fetchEvents()
+                            }
+                        },
                         onSuggestionSelected = { event ->
+                            searchViewModel.onSearch(event.title)
                             viewModel.onEventSelected(event)
                         },
-                        onActiveChange = viewModel::onActiveChange,
+                        onActiveChange = searchViewModel::onActiveChange,
                     )
 
                     // Informacion de la ruta seguida
